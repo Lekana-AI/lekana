@@ -1,5 +1,8 @@
 import { json } from '@sveltejs/kit';
-import { AUTH_USERNAME, AUTH_PASSWORD } from '$env/static/private';
+// also build-time replacement in many cases
+const username = process.env.AUTH_USERNAME;
+const password = process.env.AUTH_PASSWORD;
+
 
 const BASE_URL = 'https://lekana-ai-waitlist-api-PROJECT_NUMBER.asia-south1.run.app/api';
 
@@ -10,8 +13,8 @@ async function getToken() {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify({
-			username: AUTH_USERNAME,
-			password: AUTH_PASSWORD
+			username,
+			password
 		})
 	});
 

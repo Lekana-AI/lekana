@@ -1,5 +1,10 @@
 import { json } from '@sveltejs/kit';
-import { ADMIN_USERNAME, ADMIN_PASSWORD, AUTH_USERNAME, AUTH_PASSWORD } from '$env/static/private';
+// also build-time replacement in many cases
+const auth_username = process.env.AUTH_USERNAME;
+const auth_password = process.env.AUTH_PASSWORD;
+const admin_username = process.env.ADMIN_USERNAME;
+const admin_password = process.env.ADMIN_PASSWORD;
+
 
 const BASE_URL = 'https://lekana-ai-waitlist-api-PROJECT_NUMBER.asia-south1.run.app';
 
@@ -8,8 +13,8 @@ async function getToken() {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
-			username: AUTH_USERNAME,
-			password: AUTH_PASSWORD
+			username: auth_username,
+			password: auth_password
 		})
 	});
 
@@ -27,9 +32,9 @@ export async function POST({ request }) {
 		const { username, password } = await request.json();
 
 		// 2. Validate credentials
-		if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+		if (username !== admin_username || password !== admin_password) {
 			return json(
-				{ error: 'Unauthorized: Invalid credentials. u-' + ADMIN_PASSWORD + ' p-' + password },
+				{ error: 'Unauthorized: Invalid credentials.' },
 				{ status: 401 }
 			);
 		}
