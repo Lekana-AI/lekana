@@ -2,10 +2,6 @@
 	import DocumentScan from '$lib/components/DocumentScan.svelte';
 	import Icon from '@iconify/svelte';
 
-	let email = '';
-	let name = '';
-	let company = '';
-
 	const steps = [
 		{ label: 'Upload Document', icon: 'mdi:cloud-upload-outline' },
 		{ label: 'Identify Content', icon: 'mdi:sparkles' },
@@ -13,23 +9,55 @@
 		{ label: 'Generate Insights', icon: 'mdi:chart-box-outline' }
 	];
 
-	let activeIndex = 0;
-	const STEP_DURATION = 1600; // ms per step
+	let data = {
+		name: '',
+		company: '',
+		email: '',
+		contact: '',
+		role: '',
+		industry: '',
+		volume: '',
+		docs: ''
+	};
 
-	const isActive = (i) => i === activeIndex;
-	const isCompleted = (i) => i < activeIndex;
+	let agreeToContact = false;
+	let message = '';
+	let loading = false;
 
-	import { onMount, onDestroy } from 'svelte';
+	async function submitToWaitlist() {
+		if (!agreeToContact) {
+			message = 'Please agree to be contacted before submitting.';
+			return;
+		}
 
-	let timer;
+		loading = true;
+		message = '';
 
-	onMount(() => {
-		timer = window.setInterval(() => {
-			activeIndex = (activeIndex + 1) % steps.length;
-		}, STEP_DURATION);
+		try {
+			const response = await fetch('/api/waitlist', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
 
-		return () => clearInterval(timer);
-	});
+			const result = await response.json();
+
+			if (!response.ok) {
+				console.error('Error:', result);
+				message = result?.error || 'Failed to submit. Please try again.';
+				return;
+			}
+
+			message = 'Successfully submitted to the waitlist!';
+		} catch (err) {
+			console.error('Request failed:', err);
+			message = 'Something went wrong. Please check your connection.';
+		} finally {
+			loading = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -46,10 +74,10 @@
 	<nav
 		class="to white-0 fixed top-0 z-20 flex w-full items-center justify-between bg-linear-to-t from-white/5 px-8 py-4 text-white backdrop-blur-md md:px-24"
 	>
-		<div class="flex items-center gap-2">
+		<a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity duration-300">
 			<img src="/logo.svg" alt="logo" class="h-6 w-6" />
 			<span class="font-semibold">Lekana AI</span>
-		</div>
+		</a>
 
 		<div class="hidden items-center gap-8 text-sm text-gray-300 md:flex">
 			<a href="#about" class="transition-colors duration-300 hover:text-green-500">About</a>
@@ -159,11 +187,11 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-					<Icon
-						icon="mdi:server-network-outline"
-						class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
-					/>
-					<h3 class="mb-2 text-xl font-semibold">No Infrastructure Required</h3>
+				<Icon
+					icon="mdi:server-network-outline"
+					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
+				/>
+				<h3 class="mb-2 text-xl font-semibold">No Infrastructure Required</h3>
 				<p class="text-sm text-gray-400">
 					You tell us the workflow — we set everything up for you.
 				</p>
@@ -174,11 +202,11 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-					<Icon
-						icon="mdi:text-recognition"
-						class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
-					/>
-					<h3 class="mb-2 text-xl font-semibold">Deep OCR Understanding</h3>
+				<Icon
+					icon="mdi:text-recognition"
+					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
+				/>
+				<h3 class="mb-2 text-xl font-semibold">Deep OCR Understanding</h3>
 				<p class="text-sm text-gray-400">
 					We extract structured data from PDFs, scans, invoices, forms, and more.
 				</p>
@@ -189,11 +217,11 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-					<Icon
-						icon="mdi:flowchart"
-						class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
-					/>
-					<h3 class="mb-2 text-xl font-semibold">Custom Routing</h3>
+				<Icon
+					icon="mdi:flowchart"
+					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
+				/>
+				<h3 class="mb-2 text-xl font-semibold">Custom Routing</h3>
 				<p class="text-sm text-gray-400">
 					Data flows directly into your internal tools, CRMs, or automations.
 				</p>
@@ -204,11 +232,11 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 		   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-					<Icon
-						icon="mdi:translate"
-						class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
-					/>
-					<h3 class="mb-2 text-xl font-semibold">Multilingual Support</h3>
+				<Icon
+					icon="mdi:translate"
+					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
+				/>
+				<h3 class="mb-2 text-xl font-semibold">Multilingual Support</h3>
 				<p class="text-sm text-gray-400">
 					Reads documents across many languages and even handwriting
 				</p>
@@ -232,6 +260,7 @@
 							id="name"
 							name="name"
 							type="text"
+							bind:value={data.name}
 							placeholder="Alex Johnson"
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 							required
@@ -245,6 +274,7 @@
 							id="company"
 							name="company"
 							type="text"
+							bind:value={data.company}
 							placeholder="Acme Corp"
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 							required
@@ -258,6 +288,7 @@
 							id="email"
 							name="email"
 							type="email"
+							bind:value={data.email}
 							placeholder="you@company.com"
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 							required
@@ -271,6 +302,7 @@
 							id="contact"
 							name="contact"
 							type="tel"
+							bind:value={data.contact}
 							placeholder="+1 555 123 4567"
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 						/>
@@ -283,6 +315,7 @@
 							id="role"
 							name="role"
 							type="text"
+							bind:value={data.role}
 							placeholder="Operations Lead, CTO, etc."
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 						/>
@@ -294,6 +327,7 @@
 						<select
 							id="industry"
 							name="industry"
+							bind:value={data.industry}
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 						>
 							<option value="" disabled selected>Select an industry</option>
@@ -314,6 +348,7 @@
 						<select
 							id="volume"
 							name="documentVolume"
+							bind:value={data.volume}
 							class="w-full rounded-lg border border-neutral-700 bg-black px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
 						>
 							<option value="" disabled selected>Select a rough range</option>
@@ -333,6 +368,7 @@
 						<textarea
 							id="workflows"
 							name="workflows"
+							bind:value={data.docs}
 							rows="4"
 							placeholder="e.g. invoice processing, KYC document review, contract intake, shipping docs, claims forms..."
 							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-3 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
@@ -346,6 +382,7 @@
 						<input
 							type="checkbox"
 							name="consent"
+							bind:checked={agreeToContact}
 							class="mt-1 h-6 w-6 rounded border-neutral-600 bg-black/60 text-green-500 outline-none focus:ring-1 focus:ring-green-500"
 							required
 						/>
@@ -355,12 +392,23 @@
 						</span>
 					</label>
 
-					<a
-						href="#waitlist"
-						class="rounded-full border border-transparent bg-black px-12 py-3 shadow-xl transition-all duration-500 hover:border-green-500 hover:text-white hover:shadow-green-500/30"
+					<p class="text-sm text-white">
+						{message}
+					</p>
+
+					<div
+						class="{loading
+							? 'glow-btn'
+							: 'bg-black'} flex rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"
 					>
-						Submit
-					</a>
+						<button
+							on:click={submitToWaitlist}
+							type="button"
+							class="rounded-full border border-transparent bg-black px-12 py-3 shadow-xl transition-all duration-500 hover:border-green-500 hover:text-white hover:shadow-green-500/30"
+						>
+							Submit
+						</button>
+					</div>
 				</div>
 			</form>
 		</div>

@@ -4,13 +4,8 @@
 	// @ts-ignore
 	let document: HTMLDivElement;
 
-	let x = 0,
-		y = 0,
-		width = 0,
+	let width = 0,
 		height = 0;
-
-	let pctX = 0,
-		pctY = 0;
 
 	// Active region (driven by the autoplay, not the mouse)
 	type Region = {
@@ -247,7 +242,7 @@
 			// 4) Clear and move on
 			displayedText = '';
 			maskProgress = 0;
-			await wait(400);
+			await wait(800);
 
 			index = (index + 1) % REGIONS.length;
 		}
@@ -257,7 +252,6 @@
 		initRect();
 		runTour();
 
-		// update size on resize (optional but nice)
 		const onResize = () => {
 			initRect();
 			updateMask();
@@ -275,7 +269,7 @@
 </script>
 
 <section
-	class="flex h-full w-full flex-col items-center justify-center gap-4 md:gap-8 py-10 md:max-w-6xl md:flex-row"
+	class="flex h-full w-full flex-col items-start justify-center gap-4 py-10 md:max-w-6xl md:flex-row md:gap-8"
 >
 	<!-- Image + green highlight -->
 	<div class=" rounded-xl bg-black p-3 py-6 shadow-lg md:p-6 md:py-12">
@@ -335,7 +329,7 @@
 	</div>
 	<!-- Result Box -->
 	<div
-		class="font- mt-1 flex w-full max-w-xl items-start justify-start gap-5 rounded-xl bg-neutral-950 p-6 px-12 shadow-lg md:mt-4"
+		class="mt-1 flex w-full max-w-xl items-start justify-start gap-5 rounded-xl bg-neutral-950 p-6 px-12 shadow-lg md:mt-0"
 	>
 		<div class="min-w-0 {!displayedText ? 'animate-pulse' : ''}">
 			<h3 class="mb-2 text-left text-sm font-semibold md:text-lg">
