@@ -1,7 +1,8 @@
 import { json } from '@sveltejs/kit';
-// also build-time replacement in many cases
-const username = process.env.AUTH_USERNAME;
-const password = process.env.AUTH_PASSWORD;
+import { env } from '$env/dynamic/private';
+
+const username = env.AUTH_USERNAME;
+const password = env.AUTH_PASSWORD;
 
 
 const BASE_URL = 'https://lekana-ai-waitlist-api-PROJECT_NUMBER.asia-south1.run.app/api';

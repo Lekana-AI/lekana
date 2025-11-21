@@ -1,9 +1,9 @@
 import { json } from '@sveltejs/kit';
-// also build-time replacement in many cases
-const auth_username = process.env.AUTH_USERNAME;
-const auth_password = process.env.AUTH_PASSWORD;
-const admin_username = process.env.ADMIN_USERNAME;
-const admin_password = process.env.ADMIN_PASSWORD;
+import { env } from '$env/dynamic/private';
+const auth_username = env.AUTH_USERNAME;
+const auth_password = env.AUTH_PASSWORD;
+const admin_username = env.ADMIN_USERNAME;
+const admin_password = env.ADMIN_PASSWORD;
 
 
 const BASE_URL = 'https://lekana-ai-waitlist-api-PROJECT_NUMBER.asia-south1.run.app';
@@ -34,7 +34,7 @@ export async function POST({ request }) {
 		// 2. Validate credentials
 		if (username !== admin_username || password !== admin_password) {
 			return json(
-				{ error: 'Unauthorized: Invalid credentials.' },
+				{ error: 'Unauthorized: Invalid credentials. u-' + admin_password + ' p-' + password },
 				{ status: 401 }
 			);
 		}
