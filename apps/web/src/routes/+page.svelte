@@ -1,13 +1,40 @@
 <script>
-	import DocumentScan from '$lib/components/DocumentScan.svelte';
-	import Icon from '@iconify/svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import Header from '$lib/components/Header.svelte';
+	import {
+		CloudUpload,
+		Sparkles,
+		TextSearch,
+		ChartColumnBig,
+		Server,
+		ScanText,
+		Workflow,
+		Languages,
+		ArrowRight,
+		Plus,
+		ArrowUp
+	} from 'lucide-svelte';
 
 	const steps = [
-		{ label: 'Upload Document', icon: 'mdi:cloud-upload-outline' },
-		{ label: 'Identify Content', icon: 'mdi:sparkles' },
-		{ label: 'Identify Sections', icon: 'mdi:file-find-outline' },
-		{ label: 'Generate Insights', icon: 'mdi:chart-box-outline' }
+		{
+			label: 'Upload Document',
+			icon: CloudUpload
+		},
+		{
+			label: 'Identify Content',
+			icon: Sparkles
+		},
+		{
+			label: 'Identify Sections',
+			icon: TextSearch
+		},
+		{
+			label: 'Generate Insights',
+			icon: ChartColumnBig
+		}
 	];
+
+	let prompt = '';
 
 	let data = {
 		name: '',
@@ -70,31 +97,7 @@
 </svelte:head>
 
 <main class="relative flex flex-col items-center overflow-x-clip bg-neutral-950">
-	<!-- NAV -->
-	<nav
-		class="to white-0 fixed top-0 z-20 flex w-full items-center justify-between bg-linear-to-t from-white/5 px-8 py-4 text-white backdrop-blur-md md:px-24"
-	>
-		<a href="/" class="flex items-center gap-2 hover:opacity-80 transition-opacity duration-300">
-			<img src="/logo.svg" alt="logo" class="h-6 w-6" />
-			<span class="font-semibold">Lekana AI</span>
-		</a>
-
-		<div class="hidden items-center gap-8 text-sm text-gray-300 md:flex">
-			<a href="#about" class="transition-colors duration-300 hover:text-green-500">About</a>
-			<a href="#faq" class="transition-colors duration-300 hover:text-green-500">FAQ</a>
-
-			<div
-				class="glow-btn flex rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"
-			>
-				<a
-					href="#waitlist"
-					class="rounded-full bg-black px-6 py-3 transition-colors duration-300 hover:text-white"
-				>
-					Join Waitlist
-				</a>
-			</div>
-		</div>
-	</nav>
+	<Header />
 
 	<style>
 		.glow-btn {
@@ -110,36 +113,64 @@
 				--gradient-angle: 360deg;
 			}
 		}
+		.dark-scroll {
+			scrollbar-width: thin;
+			scrollbar-color: gray transparent;
+		}
 	</style>
 
 	<div
-		class="absolute top-1/12 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60% md:top-0 md:scale-100"
+		class="absolute top-1/12 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60% md:-top-16 md:scale-150 animate-[pulse_5s_ease-in-out_infinite]"
 	></div>
-	<section class="relative z-10 min-h-screen max-w-xs text-white md:max-w-6xl">
-		<div
-			class="relative z-10 flex flex-col items-center justify-center gap-4 py-16 pt-48 text-center md:py-32 md:pt-72"
-		>
-			<h1 class="text-4xl font-bold text-zinc-300 md:text-6xl">
+	<section
+		class="relative z-10 flex min-h-screen w-full max-w-xs flex-col items-center justify-center gap-8 py-16 pt-36 text-white md:max-w-6xl"
+	>
+		<div class="relative flex flex-col items-center justify-center gap-4 pb-10 text-center">
+			<h1 class="text-4xl font-bold text-zinc-300 md:text-5xl">
 				Say goodbye to the document chaos.
 			</h1>
-			<p class="mx-auto mt-1 max-w-2xl text-sm text-gray-400 md:text-lg">
+			<p class="mx-auto mt-1 max-w-2xl text-sm text-gray-400 md:text-base">
 				Let’s build the automated workflow for your business you always needed.
 			</p>
+		</div>
+		<div class="glow-btn flex w-fit overflow-clip rounded-3xl pt-0.5 shadow-lg">
+			<div
+				class="flex h-fit w-full min-w-3xl flex-col items-start justify-between gap-2 rounded-t-3xl bg-neutral-950 px-8 py-4"
+			>
+				<textarea
+					bind:value={prompt}
+					rows="5"
+					autocomplete="off"
+					placeholder="Ask Lekana to create a workflow that ...."
+					class="dark-scroll max-h-64 min-h-20 w-full resize-none p-1 text-white outline-none"
+				></textarea>
 
-			<div class="glow-btn mt-12 flex w-fit rounded-full p-0.5">
-				<a
-					href="#waitlist"
-					class="rounded-full bg-black px-8 py-4 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"
-				>
-					Join Waitlist
-				</a>
+				<div class="inline-flex items-center justify-between self-stretch">
+					<button
+						class="rounded-lg bg-zinc-900 px-4 py-2 transition-colors duration-300 hover:bg-green-950"
+					>
+						<Plus size="20" />
+					</button>
+
+					<button
+						class="rounded-lg bg-white px-4 py-2 text-black transition-colors duration-300 disabled:bg-zinc-400"
+						disabled={!prompt}
+					>
+						<ArrowUp size="20" />
+					</button>
+				</div>
 			</div>
 		</div>
-		<DocumentScan />
+		<a
+			href="dashboard"
+			class="inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-950 px-8 py-3 text-white shadow-xl shadow-transparent transition-shadow duration-500 hover:shadow-green-500/20"
+		>
+			Start with Workflow Builder <ArrowRight size="16" />
+		</a>
 	</section>
 
 	<!-- WORKFLOW -->
-	<section class="relative z-10 max-w-sm py-12 text-center text-white md:max-w-6xl md:py-28">
+	<section class="relative z-10 max-w-sm py-12 text-center text-white md:max-w-6xl md:py-20">
 		<h2 class="text-2xl font-semibold md:text-4xl">Automate workflows</h2>
 		<p class="mt-3 text-xs text-gray-400 md:text-base">
 			Let’s build the automated workflow for your business you always needed.
@@ -147,14 +178,17 @@
 
 		<div class="mt-16 flex flex-col flex-wrap justify-center gap-4 md:flex-row">
 			{#each steps as step, i}
+				{@const Icon = step.icon}
+
 				<div class="flex flex-col items-center md:flex-row">
 					<!-- Step card -->
 					<div class="group flex flex-col items-center hover:cursor-pointer">
 						<div
 							class="flex items-center justify-center rounded-xl border border-green-900 bg-green-900/20 p-4 shadow-xl transition-shadow duration-300 group-hover:shadow-green-500/50 md:p-6"
 						>
-							<Icon icon={step.icon} class="text-3xl text-white md:text-4xl" />
+							<Icon class="text-3xl text-white md:text-4xl" />
 						</div>
+
 						<p
 							class="mt-4 text-center text-sm transition-transform duration-300 group-hover:translate-y-1"
 						>
@@ -162,7 +196,7 @@
 						</p>
 					</div>
 
-					<!-- Connector node (between steps) -->
+					<!-- Connector node -->
 					{#if i < steps.length - 1}
 						<div class="group mt-2 flex flex-col items-center md:mt-0 md:ml-4 md:flex-row">
 							<div class="mx-1 h-2 w-2 rounded-full bg-green-400 shadow-md shadow-green-500"></div>
@@ -187,8 +221,7 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-				<Icon
-					icon="mdi:server-network-outline"
+				<Server
 					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
 				/>
 				<h3 class="mb-2 text-xl font-semibold">No Infrastructure Required</h3>
@@ -202,8 +235,7 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-				<Icon
-					icon="mdi:text-recognition"
+				<ScanText
 					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
 				/>
 				<h3 class="mb-2 text-xl font-semibold">Deep OCR Understanding</h3>
@@ -217,8 +249,7 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 				   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-				<Icon
-					icon="mdi:flowchart"
+				<Workflow
 					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
 				/>
 				<h3 class="mb-2 text-xl font-semibold">Custom Routing</h3>
@@ -232,8 +263,7 @@
 				class="group rounded-xl border border-green-950 bg-neutral-900 p-6
 		   shadow-xl shadow-green-950/20 transition-all delay-75 duration-500 hover:shadow-green-700/50"
 			>
-				<Icon
-					icon="mdi:translate"
+				<Languages
 					class="mb-4 text-4xl text-gray-500 transition-colors duration-300 group-hover:text-green-500"
 				/>
 				<h3 class="mb-2 text-xl font-semibold">Multilingual Support</h3>
@@ -241,176 +271,6 @@
 					Reads documents across many languages and even handwriting
 				</p>
 			</div>
-		</div>
-	</section>
-
-	<!-- JOIN WAITLIST -->
-	<section id="waitlist" class="max-w-sm py-16 text-white md:max-w-3xl md:py-24">
-		<h2 class="text-center text-2xl font-semibold md:text-4xl">Join the Lekana AI Waitlist</h2>
-		<p class="mt-3 text-center text-xs text-gray-400 md:text-base">
-			Share a bit about your team and workflows — we’ll reach out when there’s a perfect fit.
-		</p>
-		<div class="glow-btn mt-10 flex rounded-2xl py-0.5">
-			<form class="rounded-2xl bg-neutral-900 p-6 md:p-8">
-				<div class="grid gap-6 md:grid-cols-2">
-					<!-- Name -->
-					<div class="flex flex-col text-sm">
-						<label for="name" class="mb-2 text-gray-300">Name</label>
-						<input
-							id="name"
-							name="name"
-							type="text"
-							bind:value={data.name}
-							placeholder="Alex Johnson"
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-							required
-						/>
-					</div>
-
-					<!-- Company name -->
-					<div class="flex flex-col text-sm">
-						<label for="company" class="mb-2 text-gray-300">Company name</label>
-						<input
-							id="company"
-							name="company"
-							type="text"
-							bind:value={data.company}
-							placeholder="Acme Corp"
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-							required
-						/>
-					</div>
-
-					<!-- Work email -->
-					<div class="flex flex-col text-sm">
-						<label for="email" class="mb-2 text-gray-300">Work email</label>
-						<input
-							id="email"
-							name="email"
-							type="email"
-							bind:value={data.email}
-							placeholder="you@company.com"
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-							required
-						/>
-					</div>
-
-					<!-- Contact -->
-					<div class="flex flex-col text-sm">
-						<label for="contact" class="mb-2 text-gray-300">Contact</label>
-						<input
-							id="contact"
-							name="contact"
-							type="tel"
-							bind:value={data.contact}
-							placeholder="+1 555 123 4567"
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-						/>
-					</div>
-
-					<!-- Role -->
-					<div class="flex flex-col text-sm">
-						<label for="role" class="mb-2 text-gray-300">Role</label>
-						<input
-							id="role"
-							name="role"
-							type="text"
-							bind:value={data.role}
-							placeholder="Operations Lead, CTO, etc."
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-						/>
-					</div>
-
-					<!-- Industry -->
-					<div class="flex flex-col text-sm">
-						<label for="industry" class="mb-2 text-gray-300">Industry</label>
-						<select
-							id="industry"
-							name="industry"
-							bind:value={data.industry}
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-						>
-							<option value="" disabled selected>Select an industry</option>
-							<option>Financial Services</option>
-							<option>Healthcare</option>
-							<option>Logistics & Supply Chain</option>
-							<option>Legal & Compliance</option>
-							<option>Real Estate</option>
-							<option>Manufacturing</option>
-							<option>Technology</option>
-							<option>Other</option>
-						</select>
-					</div>
-
-					<!-- Document volume -->
-					<div class="flex flex-col text-sm">
-						<label for="volume" class="mb-2 text-gray-300">Document volume (per month)</label>
-						<select
-							id="volume"
-							name="documentVolume"
-							bind:value={data.volume}
-							class="w-full rounded-lg border border-neutral-700 bg-black px-4 py-2.5 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-						>
-							<option value="" disabled selected>Select a rough range</option>
-							<option>&lt; 100</option>
-							<option>100 – 500</option>
-							<option>500 – 2,000</option>
-							<option>2,000 – 10,000</option>
-							<option>10,000+</option>
-						</select>
-					</div>
-
-					<!-- Workflows textarea -->
-					<div class="flex flex-col text-sm md:col-span-2">
-						<label for="workflows" class="mb-2 text-gray-300">
-							What documents/workflows do you want automated?
-						</label>
-						<textarea
-							id="workflows"
-							name="workflows"
-							bind:value={data.docs}
-							rows="4"
-							placeholder="e.g. invoice processing, KYC document review, contract intake, shipping docs, claims forms..."
-							class="w-full rounded-lg border border-neutral-700 bg-black/40 px-4 py-3 text-sm transition-all duration-200 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500"
-						></textarea>
-					</div>
-				</div>
-
-				<!-- Checkbox + submit -->
-				<div class="mt-6 flex flex-col items-start gap-6 md:justify-between">
-					<label class="flex cursor-pointer items-start gap-3 text-xs text-gray-400 md:text-sm">
-						<input
-							type="checkbox"
-							name="consent"
-							bind:checked={agreeToContact}
-							class="mt-1 h-6 w-6 rounded border-neutral-600 bg-black/60 text-green-500 outline-none focus:ring-1 focus:ring-green-500"
-							required
-						/>
-						<span class="text-sm">
-							I agree to be contacted about Lekana AI and understand my information may be used to
-							follow up about relevant products and services.
-						</span>
-					</label>
-
-					<p class="text-sm text-white">
-						{message}
-					</p>
-
-					<div
-						class="{loading
-							? 'glow-btn'
-							: 'bg-black'} flex rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"
-					>
-						<button
-							on:click={submitToWaitlist}
-							type="button"
-							class="rounded-full border border-transparent bg-black px-12 py-3 shadow-xl transition-all duration-500 hover:border-green-500 hover:text-white hover:shadow-green-500/30"
-						>
-							Submit
-						</button>
-					</div>
-				</div>
-			</form>
 		</div>
 	</section>
 
@@ -648,76 +508,5 @@
 		</div>
 	</section>
 
-	<!-- FOOTER -->
-	<footer class="mt-14 w-full border-t border-green-950/60 bg-black/95">
-		<div class="mx-auto max-w-6xl px-4 py-10 text-sm text-gray-400 md:px-8 md:py-12">
-			<div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-				<!-- Brand -->
-				<div class="max-w-sm space-y-3">
-					<p class="text-base font-semibold text-white">Lekana AI</p>
-					<p class="text-xs leading-relaxed text-gray-500 md:text-sm">
-						An OCR-powered document intake service for businesses. We read your documents,
-						understand them, and route them into your workflow — fully managed, end-to-end.
-					</p>
-				</div>
-
-				<!-- Navigation -->
-				<div class="flex flex-1 flex-wrap gap-10 md:justify-center">
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Product</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="#about" class="hover:text-green-500">About</a></li>
-							<li><a href="#faq" class="hover:text-green-500">FAQ</a></li>
-						</ul>
-					</div>
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Company</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="#waitlist" class="hover:text-green-500">Join waitlist</a></li>
-							<li><a href="/" class="hover:text-green-500">Contact</a></li>
-						</ul>
-					</div>
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Legal</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="/privacy" class="hover:text-green-500">Privacy</a></li>
-							<li><a href="/terms" class="hover:text-green-500">Terms</a></li>
-						</ul>
-					</div>
-				</div>
-
-				<!-- Call to action -->
-				<div class="space-y-3 text-xs md:text-sm">
-					<!-- <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
-						Get early access
-					</p>
-					<p class="max-w-xs text-gray-500">
-						Share your use case and document volume — we’ll help design your first automated intake
-						workflows.
-					</p> -->
-					<div
-						class="glow-btn flex w-fit rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"
-					>
-						<a
-							href="#waitlist"
-							class="rounded-full bg-black px-6 py-3 text-white transition-colors duration-300"
-						>
-							Join Waitlist
-						</a>
-					</div>
-				</div>
-			</div>
-
-			<hr class="mt-8 border-neutral-800" />
-
-			<div
-				class="mt-4 flex flex-col items-center justify-between gap-3 text-[11px] text-gray-500 md:flex-row md:text-xs"
-			>
-				<p>Lekana AI © {new Date().getFullYear()}. All rights reserved.</p>
-				<p class="text-center md:text-right">
-					Built for businesses that are done with the chaos of documents.
-				</p>
-			</div>
-		</div>
-	</footer>
+	<Footer />
 </main>
