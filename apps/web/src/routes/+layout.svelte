@@ -1,6 +1,8 @@
 <script>
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { ClerkProvider } from 'svelte-clerk';
+	import { PUBLIC_CLERK_PUBLISHABLE_KEY } from '$env/static/public';
 
 	let { children } = $props();
 </script>
@@ -9,4 +11,6 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-{@render children()}
+<ClerkProvider publishableKey={PUBLIC_CLERK_PUBLISHABLE_KEY}>
+	{@render children()}
+</ClerkProvider>
