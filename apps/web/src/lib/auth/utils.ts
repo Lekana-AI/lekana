@@ -5,7 +5,7 @@
 /**
  * Helper function to make authenticated API requests with Clerk token
  * Usage:
- *   import { fetchWithAuth } from '$lib/clerk';
+ *   import { fetchWithAuth } from '$lib/auth';
  *   const response = await fetchWithAuth('http://localhost:4001/validate', { method: 'POST', body: ... });
  */
 export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {

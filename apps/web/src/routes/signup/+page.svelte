@@ -12,8 +12,8 @@
 
 <SignedOut>
 	{#snippet children()}
-		<main class="flex h-screen w-screen bg-zinc-900 py-12">
-			<div class=" flex h-full w-full flex-col items-center justify-center gap-12 px-8 md:px-24">
+		<main class="flex h-screen w-screen overflow-x-hidden bg-zinc-900">
+			<div class="flex h-full w-full flex-col items-center justify-center gap-8 px-8 py-12 md:w-1/2 md:px-16">
 				<div class="">
 					<p class="text-xs font-semibold tracking-[0.2em] text-green-400/80 uppercase">signup</p>
 					<h1 class="mt-3 text-3xl font-semibold text-white md:text-5xl">Join Lekana AI</h1>
@@ -21,6 +21,7 @@
 
 				<div class="flex w-full max-w-md flex-col items-center gap-6">
 					<SignUp 
+						signInUrl="/login"
 						afterSignUpUrl="/getting-started"
 						appearance={{
 							elements: {
@@ -39,7 +40,7 @@
 				</div>
 			</div>
 			<div
-				class="relative flex h-full w-full items-center justify-center overflow-clip rounded-l-2xl bg-black"
+				class="relative hidden h-full items-center justify-center overflow-clip rounded-l-2xl bg-black md:flex md:w-1/2"
 			>
 				<div class="z-10 flex items-center gap-4">
 					<img src="/logo.svg" alt="logo" class="h-12 w-12" />
