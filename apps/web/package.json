@@ -36,6 +36,7 @@
 	},
 	"dependencies": {
 		"@xyflow/svelte": "^1.4.2",
-		"lucide-svelte": "^0.555.0"
+		"lucide-svelte": "^0.555.0",
+		"svelte-clerk": "^0.18.7"
 	}
 }

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { SignedIn, SignedOut, UserButton } from 'svelte-clerk';
+	import { goto } from '$app/navigation';
 	import {
 		User,
 		Building2,
@@ -10,7 +12,8 @@
 		Crown,
 		Minus,
 		Info,
-		Check
+		Check,
+		LogOut
 	} from 'lucide-svelte';
 
 	let step = 1;
