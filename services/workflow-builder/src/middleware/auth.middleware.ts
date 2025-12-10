@@ -18,6 +18,8 @@ declare global {
             auth?: {
                 sub: string;
                 sid?: string;
+                email?: string;  // Custom claim from Clerk JWT template
+                name?: string;   // Custom claim from Clerk JWT template
                 [key: string]: any;
             };
             userId?: string;

@@ -6,15 +6,32 @@ const prisma = new PrismaClient({});
 export const createWorkflow = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
-        const userId = req.userId; // From auth middleware
+
+        // Get userId and email from custom Clerk JWT claims
+        const userId = req.auth?.userId;
+        const userEmail = req.auth?.email;
 
         if (!name) {
             return res.status(400).json({ error: 'Name is required' });
         }
 
         if (!userId) {
-            return res.status(401).json({ error: 'User ID not found in request' });
+            return res.status(401).json({ error: 'User ID not found in token' });
         }
+
+        if (!userEmail) {
+            return res.status(401).json({ error: 'User email not found in token' });
+        }
+
+        // Ensure user exists in local DB (sync with Auth provider)
+        await prisma.user.upsert({
+            where: { id: userId },
+            update: { email: userEmail }, // Update email if it changed
+            create: {
+                id: userId,
+                email: userEmail
+            }
+        });
 
         const workflow = await prisma.workflow.create({
             data: {
@@ -33,7 +50,7 @@ export const createWorkflow = async (req: Request, res: Response) => {
 export const getWorkflow = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const userId = req.userId; // From auth middleware
+        const userId = req.auth?.userId; // From Clerk JWT claims
 
         const workflow = await prisma.workflow.findFirst({
             where: {
@@ -67,7 +84,7 @@ export const getWorkflow = async (req: Request, res: Response) => {
 
 export const getAllWorkflows = async (req: Request, res: Response) => {
     try {
-        const userId = req.userId; // From auth middleware
+        const userId = req.auth?.userId; // From Clerk JWT claims
 
         const workflows = await prisma.workflow.findMany({
             where: {
