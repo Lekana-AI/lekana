@@ -87,9 +87,45 @@
 	}
 
 	function copyToken() {
-		navigator.clipboard.writeText(token);
-		copied = true;
-		setTimeout(() => copied = false, 2000);
+		if (navigator?.clipboard?.writeText) {
+			navigator.clipboard.writeText(token).then(() => {
+				copied = true;
+				setTimeout(() => copied = false, 2000);
+			}).catch((err) => {
+				console.error('Clipboard write failed:', err);
+				fallbackCopy();
+			});
+		} else {
+			fallbackCopy();
+		}
+	}
+
+	function fallbackCopy() {
+		try {
+			const textArea = document.createElement("textarea");
+			textArea.value = token;
+			
+			// Avoid scrolling to bottom
+			textArea.style.top = "0";
+			textArea.style.left = "0";
+			textArea.style.position = "fixed";
+
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+
+			const successful = document.execCommand('copy');
+			document.body.removeChild(textArea);
+
+			if (successful) {
+				copied = true;
+				setTimeout(() => copied = false, 2000);
+			} else {
+				console.error('Fallback copy failed');
+			}
+		} catch (err) {
+			console.error('Fallback copy error:', err);
+		}
 	}
 </script>
 
