@@ -7,104 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==============================================================================
-// USER - Represents application users
-// ==============================================================================
 model User {
-  id        String      @id @default(uuid())
-  email     String      @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   name      String?
-
   workflows Workflow[]
 }
 
-// ==============================================================================
-// WORKFLOW - User-created workflows
-// ==============================================================================
 model Workflow {
-  id        String          @id @default(uuid())
+  id        String         @id @default(uuid())
   userId    String
   name      String
-
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  nodes     WorkflowNode[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   edges     WorkflowEdge[]
+  nodes     WorkflowNode[]
 
   @@index([userId])
 }
 
-// ==============================================================================
-// WORKFLOW NODE
-// Each node refers to an Action (Upload, OCR, Gemini, etc.)
-// config stores node-specific settings (values chosen by the user)
-// ==============================================================================
 model WorkflowNode {
-  id          String         @id @default(uuid())
-  workflowId  String
-  actionId    String
-
-  positionX   Float
-  positionY   Float
-
-  config      Json            // node-specific configuration
-
-  workflow    Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  action      Action          @relation(fields: [actionId], references: [id])
-
-  outgoing    WorkflowEdge[]  @relation("SourceEdges")
-  incoming    WorkflowEdge[]  @relation("TargetEdges")
+  id         String         @id @default(uuid())
+  workflowId String
+  actionId   String
+  positionX  Float
+  positionY  Float
+  config     Json
+  outgoing   WorkflowEdge[] @relation("SourceEdges")
+  incoming   WorkflowEdge[] @relation("TargetEdges")
+  action     Action         @relation(fields: [actionId], references: [id])
+  workflow   Workflow       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([workflowId])
   @@index([actionId])
 }
 
-// ==============================================================================
-// WORKFLOW EDGE - Connections between nodes
-// ==============================================================================
 model WorkflowEdge {
   id           String       @id @default(uuid())
   workflowId   String
   sourceNodeId String
   targetNodeId String
-
-  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   sourceNode   WorkflowNode @relation("SourceEdges", fields: [sourceNodeId], references: [id], onDelete: Cascade)
   targetNode   WorkflowNode @relation("TargetEdges", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([workflowId])
 }
 
-// ==============================================================================
-// ACTION CATEGORY
-// Example categories: File Handling, OCR, AI Processing, Utility
-// ==============================================================================
 model ActionCategory {
-  id          String    @id @default(uuid())
-  name        String    @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   description String?
-
   actions     Action[]
 }
 
-// ==============================================================================
-// ACTIONS (Action Templates)
-// Represents the main action type (Upload, OCR, GeminiCall)
-// configSchema: default configuration values (simple key-value)
-// uiSchema: UI form field definitions for rendering in frontend
-// ==============================================================================
 model Action {
   id            String         @id @default(uuid())
   name          String         @unique
   description   String?
+  icon          String         // Icon name for frontend: "CloudUpload", "FileText", etc.
   categoryId    String
-
-  configSchema  Json           // default config values (simple format)
-  uiSchema      Json           // UI form schema (field definitions)
-
+  inputType     String?        // Input data type: "file", "json", "text", "any", null (start node)
+  outputType    String         // Output data type: "file", "json", "text"
+  configSchema  Json           // Default values: { stepName: "API Call", method: "GET" }
+  configMeta    Json?          // Field metadata: { stepName: { type: "text", label: "Step Name" } }
   category      ActionCategory @relation(fields: [categoryId], references: [id])
   workflowNodes WorkflowNode[]
 

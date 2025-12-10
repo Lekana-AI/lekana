@@ -1,7 +1,21 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import { generateUiSchema } from '../utils/config.utils';
 
 const prisma = new PrismaClient({});
+
+/**
+ * Transform action to include computed uiSchema
+ */
+function transformAction(action: any) {
+    return {
+        ...action,
+        uiSchema: generateUiSchema(
+            action.configSchema as Record<string, any>,
+            action.configMeta as Record<string, any> | undefined
+        )
+    };
+}
 
 /**
  * Get all actions with their field schemas
@@ -24,7 +38,10 @@ export const getAllActions = async (req: Request, res: Response) => {
             }
         });
 
-        res.json(actions);
+        // Transform actions to include computed uiSchema
+        const transformedActions = actions.map(transformAction);
+
+        res.json(transformedActions);
     } catch (error) {
         console.error('Error fetching actions:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -55,7 +72,7 @@ export const getAction = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Action not found' });
         }
 
-        res.json(action);
+        res.json(transformAction(action));
     } catch (error) {
         console.error('Error fetching action:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -85,7 +102,9 @@ export const getActionsByCategory = async (req: Request, res: Response) => {
             }
         });
 
-        res.json(actions);
+        const transformedActions = actions.map(transformAction);
+
+        res.json(transformedActions);
     } catch (error) {
         console.error('Error fetching actions by category:', error);
         res.status(500).json({ error: 'Internal server error' });

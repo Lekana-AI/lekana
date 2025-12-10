@@ -26,118 +26,119 @@ async function main() {
 
     console.log('✅ Categories created');
 
-    // Create Invoice Upload action
+    // Invoice Upload action - Start node (no input), outputs file
     await prisma.action.upsert({
         where: { name: 'Invoice Upload' },
-        update: {},
-        create: {
-            name: 'Invoice Upload',
-            description: 'Upload and process invoice documents',
-            categoryId: documentProcessingCategory.id,
-            // Simple default config values
+        update: {
+            icon: 'CloudUpload',
+            inputType: null,  // Start node - no input
+            outputType: 'file',
             configSchema: {
                 stepName: 'Invoice Upload',
                 bulkUpload: false,
                 allowedFileTypes: ['pdf', 'images'],
-                allowedInputs: {
-                    form: true,
-                    api: true
-                }
+                allowedInputs: { form: true, api: true }
             },
-            // UI form schema for frontend
-            uiSchema: {
-                fields: [
-                    {
-                        name: 'stepName',
-                        label: 'Step Name',
-                        type: 'text',
-                        placeholder: 'Enter step name',
-                        required: true
-                    },
-                    {
-                        name: 'bulkUpload',
-                        label: 'Bulk Upload (zip, rar)',
-                        type: 'checkbox'
-                    },
-                    {
-                        name: 'allowedFileTypes',
-                        label: 'Allowed File Types',
-                        type: 'checkbox-group',
-                        options: [
-                            { label: 'PDF Files (pdf)', value: 'pdf' },
-                            { label: 'Images (jpg, png, webp)', value: 'images' },
-                            { label: 'Document (docx)', value: 'docx' }
-                        ]
-                    },
-                    {
-                        name: 'allowedInputs',
-                        label: 'Allowed Inputs',
-                        type: 'object',
-                        fields: [
-                            {
-                                name: 'form',
-                                label: 'Form Input',
-                                type: 'checkbox',
-                                trigger: 'button',
-                                triggerText: 'Edit Form Input'
-                            },
-                            {
-                                name: 'api',
-                                label: 'API Input',
-                                type: 'checkbox',
-                                trigger: 'button',
-                                triggerText: 'Edit API Input'
-                            }
-                        ]
-                    }
-                ]
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                bulkUpload: { type: 'checkbox', label: 'Bulk Upload (zip, rar)' },
+                allowedFileTypes: {
+                    type: 'checkbox-group',
+                    label: 'Allowed File Types',
+                    options: [
+                        { label: 'PDF Files (pdf)', value: 'pdf' },
+                        { label: 'Images (jpg, png, webp)', value: 'images' },
+                        { label: 'Document (docx)', value: 'docx' }
+                    ]
+                },
+                allowedInputs: {
+                    type: 'object',
+                    label: 'Allowed Inputs',
+                    fields: [
+                        { name: 'form', label: 'Form Input', type: 'checkbox', trigger: 'button', triggerText: 'Edit Form Input' },
+                        { name: 'api', label: 'API Input', type: 'checkbox', trigger: 'button', triggerText: 'Edit API Input' }
+                    ]
+                }
+            }
+        },
+        create: {
+            name: 'Invoice Upload',
+            description: 'Upload and process invoice documents',
+            icon: 'CloudUpload',
+            categoryId: documentProcessingCategory.id,
+            inputType: null,  // Start node - no input
+            outputType: 'file',
+            configSchema: {
+                stepName: 'Invoice Upload',
+                bulkUpload: false,
+                allowedFileTypes: ['pdf', 'images'],
+                allowedInputs: { form: true, api: true }
+            },
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                bulkUpload: { type: 'checkbox', label: 'Bulk Upload (zip, rar)' },
+                allowedFileTypes: {
+                    type: 'checkbox-group',
+                    label: 'Allowed File Types',
+                    options: [
+                        { label: 'PDF Files (pdf)', value: 'pdf' },
+                        { label: 'Images (jpg, png, webp)', value: 'images' },
+                        { label: 'Document (docx)', value: 'docx' }
+                    ]
+                },
+                allowedInputs: {
+                    type: 'object',
+                    label: 'Allowed Inputs',
+                    fields: [
+                        { name: 'form', label: 'Form Input', type: 'checkbox', trigger: 'button', triggerText: 'Edit Form Input' },
+                        { name: 'api', label: 'API Input', type: 'checkbox', trigger: 'button', triggerText: 'Edit API Input' }
+                    ]
+                }
             }
         }
     });
 
-    // Create Data Validation action
+    // Data Validation action - Takes JSON, outputs JSON
     await prisma.action.upsert({
         where: { name: 'Data Validation' },
-        update: {},
-        create: {
-            name: 'Data Validation',
-            description: 'Validate data against defined rules',
-            categoryId: dataOperationsCategory.id,
-            // Simple default config values
+        update: {
+            icon: 'ShieldCheck',
+            inputType: 'json',
+            outputType: 'json',
             configSchema: {
                 stepName: 'Data Validation',
                 validationRules: ''
             },
-            // UI form schema
-            uiSchema: {
-                fields: [
-                    {
-                        name: 'stepName',
-                        label: 'Step Name',
-                        type: 'text',
-                        placeholder: 'Enter step name',
-                        required: true
-                    },
-                    {
-                        name: 'validationRules',
-                        label: 'Validation Rules',
-                        type: 'textarea',
-                        placeholder: 'Enter validation rules (JSON format)'
-                    }
-                ]
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                validationRules: { type: 'textarea', label: 'Validation Rules', placeholder: 'Enter validation rules (JSON format)' }
+            }
+        },
+        create: {
+            name: 'Data Validation',
+            description: 'Validate data against defined rules',
+            icon: 'ShieldCheck',
+            categoryId: dataOperationsCategory.id,
+            inputType: 'json',
+            outputType: 'json',
+            configSchema: {
+                stepName: 'Data Validation',
+                validationRules: ''
+            },
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                validationRules: { type: 'textarea', label: 'Validation Rules', placeholder: 'Enter validation rules (JSON format)' }
             }
         }
     });
 
-    // Create API Call action
+    // API Call action - Takes JSON, outputs JSON
     await prisma.action.upsert({
         where: { name: 'API Call' },
-        update: {},
-        create: {
-            name: 'API Call',
-            description: 'Make HTTP requests to external APIs',
-            categoryId: dataOperationsCategory.id,
-            // Simple default config values
+        update: {
+            icon: 'Globe',
+            inputType: 'json',
+            outputType: 'json',
             configSchema: {
                 stepName: 'API Call',
                 endpoint: '',
@@ -145,52 +146,57 @@ async function main() {
                 headers: {},
                 body: null
             },
-            // UI form schema
-            uiSchema: {
-                fields: [
-                    {
-                        name: 'stepName',
-                        label: 'Step Name',
-                        type: 'text',
-                        placeholder: 'Enter step name',
-                        required: true
-                    },
-                    {
-                        name: 'endpoint',
-                        label: 'API Endpoint',
-                        type: 'text',
-                        placeholder: 'https://api.example.com/endpoint',
-                        required: true
-                    },
-                    {
-                        name: 'method',
-                        label: 'HTTP Method',
-                        type: 'select',
-                        options: [
-                            { label: 'GET', value: 'GET' },
-                            { label: 'POST', value: 'POST' },
-                            { label: 'PUT', value: 'PUT' },
-                            { label: 'DELETE', value: 'DELETE' }
-                        ]
-                    },
-                    {
-                        name: 'headers',
-                        label: 'Request Headers',
-                        type: 'json',
-                        placeholder: '{"Content-Type": "application/json"}'
-                    },
-                    {
-                        name: 'body',
-                        label: 'Request Body',
-                        type: 'json',
-                        placeholder: 'Request payload (for POST/PUT)'
-                    }
-                ]
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                endpoint: { type: 'text', label: 'API Endpoint', required: true, placeholder: 'https://api.example.com/endpoint' },
+                method: {
+                    type: 'select',
+                    label: 'HTTP Method',
+                    options: [
+                        { label: 'GET', value: 'GET' },
+                        { label: 'POST', value: 'POST' },
+                        { label: 'PUT', value: 'PUT' },
+                        { label: 'DELETE', value: 'DELETE' }
+                    ]
+                },
+                headers: { type: 'json', label: 'Request Headers', placeholder: '{"Content-Type": "application/json"}' },
+                body: { type: 'json', label: 'Request Body', placeholder: 'Request payload (for POST/PUT)' }
+            }
+        },
+        create: {
+            name: 'API Call',
+            description: 'Make HTTP requests to external APIs',
+            icon: 'Globe',
+            categoryId: dataOperationsCategory.id,
+            inputType: 'json',
+            outputType: 'json',
+            configSchema: {
+                stepName: 'API Call',
+                endpoint: '',
+                method: 'GET',
+                headers: {},
+                body: null
+            },
+            configMeta: {
+                stepName: { type: 'text', label: 'Step Name', required: true, placeholder: 'Enter step name' },
+                endpoint: { type: 'text', label: 'API Endpoint', required: true, placeholder: 'https://api.example.com/endpoint' },
+                method: {
+                    type: 'select',
+                    label: 'HTTP Method',
+                    options: [
+                        { label: 'GET', value: 'GET' },
+                        { label: 'POST', value: 'POST' },
+                        { label: 'PUT', value: 'PUT' },
+                        { label: 'DELETE', value: 'DELETE' }
+                    ]
+                },
+                headers: { type: 'json', label: 'Request Headers', placeholder: '{"Content-Type": "application/json"}' },
+                body: { type: 'json', label: 'Request Body', placeholder: 'Request payload (for POST/PUT)' }
             }
         }
     });
 
-    console.log('✅ Actions created with config and UI schemas');
+    console.log('✅ Actions created with configSchema and configMeta');
     console.log('🎉 Seed completed successfully!');
 }
 
