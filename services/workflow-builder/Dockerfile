@@ -1,6 +1,9 @@
 # Use Node.js 20 Alpine as the base image
 FROM node:20-alpine
 
+# Install OpenSSL for Prisma compatibility
+RUN apk add --no-cache openssl
+
 # Set the working directory inside the container
 WORKDIR /app
 
