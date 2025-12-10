@@ -3,7 +3,7 @@
 		ChevronLeft,
 		ChevronRight,
 		Search,
-		UploadCloud,
+		CloudUpload,
 		ListChecks,
 		Grid3x3,
 		ScanText,
@@ -26,12 +26,14 @@
 		LayoutGrid
 	} from 'lucide-svelte';
 
-	let collapsed = false;
-	let activeTab: 'actions' | 'assistant' = 'actions';
+	let { onAction } = $props();
 
-	let prompt = '';
+	let collapsed = $state(false);
+	let activeTab = $state<'actions' | 'assistant'>('actions');
 
-	type IconComponent = typeof UploadCloud;
+	let prompt = $state('');
+
+	type IconComponent = typeof CloudUpload;
 
 	const actionSections: {
 		title: string;
@@ -40,7 +42,7 @@
 		{
 			title: 'Input & Pre-Processing',
 			items: [
-				{ label: 'Upload files', icon: UploadCloud },
+				{ label: 'Upload files', icon: CloudUpload },
 				{ label: 'Classification', icon: ListChecks },
 				{ label: 'Segmentation', icon: Grid3x3 },
 				{ label: 'OCR', icon: ScanText }
@@ -102,7 +104,7 @@
 		<button
 			type="button"
 			class="flex items-center justify-center rounded-md bg-white/0 p-2 transition-colors duration-300 hover:bg-white/10"
-			on:click={() => (collapsed = !collapsed)}
+			onclick={() => (collapsed = !collapsed)}
 			aria-label="Collapse panel"
 		>
 			{#if collapsed}
@@ -124,7 +126,7 @@
 							? 'border border-white/50 bg-white/10 text-white'
 							: 'text-white/80 hover:text-white'
 					}`}
-					on:click={() => (activeTab = 'actions')}
+					onclick={() => (activeTab = 'actions')}
 				>
 					<span>Actions</span>
 				</button>
@@ -136,7 +138,7 @@
 							? 'border border-white/50 bg-white/10 text-white'
 							: 'text-white/80 hover:text-white'
 					}`}
-					on:click={() => (activeTab = 'assistant')}
+					onclick={() => (activeTab = 'assistant')}
 				>
 					<span>Assistant</span>
 				</button>
@@ -169,17 +171,19 @@
 
 							{#each section.items as item}
 								<button
+									onclick={() => onAction?.(item.label)}
 									type="button"
 									class="border-white/50/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition hover:bg-white/10"
 								>
 									<span
-										class="flex items-center justify-center rounded-full bg-radial from-green-500 from-0% to-green-700 to-60% p-1.5"
+										class="flex items-center justify-center rounded-full bg-green-700 p-2"
 									>
 										<item.icon class="h-3 w-3 text-white" />
 									</span>
 									<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
 										{item.label}
 									</span>
+									<Plus class="ml-auto h-3 w-3 text-white" />
 								</button>
 							{/each}
 						</section>
@@ -195,7 +199,7 @@
 						<button
 							type="button"
 							class="inline-flex items-center justify-center gap-1.5 rounded bg-stone-900 px-3 py-1 text-[10px] leading-5 text-white transition hover:bg-stone-800"
-							on:click={(prompt = label)}
+							onclick={() => (prompt = label)}
 						>
 							<Sparkles class="h-3 w-3" />
 							<span>{label}</span>

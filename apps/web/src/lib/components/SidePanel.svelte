@@ -5,27 +5,29 @@
 		ChevronDown,
 		Plus,
 		PanelRightClose,
-		CircleUser
+		CircleUser,
+		Ellipsis,
+		EllipsisVertical,
+		Trash,
+		CopyPlus,
+		Settings2
 	} from 'lucide-svelte';
-	export let userName = 'Lasandu';
 
-	export let workflows = [
-		{ id: '1', name: 'Untitled Workflow 1', active: true },
-		{ id: '2', name: 'Registration Application Workflow', active: false }
-	];
-	let workflowsCollapsed = false;
-	let panelCollapsed = false;
+	let { userName, workflows, onSettings } = $props();
 
-	
+	let workflowsCollapsed = $state(false);
+	let panelCollapsed = $state(false);
+
+	let openMenuId = $state(null);
 </script>
 
 <aside
 	class="flex h-screen {panelCollapsed
 		? 'w-16'
-		: 'w-56'} flex-col justify-between bg-zinc-900 px-4 py-6 backdrop-blur-md transition-[width] duration-300"
+		: 'w-56'} z-30 flex-col justify-between bg-zinc-900 px-2 py-6 backdrop-blur-md transition-[width] duration-300"
 	aria-label="Workflow sidebar"
 >
-	<div class="flex flex-col gap-3 h-full">
+	<div class="flex h-full flex-col gap-3">
 		<header class="flex items-center {panelCollapsed ? 'justify-center' : 'justify-between'} group">
 			<!-- Logo / brand -->
 			<a
@@ -44,7 +46,7 @@
 					? 'hidden group-hover:block'
 					: ''}"
 				aria-label="Toggle sidebar"
-				on:click={() => (panelCollapsed = !panelCollapsed)}
+				onclick={() => (panelCollapsed = !panelCollapsed)}
 			>
 				{#if panelCollapsed}
 					<PanelRightClose class="h-full w-full " />
@@ -55,72 +57,121 @@
 		</header>
 
 		<!-- Workflows section -->
-		<section class="flex flex-col gap-3 h-full w-full">
-			<!-- Workflows header row -->
-			<header
-				class="flex items-center {panelCollapsed ? 'justify-center' : 'justify-between'} text-white"
+		<button
+			aria-label="New workflow"
+			type="button"
+			class="{panelCollapsed
+				? 'justify-center'
+				: 'justify-start'} flex items-center rounded-md px-1 py-2 text-gray-300 transition-colors duration-300 hover:bg-white/5 hover:text-gray-100 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+		>
+			<div class="flex items-center gap-2">
+				<Plus class="p- h-6 w-6" />
+
+				<h2 class="truncate text-xs leading-4 font-medium {panelCollapsed ? 'hidden' : ''}">
+					New Workflow
+				</h2>
+			</div>
+		</button>
+
+		<section class="flex h-full w-full flex-col gap-3 px-1">
+			<!-- New Workflow button -->
+			<button
+				aria-label="Collapse workflows"
+				onclick={() => (workflowsCollapsed = !workflowsCollapsed)}
+				type="button"
+				class="flex items-center {panelCollapsed
+					? 'justify-center'
+					: 'justify-between'}  text-gray-300"
 			>
 				<div class="flex items-center gap-2">
-					<Network class="h-4 w-4 " />
+					<Network class="h-6 w-6 p-1" />
 
-					<h2 class="text-xs leading-4 font-normal {panelCollapsed ? 'hidden' : ''}">Workflows</h2>
+					<h2 class="text-xs leading-4 font-medium {panelCollapsed ? 'hidden' : ''}">Workflows</h2>
 				</div>
 
 				<!-- Collapse button -->
-				<button
-					type="button"
+				<div
 					class="{panelCollapsed
 						? 'hidden'
-						: ''} flex items-center justify-center rounded-md p-2 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
-					aria-label="Collapse workflows"
-					on:click={() => (workflowsCollapsed = !workflowsCollapsed)}
+						: ''} flex items-center justify-center rounded-md p-2 transition-colors duration-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
 				>
 					<ChevronDown
 						class="h-4 w-4 {workflowsCollapsed
 							? '-rotate-90'
 							: 'rotate-0'} transition-transform duration-300"
 					/>
-				</button>
-			</header>
+				</div>
+			</button>
 			{#if !workflowsCollapsed && !panelCollapsed}
 				<!-- Workflows list -->
-				<nav
-					class="flex max-h-[60vh] w-full flex-col gap-1 overflow-auto pr-1"
-					aria-label="Workflow list"
-				>
-					{#each workflows as workflow}
-						<a
-							on:click={() => (window.location.href = '/w/' + workflow.id)}
-							href="/w/{workflow.id}"
-							type="button"
-							class="flex w-full items-center gap-2 truncate rounded px-2 py-1.5 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
-              					{workflow.active
-								? 'bg-white/10 font-semibold text-white'
-								: 'font-normal text-white/70 hover:bg-white/5'}"
-						>
-							<span
-								class="h-1.5 w-1.5 rounded-full {workflow.active
-									? 'bg-emerald-400'
-									: 'bg-white/30'}"
-								aria-hidden="true"
-							></span>
-							<p>
-								{workflow.name}
-							</p>
-						</a>
+				<nav class="flex max-h-[60vh] w-full flex-col gap-1" aria-label="Workflow list">
+					{#each workflows as workflow (workflow.id)}
+						<div class="relative">
+							<a
+								onclick={() => (window.location.href = '/w/' + workflow.id)}
+								href="/w/{workflow.id}"
+								class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
+						{workflow.active
+									? 'bg-green-700 font-semibold text-white'
+									: 'font-normal text-white/70 hover:bg-white/5'}"
+							>
+								<p class="truncate">{workflow.name}</p>
+
+								<!-- OPTIONS BUTTON -->
+								<button
+									type="button"
+									onclick={(event) => (
+										event.preventDefault(),
+										event.stopPropagation(),
+										(openMenuId = openMenuId === workflow.id ? null : workflow.id)
+									)}
+									class="absolute right-1 z-20 items-center justify-center rounded-md p-2 transition-colors duration-300 {openMenuId ===
+									workflow.id
+										? 'flex'
+										: 'hidden group-hover:flex'} 
+				{workflow.active ? 'bg-green-900 hover:bg-green-950' : 'bg-zinc-900 hover:bg-zinc-950'}"
+								>
+									<EllipsisVertical class="h-4 w-4" />
+								</button>
+							</a>
+							<!-- DROPDOWN MENU -->
+							{#if openMenuId === workflow.id}
+								<div
+									class="absolute top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+								>
+									<button
+										onclick={() => onSettings?.(workflow.id)}
+										type="button"
+										class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+									>
+										<Settings2 class="h-4 w-4" />
+
+										Workflow Settings
+									</button>
+
+									<button
+										class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+										onclick={() => console.log('Duplicate', workflow.id)}
+									>
+										<CopyPlus class="h-4 w-4" />
+
+										Duplicate Workflow
+									</button>
+
+									<button
+										class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
+										onclick={() => console.log('Delete', workflow.id)}
+									>
+										<Trash class="h-4 w-4" />
+
+										Delete Workflow
+									</button>
+								</div>
+							{/if}
+						</div>
 					{/each}
 				</nav>
 			{/if}
-			<!-- New Workflow button -->
-			<button
-				type="button"
-				class="{panelCollapsed
-					? 'hidden'
-					: ''} flex items-center gap-2 truncate rounded-md p-2 text-xs text-white/70 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
-			>
-				<Plus class="h-4 w-4" />
-				New Workflow
-			</button>
 		</section>
 	</div>
 
@@ -136,3 +187,5 @@
 		</p>
 	</footer>
 </aside>
+
+<svelte:window on:click={(openMenuId = null)} />

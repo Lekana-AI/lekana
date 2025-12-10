@@ -7,6 +7,8 @@
 	import ActiveActionNode from './SvelteFlow/Node/ActiveActionNode.svelte';
 	import NewActionNode from './SvelteFlow/Node/NewActionNode.svelte';
 
+	let { onNodeClick } = $props();
+	
 	const nodeTypes = {
 		activeAction: ActiveActionNode,
 		newAction: NewActionNode
@@ -31,6 +33,15 @@
 		}
 	]);
 
+	$effect: nodes = nodes.map((node) => ({
+		...node,
+		data: {
+			...node.data,
+			onClick: onNodeClick
+		}
+	}));
+
+
 	let edges = $state.raw([{ id: 'e1-2', source: '1', target: '2', type: 'smoothstep' }]);
 
 	let showMiniMap = $state(false);
@@ -38,7 +49,7 @@
 
 <div class="flow-wrapper h-full w-full overflow-clip rounded-xl bg-zinc-900">
 	<SvelteFlow
-		onmovestart={() => (console.log('move start'), (showMiniMap = true))}
+		onmovestart={() => ((showMiniMap = true))}
 		onmoveend={() =>
 			setTimeout(() => {
 				showMiniMap = false;
@@ -50,7 +61,10 @@
 		{edgeTypes}
 		fitView
 	>
-		<MiniMap maskColor="#27272a" class="{showMiniMap ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300" />
+		<MiniMap
+			maskColor="#27272a"
+			class="{showMiniMap ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300"
+		/>
 
 		<Controls />
 		<Background bgColor="#18181b" patternColor="#52525c" />

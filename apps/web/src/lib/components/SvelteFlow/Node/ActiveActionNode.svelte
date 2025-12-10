@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
 
-	let { id, data }: NodeProps = $props();
-
 	import {
-		UploadCloud,
+		CloudUpload,
 		ListChecks,
 		Grid3x3,
 		ScanText,
@@ -21,55 +19,47 @@
 		Calculator
 	} from 'lucide-svelte';
 
-	type IconComponent = typeof UploadCloud;
+	let { id, data }: NodeProps = $props();
+
+	type IconComponent = typeof CloudUpload;
 
 	const iconMap: Record<string, IconComponent> = {
-		// Input & Pre-Processing
-		'Upload files': UploadCloud,
-		'Classification': ListChecks,
-		'Segmentation': Grid3x3,
-		'OCR': ScanText,
-
-		// Data Quality & Validation
-		'Validation': ShieldCheck,
+		'Upload Files': CloudUpload,
+		Classification: ListChecks,
+		Segmentation: Grid3x3,
+		OCR: ScanText,
+		Validation: ShieldCheck,
 		'De-duplication': CopyCheck,
-
-		// Human Review
 		'Human Review OCR': UserCheck,
 		'Human Review Classification': UserCheck,
 		'Human Review Segments': UserCheck,
-
-		// Storage & Integrations
-		'Database': Database,
+		Database: Database,
 		'Export to ERP, CRM, DMS': Share2,
 		'Webhook / API': Webhook,
 		'Email Notification / API': Mail,
 		'Google Sheets': FileSpreadsheet,
-
-		// Understanding & Structuring
-		'Summarization': FileText,
+		Summarization: FileText,
 		'Generate Document': FileOutput,
-
-		// Logic & Computation
 		'Arithmetic Operations': Calculator
 	};
 
-	const Icon = iconMap[data.label] ?? UploadCloud;
+	const Icon = iconMap[data.label] ?? CloudUpload;
 </script>
 
-<div
-	class="border-white/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition-colors duration-300 hover:border-white/70"
+<button
+	ondblclick={() => data.onClick?.({ id, ...data })}
+	class="inline-flex w-full items-center justify-start gap-4 rounded-lg border border-white/50 bg-white/5 px-3 py-2 backdrop-blur transition-colors duration-300 hover:bg-white/10"
 >
 	<span
-		class="flex items-center justify-center rounded-full bg-radial from-green-500 from-0% to-green-700 to-60% p-1.5"
+		class="flex items-center justify-center rounded-full bg-green-700 p-1"
 	>
-		<Icon class="h-3 w-3 text-white" />
+		<Icon class="h-2 w-2 text-white" />
 	</span>
 
 	<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
 		{data.label}
 	</span>
-</div>
+</button>
 
 <Handle type="target" position={Position.Top} />
 <Handle type="source" position={Position.Bottom} />

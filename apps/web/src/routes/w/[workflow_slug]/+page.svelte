@@ -1,9 +1,11 @@
 <script lang="ts">
 	import SidePanel from '$lib/components/SidePanel.svelte';
-	import { Plus, ArrowUp, ArrowRight } from 'lucide-svelte';
+	import { Plus, ArrowUp, ArrowRight, ChevronDown } from 'lucide-svelte';
 
 	import FlowCanvas from '$lib/components/FlowCanvas.svelte';
 	import Menu from '$lib/components/Menu.svelte';
+	import ActionProperties from '$lib/components/ActionProperties.svelte';
+	import { goto } from '$app/navigation';
 
 	export let data;
 
@@ -34,13 +36,31 @@
 			name: 'Classify'
 		}
 	];
+
+	let propertiesVisible = false;
+	let settingsVisible = false;
+	let action: string = '';
+
+	let workflows = [
+		{ id: '1', name: 'Untitled Workflow 1', active: true },
+		{ id: '2', name: 'Registration Application Workflow', active: false }
+	];
+
+	let open = false;
+	let selectedScreen = 'Workflow Designer';
+
+	const screens = ['Workflow Designer', 'Workflow Settings', 'Workflow Insights'];
 </script>
 
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
-	<SidePanel />
-	<div
-		class="relative flex gap-4 h-screen w-full justify-center overflow-clip bg-zinc-950 p-4"
-	>
+	<ActionProperties visible={propertiesVisible} onClose={() => (propertiesVisible = false)} />
+
+	<SidePanel
+		{workflows}
+		userName="Lasandu"
+		onSettings={(value: string) => goto(`/w/${value}/settings`)}
+	/>
+	<div class="relative flex h-screen w-full justify-center gap-4 overflow-clip bg-zinc-950 p-4">
 		<div
 			class="absolute top-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 		></div>
@@ -50,13 +70,66 @@
 					class="text-l truncate rounded font-semibold text-zinc-300 outline outline-white/0 focus:px-2 focus:outline-white/50"
 					value="Untitled Workflow {slug}"
 				/>
-
-				<div class="w-fit rounded-md bg-white/10 p-0.5 px-2">
-					<p class="text-xs text-gray-300">Unpublished</p>
-				</div>
 			</div>
-			<FlowCanvas />
+
+			<!-- <div class="relative w-fit">
+								<div class="flex items-center gap-4 rounded-md bg-white/10 p-1 px-2 text-gray-300">
+									<p class="text-xs font-medium tracking-wide">{selectedScreen}</p>
+			
+									<button
+										type="button"
+										on:click|stopPropagation={() => (open = !open)}
+										class="flex items-center justify-center rounded-sm p-1 transition-colors duration-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+										aria-haspopup="true"
+										aria-expanded={open}
+									>
+										<ChevronDown
+											class="h-4 w-4 transition-transform duration-300 ease-in {open
+												? 'rotate-0'
+												: 'rotate-180'}"
+										/>
+									</button>
+								</div>
+			
+								{#if open}
+									<div
+										class="absolute left-0 z-50 mt-2 min-w-[180px] overflow-hidden rounded-md border border-white/10 bg-zinc-900 shadow-lg"
+									>
+										{#each screens as screen}
+											<button
+												class="block w-full p-3 text-left text-xs {selectedScreen == screen
+													? 'font-semibold  text-gray-100'
+													: 'text-gray-200  hover:bg-white/10'}"
+												on:click={() => {
+													selectedScreen = screen;
+													open = false;
+												}}
+											>
+												{screen}
+											</button>
+										{/each}
+									</div>
+								{/if}
+							</div> -->
+			<div class="flex gap-2">
+				{#each screens as screen}
+					<button
+						class="block rounded-md p-2 px-3 text-left text-xs {selectedScreen == screen
+							? 'text-gray-100 bg-zinc-800'
+							: 'text-gray-200 bg-zinc-900'}"
+						on:click={() => {
+							selectedScreen = screen;
+							open = false;
+						}}
+					>
+						{screen}
+					</button>
+				{/each}
+			</div>
+			<FlowCanvas onNodeClick={(value: string) => ((propertiesVisible = true), (action = value))} />
 		</section>
-        <Menu />
+		<Menu onAction={(value: string) => ((propertiesVisible = true), (action = value))} />
 	</div>
 </main>
+
+<svelte:window on:click={() => (open = false)} />

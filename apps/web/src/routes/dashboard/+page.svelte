@@ -26,10 +26,15 @@
 			name: 'Classify'
 		}
 	];
+
+	let workflows = [
+		{ id: '1', name: 'Untitled Workflow 1', active: true },
+		{ id: '2', name: 'Registration Application Workflow', active: false }
+	];
 </script>
 
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
-	<SidePanel />
+	<SidePanel {workflows} userName="Lasandu" onSettings={(value: string) => (goto(`/w/${value}/settings`))} />
 	<div
 		class="relative flex min-h-screen w-full items-center justify-center overflow-clip bg-zinc-950 px-4 py-10"
 	>
