@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  workflow-builder:
+    build: .
+    ports:
+      - '3001:3001'
+    environment:
+      - DATABASE_URL=postgresql://workflow_user:workflow_password@postgres:5432/workflow_db?schema=public
+      - JWT_SECRET=dev_jwt_secret_key_123
+      - PORT=3001
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=workflow_user
+      - POSTGRES_PASSWORD=workflow_password
+      - POSTGRES_DB=workflow_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
