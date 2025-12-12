@@ -1,17 +1,18 @@
 <script lang="ts">
 	import SidePanel from '$lib/components/SidePanel.svelte';
-	import { Plus, ArrowUp, ArrowRight, ChevronDown } from 'lucide-svelte';
 
 	import FlowCanvas from '$lib/components/FlowCanvas.svelte';
 	import Menu from '$lib/components/Menu.svelte';
 	import ActionProperties from '$lib/components/ActionProperties.svelte';
 	import { goto } from '$app/navigation';
+	import type { User } from 'svelte-clerk/server';
+	import { onMount } from 'svelte';
 
-	export let data;
+	let { data } = $props();
 
-	const slug = data?.slug;
+	const workflow = data?.workflow;
 
-	let prompt = '';
+	const user: User = data?.user;
 
 	type Template = {
 		id: number;
@@ -37,27 +38,96 @@
 		}
 	];
 
-	let propertiesVisible = false;
-	let settingsVisible = false;
-	let action: string = '';
+	let propertiesVisible = $state(false);
+	let settingsVisible = $state(false);
+	let actionId: string = $state('');
 
-	let workflows = [
-		{ id: '1', name: 'Untitled Workflow 1', active: true },
-		{ id: '2', name: 'Registration Application Workflow', active: false }
-	];
-
-	let open = false;
-	let selectedScreen = 'Workflow Designer';
+	let open = $state(false);
+	let selectedScreen = $state('Workflow Designer');
+	let nodes = $state.raw(workflow.nodes);
+	let edges = $state.raw(workflow.edges);
 
 	const screens = ['Workflow Designer', 'Workflow Settings', 'Workflow Insights'];
+
+	// const actionSections: {
+	// 	category: string;
+	// 	action: { label: string; icon: IconComponent }[];
+	// }[] = [
+	// 	{
+	// 		category: 'Input & Pre-Processing',
+	// 		action: [
+	// 			{ label: 'Upload files', icon: CloudUpload },
+	// 			{ label: 'Classification', icon: ListChecks },
+	// 			{ label: 'Segmentation', icon: Grid3x3 },
+	// 			{ label: 'OCR', icon: ScanText }
+	// 		]
+	// 	},
+	// 	{
+	// 		category: 'Data Quality & Validation',
+	// 		action: [
+	// 			{ label: 'Validation', icon: ShieldCheck },
+	// 			{ label: 'De-duplication', icon: CopyCheck }
+	// 		]
+	// 	},
+	// 	{
+	// 		category: 'Human Review',
+	// 		action: [
+	// 			{ label: 'Human Review OCR', icon: UserCheck },
+	// 			{ label: 'Human Review Classification', icon: UserCheck },
+	// 			{ label: 'Human Review Segments', icon: UserCheck }
+	// 		]
+	// 	},
+	// 	{
+	// 		category: 'Storage & Integrations',
+	// 		action: [
+	// 			{ label: 'Database', icon: Database },
+	// 			{ label: 'Export to ERP, CRM, DMS', icon: Share2 },
+	// 			{ label: 'Webhook / API', icon: Webhook },
+	// 			{ label: 'Email Notification / API', icon: Mail },
+	// 			{ label: 'Google Sheets', icon: FileSpreadsheet }
+	// 		]
+	// 	},
+	// 	{
+	// 		category: 'Understanding & Structuring',
+	// 		action: [
+	// 			{ label: 'Summarization', icon: FileText },
+	// 			{ label: 'Generate Document', icon: FileOutput }
+	// 		]
+	// 	},
+	// 	{
+	// 		category: 'Logic & Computation',
+	// 		action: [{ label: 'Arithmetic Operations', icon: Calculator }]
+	// 	}
+	// ];
+
+	nodes = [
+		{
+			id: '1',
+			position: { x: 100, y: 100 },
+			data: { label: 'Upload files' }
+		}
+	];
+
+	edges = [];
+	// edges = [{ id: 'e1-2', source: '1', target: '2', type: 'smoothstep' }];
 </script>
 
-<main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
-	<ActionProperties visible={propertiesVisible} onClose={() => (propertiesVisible = false)} />
+<svelte:head>
+	<title>{workflow.name} - Lekana</title>
+	<meta
+		name="description"
+		content="Lekana automates document workflows for businesses. Scan, structure, and route documents seamlessly."
+	/>
+	<meta property="og:image" content="/thumb.png" />
+</svelte:head>
 
+<main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
+	{#if propertiesVisible}
+		<ActionProperties {actionId} onClose={() => (propertiesVisible = false)} />
+	{/if}
 	<SidePanel
-		{workflows}
-		userName="Lasandu"
+		activeWorkflow={workflow.id}
+		userName={user.firstName}
 		onSettings={(value: string) => goto(`/w/${value}/settings`)}
 	/>
 	<div class="relative flex h-screen w-full justify-center gap-4 overflow-clip bg-zinc-950 p-4">
@@ -68,7 +138,7 @@
 			<div class="mt-2 flex w-fit flex-col gap-2 rounded-lg px-3">
 				<input
 					class="text-l truncate rounded font-semibold text-zinc-300 outline outline-white/0 focus:px-2 focus:outline-white/50"
-					value="Untitled Workflow {slug}"
+					value={workflow?.name}
 				/>
 			</div>
 
@@ -115,8 +185,8 @@
 				{#each screens as screen}
 					<button
 						class="block rounded-md p-2 px-3 text-left text-xs {selectedScreen == screen
-							? 'text-gray-100 bg-zinc-800'
-							: 'text-gray-200 bg-zinc-900'}"
+							? 'bg-zinc-800 text-gray-100'
+							: 'bg-zinc-900 text-gray-200'}"
 						on:click={() => {
 							selectedScreen = screen;
 							open = false;
@@ -126,9 +196,13 @@
 					</button>
 				{/each}
 			</div>
-			<FlowCanvas onNodeClick={(value: string) => ((propertiesVisible = true), (action = value))} />
+			<FlowCanvas
+				{nodes}
+				{edges}
+				onNodeClick={(value: string) => ((propertiesVisible = true), (actionId = value))}
+			/>
 		</section>
-		<Menu onAction={(value: string) => ((propertiesVisible = true), (action = value))} />
+		<Menu onAction={(value: string) => ((propertiesVisible = true), (actionId = value))} />
 	</div>
 </main>
 

@@ -1,6 +1,6 @@
 # Authentication Utilities
 
-This directory contains authentication-related utilities for Lekana AI frontend.
+This directory contains authentication-related utilities for Lekana frontend.
 
 ## Structure
 

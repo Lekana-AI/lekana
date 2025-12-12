@@ -36,28 +36,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
     }
 }
 
-/**
- * Get the current user's ID from Clerk
- */
-export function getUserId(): string | null {
+export function getUser(): string | null {
     const Clerk = (window as any).Clerk;
-    return Clerk?.user?.id || null;
-}
-
-/**
- * Get the current user's email from Clerk
- */
-export function getUserEmail(): string | null {
-    const Clerk = (window as any).Clerk;
-    return Clerk?.user?.primaryEmailAddress?.emailAddress || null;
-}
-
-/**
- * Check if user has a specific role (for future role-based access)
- * Default: all users are 'developer'
- */
-export function hasRole(role: string): boolean {
-    // For now, all users are developers
-    // In the future, you can add role metadata in Clerk Dashboard
-    return role === 'developer';
+    return Clerk?.user || null;
 }

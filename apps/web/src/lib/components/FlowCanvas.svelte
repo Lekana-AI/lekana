@@ -7,42 +7,25 @@
 	import ActiveActionNode from './SvelteFlow/Node/ActiveActionNode.svelte';
 	import NewActionNode from './SvelteFlow/Node/NewActionNode.svelte';
 
-	let { onNodeClick } = $props();
+	let { onNodeClick, nodes, edges } = $props();
 	
 	const nodeTypes = {
 		activeAction: ActiveActionNode,
-		newAction: NewActionNode
 	};
 
 	const edgeTypes: EdgeTypes = {
 		'custom-edge': CustomEdge
 	};
 
-	let nodes = $state.raw([
-		{
-			id: '1',
-			position: { x: 100, y: 100 },
-			type: 'activeAction',
-			data: { label: 'Upload files' }
-		},
-		{
-			id: '2',
-			position: { x: 150, y: 200 },
-			type: 'newAction',
-			data: { label: 'Add New' }
-		}
-	]);
 
 	$effect: nodes = nodes.map((node) => ({
 		...node,
+		type: node.type ?? "activeAction",
 		data: {
 			...node.data,
 			onClick: onNodeClick
 		}
 	}));
-
-
-	let edges = $state.raw([{ id: 'e1-2', source: '1', target: '2', type: 'smoothstep' }]);
 
 	let showMiniMap = $state(false);
 </script>

@@ -1,4 +1,5 @@
 <script>
+	import { goto } from '$app/navigation';
 	import {
 		PanelLeftClose,
 		Network,
@@ -12,13 +13,57 @@
 		CopyPlus,
 		Settings2
 	} from 'lucide-svelte';
+	import { onMount } from 'svelte';
 
-	let { userName, workflows, onSettings } = $props();
+	let { userName, onSettings, activeWorkflow } = $props();
 
 	let workflowsCollapsed = $state(false);
 	let panelCollapsed = $state(false);
-
 	let openMenuId = $state(null);
+	let workflows = $state([]);
+
+	onMount(() => {
+		loadWorkflows();
+	});
+
+	async function loadWorkflows() {
+		const res = await fetch('/api/workflows', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+
+			throw new Error(`Failed to load workflows: ${res.status}`);
+		}
+
+		workflows = await res.json();
+	}
+
+	async function createWorkflow() {
+		const res = await fetch('/api/workflows', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ name: 'Untitled' })
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+
+			throw new Error(`Failed to create workflow: ${res.status}`);
+		}
+
+		let workflow = await res.json();
+
+		window.location.replace(`/w/${workflow.id}`);
+	}
 </script>
 
 <aside
@@ -31,7 +76,7 @@
 		<header class="flex items-center {panelCollapsed ? 'justify-center' : 'justify-between'} group">
 			<!-- Logo / brand -->
 			<a
-				href={panelCollapsed ? '' : '/'}
+				href={panelCollapsed ? '' : '/dashboard'}
 				class="h-7 w-7 p-1 transition-opacity duration-300 hover:opacity-80 {panelCollapsed
 					? 'group-hover:hidden'
 					: ''}"
@@ -63,6 +108,7 @@
 			class="{panelCollapsed
 				? 'justify-center'
 				: 'justify-start'} flex items-center rounded-md px-1 py-2 text-gray-300 transition-colors duration-300 hover:bg-white/5 hover:text-gray-100 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+			onclick={createWorkflow}
 		>
 			<div class="flex items-center gap-2">
 				<Plus class="p- h-6 w-6" />
@@ -72,107 +118,112 @@
 				</h2>
 			</div>
 		</button>
-
-		<section class="flex h-full w-full flex-col gap-3 px-1">
-			<!-- New Workflow button -->
-			<button
-				aria-label="Collapse workflows"
-				onclick={() => (workflowsCollapsed = !workflowsCollapsed)}
-				type="button"
-				class="flex items-center {panelCollapsed
-					? 'justify-center'
-					: 'justify-between'}  text-gray-300"
-			>
-				<div class="flex items-center gap-2">
-					<Network class="h-6 w-6 p-1" />
-
-					<h2 class="text-xs leading-4 font-medium {panelCollapsed ? 'hidden' : ''}">Workflows</h2>
-				</div>
-
-				<!-- Collapse button -->
-				<div
-					class="{panelCollapsed
-						? 'hidden'
-						: ''} flex items-center justify-center rounded-md p-2 transition-colors duration-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+		{#if workflows.length > 0}
+			<section class="flex h-full w-full flex-col gap-3 px-1">
+				<!-- New Workflow button -->
+				<button
+					aria-label="Collapse workflows"
+					onclick={() => (workflowsCollapsed = !workflowsCollapsed)}
+					type="button"
+					class="flex items-center {panelCollapsed
+						? 'justify-center'
+						: 'justify-between'}  text-gray-300"
 				>
-					<ChevronDown
-						class="h-4 w-4 {workflowsCollapsed
-							? '-rotate-90'
-							: 'rotate-0'} transition-transform duration-300"
-					/>
-				</div>
-			</button>
-			{#if !workflowsCollapsed && !panelCollapsed}
-				<!-- Workflows list -->
-				<nav class="flex max-h-[60vh] w-full flex-col gap-1" aria-label="Workflow list">
-					{#each workflows as workflow (workflow.id)}
-						<div class="relative">
-							<a
-								onclick={() => (window.location.href = '/w/' + workflow.id)}
-								href="/w/{workflow.id}"
-								class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
-						{workflow.active
-									? 'bg-green-700 font-semibold text-white'
-									: 'font-normal text-white/70 hover:bg-white/5'}"
-							>
-								<p class="truncate">{workflow.name}</p>
+					<div class="flex items-center gap-2">
+						<Network class="h-6 w-6 p-1" />
 
-								<!-- OPTIONS BUTTON -->
-								<button
-									type="button"
-									onclick={(event) => (
-										event.preventDefault(),
-										event.stopPropagation(),
-										(openMenuId = openMenuId === workflow.id ? null : workflow.id)
-									)}
-									class="absolute right-1 z-20 items-center justify-center rounded-md p-2 transition-colors duration-300 {openMenuId ===
-									workflow.id
-										? 'flex'
-										: 'hidden group-hover:flex'} 
-				{workflow.active ? 'bg-green-900 hover:bg-green-950' : 'bg-zinc-900 hover:bg-zinc-950'}"
+						<h2 class="text-xs leading-4 font-medium {panelCollapsed ? 'hidden' : ''}">
+							Workflows
+						</h2>
+					</div>
+
+					<!-- Collapse button -->
+					<div
+						class="{panelCollapsed
+							? 'hidden'
+							: ''} flex items-center justify-center rounded-md p-2 transition-colors duration-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
+					>
+						<ChevronDown
+							class="h-4 w-4 {workflowsCollapsed
+								? '-rotate-90'
+								: 'rotate-0'} transition-transform duration-300"
+						/>
+					</div>
+				</button>
+				{#if !workflowsCollapsed && !panelCollapsed}
+					<!-- Workflows list -->
+					<nav class="flex max-h-[60vh] w-full flex-col gap-1" aria-label="Workflow list">
+						{#each workflows as workflow (workflow.id)}
+							<div class="relative">
+								<a
+									onclick={() => (window.location.href = '/w/' + workflow.id)}
+									href="/w/{workflow.id}"
+									class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
+						{activeWorkflow === workflow.id
+										? 'bg-green-700 font-semibold text-white'
+										: 'font-normal text-white/70 hover:bg-white/5'}"
 								>
-									<EllipsisVertical class="h-4 w-4" />
-								</button>
-							</a>
-							<!-- DROPDOWN MENU -->
-							{#if openMenuId === workflow.id}
-								<div
-									class="absolute top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
-								>
+									<p class="truncate">{workflow.name}</p>
+
+									<!-- OPTIONS BUTTON -->
 									<button
-										onclick={() => onSettings?.(workflow.id)}
 										type="button"
-										class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+										onclick={(event) => (
+											event.preventDefault(),
+											event.stopPropagation(),
+											(openMenuId = openMenuId === workflow.id ? null : workflow.id)
+										)}
+										class="absolute right-1 z-20 items-center justify-center rounded-md p-2 transition-colors duration-300 {openMenuId ===
+										workflow.id
+											? 'flex'
+											: 'hidden group-hover:flex'} 
+				{activeWorkflow === workflow.id
+											? 'bg-green-900 hover:bg-green-950'
+											: 'bg-zinc-900 hover:bg-zinc-950'}"
 									>
-										<Settings2 class="h-4 w-4" />
-
-										Workflow Settings
+										<EllipsisVertical class="h-4 w-4" />
 									</button>
-
-									<button
-										class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-										onclick={() => console.log('Duplicate', workflow.id)}
+								</a>
+								<!-- DROPDOWN MENU -->
+								{#if openMenuId === workflow.id}
+									<div
+										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 									>
-										<CopyPlus class="h-4 w-4" />
+										<button
+											onclick={() => onSettings?.(workflow.id)}
+											type="button"
+											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+										>
+											<Settings2 class="h-4 w-4" />
 
-										Duplicate Workflow
-									</button>
+											Workflow Settings
+										</button>
 
-									<button
-										class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
-										onclick={() => console.log('Delete', workflow.id)}
-									>
-										<Trash class="h-4 w-4" />
+										<button
+											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+											onclick={() => console.log('Duplicate', workflow.id)}
+										>
+											<CopyPlus class="h-4 w-4" />
 
-										Delete Workflow
-									</button>
-								</div>
-							{/if}
-						</div>
-					{/each}
-				</nav>
-			{/if}
-		</section>
+											Duplicate Workflow
+										</button>
+
+										<button
+											class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
+											onclick={() => console.log('Delete', workflow.id)}
+										>
+											<Trash class="h-4 w-4" />
+
+											Delete Workflow
+										</button>
+									</div>
+								{/if}
+							</div>
+						{/each}
+					</nav>
+				{/if}
+			</section>
+		{/if}
 	</div>
 
 	<!-- Bottom welcome strip -->

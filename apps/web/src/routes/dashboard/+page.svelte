@@ -1,12 +1,18 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import SidePanel from '$lib/components/SidePanel.svelte';
 	import { Plus, ArrowUp, ArrowRight } from 'lucide-svelte';
+	import type { User } from 'svelte-clerk/server';
 	let prompt = '';
 
 	type Template = {
 		id: number;
 		name: string;
 	};
+
+	export let data;
+
+	const user: User = data?.user;
 
 	const templates: Template[] = [
 		{
@@ -26,15 +32,22 @@
 			name: 'Classify'
 		}
 	];
-
-	let workflows = [
-		{ id: '1', name: 'Untitled Workflow 1', active: true },
-		{ id: '2', name: 'Registration Application Workflow', active: false }
-	];
 </script>
 
+<svelte:head>
+	<title>Dashboard - Lekana</title>
+	<meta
+		name="description"
+		content="Lekana automates document workflows for businesses. Scan, structure, and route documents seamlessly."
+	/>
+	<meta property="og:image" content="/thumb.png" />
+</svelte:head>
+
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
-	<SidePanel {workflows} userName="Lasandu" onSettings={(value: string) => (goto(`/w/${value}/settings`))} />
+	<SidePanel
+		userName={user.firstName}
+		onSettings={(value: string) => goto(`/w/${value}/settings`)}
+	/>
 	<div
 		class="relative flex min-h-screen w-full items-center justify-center overflow-clip bg-zinc-950 px-4 py-10"
 	>

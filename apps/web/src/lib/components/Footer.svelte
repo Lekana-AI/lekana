@@ -4,7 +4,7 @@
 			<div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
 				<!-- Brand -->
 				<div class="max-w-sm space-y-3">
-					<p class="text-base font-semibold text-white">Lekana AI</p>
+					<p class="text-base font-semibold text-white">Lekana</p>
 					<p class="text-xs leading-relaxed text-gray-500 md:text-sm">
 						An OCR-powered document intake service for businesses. We read your documents,
 						understand them, and route them into your workflow — fully managed, end-to-end.
@@ -63,7 +63,7 @@
 			<div
 				class="mt-4 flex flex-col items-center justify-between gap-3 text-[11px] text-gray-500 md:flex-row md:text-xs"
 			>
-				<p>Lekana AI © {new Date().getFullYear()}. All rights reserved.</p>
+				<p>Lekana © {new Date().getFullYear()}. All rights reserved.</p>
 				<p class="text-center md:text-right">
 					Built for businesses that are done with the chaos of documents.
 				</p>

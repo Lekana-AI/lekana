@@ -1,96 +1,49 @@
 <script lang="ts">
+	import { icons } from '$lib/icon';
 	import {
-		ChevronLeft,
-		ChevronRight,
 		Search,
-		CloudUpload,
-		ListChecks,
-		Grid3x3,
-		ScanText,
-		ShieldCheck,
-		CopyCheck,
-		UserCheck,
-		Database,
-		Share2,
-		Webhook,
-		Mail,
-		FileSpreadsheet,
-		FileText,
-		FileOutput,
-		Calculator,
 		Sparkles,
-		Bot,
 		ArrowRightToLine,
 		Plus,
 		ArrowUp,
 		LayoutGrid
 	} from 'lucide-svelte';
+	import { onMount } from 'svelte';
 
 	let { onAction } = $props();
 
 	let collapsed = $state(false);
 	let activeTab = $state<'actions' | 'assistant'>('actions');
-
+	let actionSections = $state([]);
 	let prompt = $state('');
-
-	type IconComponent = typeof CloudUpload;
-
-	const actionSections: {
-		title: string;
-		items: { label: string; icon: IconComponent }[];
-	}[] = [
-		{
-			title: 'Input & Pre-Processing',
-			items: [
-				{ label: 'Upload files', icon: CloudUpload },
-				{ label: 'Classification', icon: ListChecks },
-				{ label: 'Segmentation', icon: Grid3x3 },
-				{ label: 'OCR', icon: ScanText }
-			]
-		},
-		{
-			title: 'Data Quality & Validation',
-			items: [
-				{ label: 'Validation', icon: ShieldCheck },
-				{ label: 'De-duplication', icon: CopyCheck }
-			]
-		},
-		{
-			title: 'Human Review',
-			items: [
-				{ label: 'Human Review OCR', icon: UserCheck },
-				{ label: 'Human Review Classification', icon: UserCheck },
-				{ label: 'Human Review Segments', icon: UserCheck }
-			]
-		},
-		{
-			title: 'Storage & Integrations',
-			items: [
-				{ label: 'Database', icon: Database },
-				{ label: 'Export to ERP, CRM, DMS', icon: Share2 },
-				{ label: 'Webhook / API', icon: Webhook },
-				{ label: 'Email Notification / API', icon: Mail },
-				{ label: 'Google Sheets', icon: FileSpreadsheet }
-			]
-		},
-		{
-			title: 'Understanding & Structuring',
-			items: [
-				{ label: 'Summarization', icon: FileText },
-				{ label: 'Generate Document', icon: FileOutput }
-			]
-		},
-		{
-			title: 'Logic & Computation',
-			items: [{ label: 'Arithmetic Operations', icon: Calculator }]
-		}
-	];
 
 	const assistantQuickActions = [
 		'Summarize Documents',
 		'Validate field data',
 		'Extract data into Spreadsheet'
 	];
+
+	onMount(() => {
+		loadActions();
+	});
+
+	async function loadActions() {
+		const res = await fetch('/api/categories/with-actions', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+
+			throw new Error(`Failed to load actions: ${res.status}`);
+		}
+
+		actionSections = await res.json();
+	}
 </script>
 
 <!-- Expanded state -->
@@ -165,20 +118,21 @@
 						<section class="flex w-full flex-col gap-2">
 							<div class="inline-flex w-full items-center justify-between pt-1.5">
 								<h2 class="text-xs font-semibold text-zinc-300">
-									{section.title}
+									{section.category}
 								</h2>
 							</div>
 
-							{#each section.items as item}
+							{#each section.actions as item}
+								{@const Icon = icons[item.icon]}
 								<button
-									onclick={() => onAction?.(item.label)}
+									onclick={(() => onAction?.(item.id))}
 									type="button"
 									class="border-white/50/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition hover:bg-white/10"
 								>
-									<span
-										class="flex items-center justify-center rounded-full bg-green-700 p-2"
-									>
-										<item.icon class="h-3 w-3 text-white" />
+									<span class="flex items-center justify-center rounded-full bg-green-700 p-2">
+										<!-- <item.icon class="h-3 w-3 text-white" /> -->
+										<Icon class="h-3 w-3 text-white" />
+										<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
 									</span>
 									<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
 										{item.label}

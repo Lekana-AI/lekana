@@ -35,8 +35,10 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
+		"@clerk/themes": "^2.4.43",
 		"@xyflow/svelte": "^1.4.2",
 		"lucide-svelte": "^0.555.0",
-		"svelte-clerk": "^0.18.7"
+		"svelte-clerk": "^0.18.7",
+		"svelte-jsoneditor": "^3.11.0"
 	}
 }
