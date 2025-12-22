@@ -1,0 +1,122 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Workflow Execution - tracks each published workflow run
+model WorkflowExecution {
+  id                  String             @id @default(uuid())
+  workflowId          String             // Reference to workflow-builder workflow ID
+  workflowName        String             // Cached name for display
+  userId              String
+  publishedWorkflowId String?            // Link to published workflow (optional for backward compat)
+  publishedWorkflow   PublishedWorkflow? @relation(fields: [publishedWorkflowId], references: [id])
+  inputData           Json?              // Input data provided when running workflow
+  status              ExecutionStatus    @default(PENDING)
+  startedAt           DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  nodeExecutions      NodeExecution[]
+  logs                ExecutionLog[]
+
+  @@index([workflowId])
+  @@index([userId])
+  @@index([publishedWorkflowId])
+  @@index([status])
+}
+
+// Node Execution - tracks each node's execution within a workflow run
+model NodeExecution {
+  id                  String            @id @default(uuid())
+  workflowExecutionId String
+  nodeId              String            // Reference to workflow node ID
+  actionName          String            // Action type (e.g., "Invoice Upload", "API Call")
+  stepName            String            // User-configured step name
+  executionOrder      Int               // Order in which this node executes
+  status              ExecutionStatus   @default(PENDING)
+  input               Json?             // Input data from previous node(s)
+  output              Json?             // Output data to pass to next node(s)
+  config              Json?             // Node configuration (method, endpoint, etc.)
+  error               String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime          @default(now())
+  workflowExecution   WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([workflowExecutionId])
+  @@index([nodeId])
+  @@index([status])
+}
+
+// Execution Logs - detailed logs for debugging and monitoring
+model ExecutionLog {
+  id                  String            @id @default(uuid())
+  workflowExecutionId String
+  nodeExecutionId     String?           // Optional - can be workflow-level or node-level log
+  level               LogLevel          @default(INFO)
+  message             String
+  metadata            Json?             // Additional context data
+  timestamp           DateTime          @default(now())
+  workflowExecution   WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([workflowExecutionId])
+  @@index([nodeExecutionId])
+  @@index([level])
+  @@index([timestamp])
+}
+
+// Published workflow definition - stored for later execution
+model PublishedWorkflow {
+  id           String              @id @default(uuid())
+  workflowId   String              @unique // Reference to workflow-builder ID
+  userId       String
+  name         String
+  definition   Json                // Full workflow JSON (nodes, edges, configs)
+  isActive     Boolean             @default(true)
+  publishedAt  DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  apiKeys      ApiKey[]
+  executions   WorkflowExecution[]
+
+  @@index([workflowId])
+  @@index([userId])
+}
+
+// API Key for workflow access - used by external systems
+model ApiKey {
+  id                  String            @id @default(uuid())
+  key                 String            @unique // Hashed API key
+  keyPrefix           String            // First 8 chars for display (e.g., "lk_abc123...")
+  name                String            // e.g., "Production", "Development"
+  publishedWorkflowId String
+  publishedWorkflow   PublishedWorkflow @relation(fields: [publishedWorkflowId], references: [id], onDelete: Cascade)
+  isActive            Boolean           @default(true)
+  lastUsedAt          DateTime?
+  createdAt           DateTime          @default(now())
+  expiresAt           DateTime?         // Optional expiration
+
+  @@index([key])
+  @@index([publishedWorkflowId])
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+

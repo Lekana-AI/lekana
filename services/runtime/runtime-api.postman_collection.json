@@ -1,0 +1,281 @@
+{
+  "info": {
+    "name": "Runtime API",
+    "description": "Workflow Runtime Service API - Publish, Run, and Monitor Workflows.\n\n**Authentication:**\n- JWT Token: For user-facing endpoints (publish, manage keys, view executions)\n- API Key: For running workflows from external systems\n\n**Flow:**\n1. Publish workflow (JWT) → Get API key\n2. Run workflow (API Key) → Get execution ID\n3. Check status (JWT) → View results",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002",
+      "type": "string",
+      "description": "Runtime service base URL"
+    },
+    {
+      "key": "jwtToken",
+      "value": "YOUR_JWT_TOKEN_HERE",
+      "type": "string",
+      "description": "JWT token from Clerk authentication"
+    },
+    {
+      "key": "apiKey",
+      "value": "lk_YOUR_API_KEY_HERE",
+      "type": "string",
+      "description": "API key returned when publishing workflow"
+    },
+    {
+      "key": "workflowId",
+      "value": "f73e9d7a-514f-48f3-a995-4f784c7e591b",
+      "type": "string",
+      "description": "Workflow ID from workflow-builder"
+    },
+    {
+      "key": "executionId",
+      "value": "EXECUTION_ID_HERE",
+      "type": "string",
+      "description": "Execution ID from run response"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health",
+            "description": "Check if the runtime service is running"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Publish & Manage (JWT Auth)",
+      "description": "These endpoints require JWT authentication. Use for publishing workflows and managing API keys.",
+      "item": [
+        {
+          "name": "Publish Workflow",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/publish",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n    \"name\": \"Invoice Processing Workflow\",\n    \"nodes\": [\n        {\n            \"id\": \"node-1\",\n            \"workflowId\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n            \"actionId\": \"action-upload\",\n            \"positionX\": 50,\n            \"positionY\": 150,\n            \"config\": {\n                \"stepName\": \"Upload Invoice\",\n                \"allowedFileTypes\": [\"pdf\"],\n                \"bulkUpload\": false\n            },\n            \"action\": {\n                \"id\": \"action-upload\",\n                \"name\": \"Invoice Upload\",\n                \"description\": \"Upload and process invoice documents\"\n            }\n        },\n        {\n            \"id\": \"node-2\",\n            \"workflowId\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n            \"actionId\": \"action-validate\",\n            \"positionX\": 200,\n            \"positionY\": 150,\n            \"config\": {\n                \"stepName\": \"Validate Invoice Data\",\n                \"validationRules\": \"{\\\"required\\\": [\\\"amount\\\", \\\"vendor\\\"]}\"\n            },\n            \"action\": {\n                \"id\": \"action-validate\",\n                \"name\": \"Data Validation\",\n                \"description\": \"Validate data against defined rules\"\n            }\n        },\n        {\n            \"id\": \"node-3\",\n            \"workflowId\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n            \"actionId\": \"action-api\",\n            \"positionX\": 350,\n            \"positionY\": 150,\n            \"config\": {\n                \"stepName\": \"Send to ERP\",\n                \"endpoint\": \"https://api.example.com/invoices\",\n                \"method\": \"POST\",\n                \"headers\": {\"Authorization\": \"Bearer token\"}\n            },\n            \"action\": {\n                \"id\": \"action-api\",\n                \"name\": \"API Call\",\n                \"description\": \"Make HTTP requests to external APIs\"\n            }\n        }\n    ],\n    \"edges\": [\n        {\n            \"id\": \"edge-1\",\n            \"workflowId\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n            \"sourceNodeId\": \"node-1\",\n            \"targetNodeId\": \"node-2\"\n        },\n        {\n            \"id\": \"edge-2\",\n            \"workflowId\": \"f73e9d7a-514f-48f3-a995-4f784c7e591b\",\n            \"sourceNodeId\": \"node-2\",\n            \"targetNodeId\": \"node-3\"\n        }\n    ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Publish a workflow definition. Returns an API key on first publish.\n\n**Response includes:**\n- `publishedWorkflowId`: ID of the published workflow\n- `apiKey.key`: The API key (SAVE THIS - only shown once!)\n- `runEndpoint`: The endpoint to run this workflow"
+          }
+        },
+        {
+          "name": "Get Published Workflow Info",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "Get information about a published workflow including execution count"
+          }
+        },
+        {
+          "name": "List API Keys",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/keys",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "List all API keys for a workflow (shows prefix only, not full key)"
+          }
+        },
+        {
+          "name": "Create New API Key",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/keys",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Production API Key\",\n    \"expiresAt\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Create a new API key for the workflow.\n\n**IMPORTANT:** Save the returned key immediately - it will not be shown again!"
+          }
+        },
+        {
+          "name": "Revoke API Key",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/keys/:keyId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "workflows", "{{workflowId}}", "keys", ":keyId"],
+              "variable": [
+                { "key": "keyId", "value": "KEY_ID_HERE", "description": "API key ID to revoke" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "Revoke (deactivate) an API key. The key will no longer work for authentication."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Run Workflow (API Key Auth)",
+      "description": "These endpoints use API Key authentication. Use X-API-Key header instead of JWT.",
+      "item": [
+        {
+          "name": "Run Workflow with Input",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/run",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}", "type": "text", "description": "API key from publish response" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"input\": {\n        \"invoiceNumber\": \"INV-2024-001\",\n        \"amount\": 1500.00,\n        \"currency\": \"USD\",\n        \"vendor\": \"Acme Corporation\",\n        \"dueDate\": \"2024-12-31\"\n    },\n    \"documents\": [\n        {\n            \"filename\": \"invoice_001.pdf\",\n            \"contentType\": \"application/pdf\",\n            \"size\": 102400,\n            \"url\": \"https://storage.example.com/invoices/invoice_001.pdf\"\n        }\n    ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Run a published workflow with input data.\n\n**Authentication:** Uses X-API-Key header (not JWT)\n\n**Request body:**\n- `input`: JSON data to pass to the first node\n- `documents`: Array of document references\n\n**Response:**\n- `executionId`: Use this to check status\n- `statusEndpoint`: Endpoint to poll for completion"
+          }
+        },
+        {
+          "name": "Run Workflow (Minimal)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/workflows/{{workflowId}}/run",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"input\": {\n        \"message\": \"Hello from API\"\n    }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "description": "Run workflow with minimal input (for testing)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Execution Status (JWT Auth)",
+      "description": "Check execution status and logs. Requires JWT authentication.",
+      "item": [
+        {
+          "name": "List All Executions",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/executions",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "List all workflow executions for the authenticated user"
+          }
+        },
+        {
+          "name": "Get Execution Details",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/executions/:executionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "executions", ":executionId"],
+              "variable": [
+                { "key": "executionId", "value": "{{executionId}}", "description": "Execution ID from run response" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "Get detailed execution info including status of each node"
+          }
+        },
+        {
+          "name": "Get Execution Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/executions/:executionId/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "executions", ":executionId", "logs"],
+              "variable": [
+                { "key": "executionId", "value": "{{executionId}}", "description": "Execution ID" }
+              ]
+            },
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" }
+            ],
+            "description": "Get detailed logs for debugging execution issues"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Test Actions (JWT Auth)",
+      "description": "Test individual action handlers directly (for development)",
+      "item": [
+        {
+          "name": "Test Upload Action",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/actions/upload",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"input\": null,\n    \"config\": {\n        \"stepName\": \"Test Upload\",\n        \"bulkUpload\": false,\n        \"allowedFileTypes\": [\"pdf\", \"images\"]\n    }\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Test Validate Action",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/actions/validate",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"input\": {\n        \"data\": {\n            \"extractedData\": {\n                \"amount\": 1500.00,\n                \"vendor\": \"Acme Corp\",\n                \"date\": \"2024-12-10\"\n            }\n        }\n    },\n    \"config\": {\n        \"stepName\": \"Test Validation\",\n        \"validationRules\": \"{\\\"required\\\": [\\\"amount\\\", \\\"vendor\\\"]}\"\n    }\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Test API Call Action",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/actions/api-call",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"input\": {\n        \"previousNodeOutput\": { \"invoiceId\": \"INV-001\" }\n    },\n    \"config\": {\n        \"stepName\": \"Send to ERP\",\n        \"endpoint\": \"https://api.example.com/invoices\",\n        \"method\": \"POST\",\n        \"headers\": { \"Authorization\": \"Bearer secret\" },\n        \"body\": { \"action\": \"create\" }\n    }\n}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
