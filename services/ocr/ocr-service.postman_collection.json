@@ -1,0 +1,194 @@
+{
+	"info": {
+		"_postman_id": "ocr-service-collection",
+		"name": "OCR Service",
+		"description": "OCR microservice with Document AI + Gemini hybrid approach",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				}
+			}
+		},
+		{
+			"name": "Key-Value Extraction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"test-exec-1\",\n  \"nodeId\": \"node-1\",\n  \"workflowId\": \"wf-1\",\n  \"userId\": \"user-1\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"url\": \"https://example.com/invoice.pdf\",\n        \"filename\": \"invoice.pdf\",\n        \"mimeType\": \"application/pdf\"\n      }\n    ]\n  },\n  \"config\": {\n    \"outputMode\": \"key-value\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Extracts ALL key-value pairs from the document automatically. Best for invoices, receipts, and forms."
+			}
+		},
+		{
+			"name": "Field Extraction (Specific Fields)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"test-exec-2\",\n  \"nodeId\": \"node-1\",\n  \"workflowId\": \"wf-1\",\n  \"userId\": \"user-1\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"url\": \"https://example.com/id_card.jpg\",\n        \"filename\": \"id_card.jpg\",\n        \"mimeType\": \"image/jpeg\"\n      }\n    ]\n  },\n  \"config\": {\n    \"outputMode\": \"field-extract\",\n    \"extractFields\": [\"nic\", \"name\", \"dob\", \"address\"],\n    \"fieldPrompts\": {\n      \"nic\": \"NIC can have 12 digits OR 9 digits + V/X at the end\",\n      \"dob\": \"Date of birth in YYYY-MM-DD format\",\n      \"name\": \"Full name as it appears on the document\"\n    }\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Extracts SPECIFIC fields with optional validation rules. Best for ID cards and structured documents."
+			}
+		},
+		{
+			"name": "Full OCR (Text Cleanup)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"test-exec-3\",\n  \"nodeId\": \"node-1\",\n  \"workflowId\": \"wf-1\",\n  \"userId\": \"user-1\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"url\": \"https://example.com/document.pdf\",\n        \"filename\": \"document.pdf\",\n        \"mimeType\": \"application/pdf\"\n      }\n    ]\n  },\n  \"config\": {\n    \"outputMode\": \"auto\"\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Full text extraction with cleanup and section structuring. Use 'auto' or omit outputMode."
+			}
+		},
+		{
+			"name": "Train Processor Version",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"train\",\n  \"processorId\": \"your-processor-id\",\n  \"versionName\": \"v2-fine-tuned-nic\",\n  \"trainDataUri\": \"gs://your-bucket/train-data/\",\n  \"testDataUri\": \"gs://your-bucket/test-data/\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/configure",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "configure"]
+				}
+			}
+		},
+		{
+			"name": "Deploy Processor Version",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"deploy\",\n  \"processorId\": \"your-processor-id\",\n  \"versionId\": \"version-id-to-deploy\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/configure",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "configure"]
+				}
+			}
+		},
+		{
+			"name": "List Processor Versions",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"list-versions\",\n  \"processorId\": \"your-processor-id\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/configure",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "configure"]
+				}
+			}
+		},
+		{
+			"name": "Set Default Version",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"action\": \"set-default\",\n  \"processorId\": \"your-processor-id\",\n  \"versionId\": \"version-id-to-set\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/configure",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "configure"]
+				}
+			}
+		},
+		{
+			"name": "Check Training Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/configure/status/{{operationId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "configure", "status", "{{operationId}}"]
+				}
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:4004"
+		},
+		{
+			"key": "operationId",
+			"value": "operation-id-from-training"
+		}
+	]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "ocr-service",
+  "version": "1.0.0",
+  "description": "OCR microservice with Document AI + Gemini hybrid approach",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "ocr",
+    "document-ai",
+    "gemini",
+    "microservice"
+  ],
+  "author": "Lekana.ai",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google-cloud/documentai": "^8.0.0",
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-jwt": "^8.5.1",
+    "jwks-rsa": "^3.2.0"
+  }
+}
