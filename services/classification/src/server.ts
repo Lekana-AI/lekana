@@ -10,20 +10,26 @@ const PORT = process.env.PORT || 4002;
 
 async function startServer(): Promise<void> {
     try {
-        // Connect to database
-        logger.info('Connecting to database...');
-        await database.connect();
-        logger.info('Database connected successfully');
-
         // Create Express app
         const app = createApp();
 
         // Start server
-        const server = app.listen(PORT, () => {
+        const server = app.listen(PORT, async () => {
             logger.info(`Server running on port ${PORT}`);
             logger.info(`Health check: http://localhost:${PORT}/health`);
             logger.info(`Classify (custom): POST http://localhost:${PORT}/api/classify/custom`);
             logger.info(`Classify (auto): POST http://localhost:${PORT}/api/classify/auto`);
+
+            try {
+                // Connect to database after server started
+                logger.info('Connecting to database...');
+                await database.connect();
+                logger.info('Database connected successfully');
+            } catch (dbError) {
+                logger.error('Failed to connect to database on startup', dbError);
+                // We keep the server running so Cloud Run doesn't enter a crash loop immediately,
+                // but health checks or subsequent requests will fail if DB is critical.
+            }
         });
 
         // Graceful shutdown
