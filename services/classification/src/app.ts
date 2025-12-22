@@ -24,7 +24,7 @@ export function createApp(): Application {
     app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
     // Health check endpoint
-    app.get('/health', (req, res) => {
+    app.get('/health', (_req, res) => {
         res.status(200).json({
             status: 'healthy',
             service: 'lekana-classification',

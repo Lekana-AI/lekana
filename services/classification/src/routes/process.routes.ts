@@ -52,7 +52,6 @@ router.post('/process', async (req: Request, res: Response) => {
             executionId,
             nodeId,
             workflowId,
-            userId,
             input = {},
             config = {}
         } = req.body as ServiceRequest;

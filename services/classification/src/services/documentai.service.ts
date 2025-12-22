@@ -121,7 +121,7 @@ export class DocumentAIService {
         document: any,
         documentUrl: string,
         filename: string,
-        customLabels?: string[]
+        _customLabels?: string[]
     ): Classification {
         // For document classification processor, extract entities
         const entities = document.entities || [];

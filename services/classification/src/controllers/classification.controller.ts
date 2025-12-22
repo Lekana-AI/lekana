@@ -7,8 +7,7 @@ import {
     ClassifyCustomRequest,
     ClassifyAutoRequest,
     Classification,
-    ClassificationResponse,
-    DocumentInput
+    ClassificationResponse
 } from '../types';
 import { getConfidenceThreshold, shouldRequireHumanReview } from '../utils/confidence.util';
 import { logger } from '../utils/logger.util';
