@@ -19,6 +19,7 @@
 		if (!browser) return;
 
 		console.log('🔍 Starting Clerk data load...');
+		let unsubscribe: (() => void) | undefined;
 
 		const loadData = async () => {
 			try {
@@ -36,33 +37,49 @@
 				await Clerk.load();
 				
 				console.log('✅ Clerk fully loaded!');
-				console.log('🔍 Clerk.user:', Clerk.user);
-				console.log('🔍 Clerk.session:', Clerk.session);
 
-				// Get user info
-				if (Clerk.user) {
-					userId = Clerk.user.id || '';
-					userEmail = Clerk.user.primaryEmailAddress?.emailAddress || '';
-					userFirstName = Clerk.user.firstName || '';
-					userLastName = Clerk.user.lastName || '';
-					console.log('✅ User data loaded:', { userId, userEmail, userFirstName, userLastName });
-				} else {
-					console.log('❌ No Clerk.user found after load()');
+				const updateState = async () => {
+					// Get user info
+					if (Clerk.user) {
+						userId = Clerk.user.id || '';
+						userEmail = Clerk.user.primaryEmailAddress?.emailAddress || '';
+						userFirstName = Clerk.user.firstName || '';
+						userLastName = Clerk.user.lastName || '';
+						console.log('✅ User data updated');
+					}
+
+					// Get token
+					if (Clerk.session) {
+						token = await Clerk.session.getToken();
+						console.log('✅ Token refreshed:', token?.substring(0, 20) + '...');
+					}
+				};
+
+				// Initial update
+				await updateState();
+
+				// Listen for future updates
+				if (Clerk.addListener) {
+					console.log('👂 Registering Clerk listener...');
+					unsubscribe = Clerk.addListener((resources: any) => {
+						console.log('🔄 Clerk state changed, refreshing token...');
+						updateState();
+					});
 				}
 
-				// Get token
-				if (Clerk.session) {
-					token = await Clerk.session.getToken();
-					console.log('✅ Token loaded:', token?.substring(0, 20) + '...');
-				} else {
-					console.log('❌ No Clerk.session found after load()');
-				}
 			} catch (err) {
 				console.error('❌ Error loading Clerk data:', err);
 			}
 		};
 
 		loadData();
+
+		return () => {
+			if (unsubscribe) {
+				console.log('Cleaning up Clerk listener');
+				unsubscribe();
+			}
+		};
 	});
 
 	async function testApiCall() {
