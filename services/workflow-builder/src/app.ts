@@ -16,10 +16,16 @@ app.get('/', (req, res) => {
     res.send('Workflow Editor Service is running');
 });
 
-// Protected Routes - Apply auth middleware
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// Protected Routes - Apply Clerk JWT authentication
 app.use('/workflows', checkJwt, handleAuthError, extractUserInfo, workflowRoutes);
 app.use('/actions', checkJwt, handleAuthError, extractUserInfo, actionRoutes);
 app.use('/categories', checkJwt, handleAuthError, extractUserInfo, categoryRoutes);
 
 export default app;
+
 

@@ -115,3 +115,95 @@ export const getAllWorkflows = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * Update an existing workflow
+ */
+export const updateWorkflow = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name } = req.body;
+        const userId = req.auth?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User ID not found in token' });
+        }
+
+        // Check if workflow exists and belongs to user
+        const existingWorkflow = await prisma.workflow.findFirst({
+            where: {
+                id,
+                userId
+            }
+        });
+
+        if (!existingWorkflow) {
+            return res.status(404).json({ error: 'Workflow not found' });
+        }
+
+        // Validate name if provided
+        if (name !== undefined && (!name || typeof name !== 'string' || name.trim() === '')) {
+            return res.status(400).json({ error: 'Name must be a non-empty string' });
+        }
+
+        const updatedWorkflow = await prisma.workflow.update({
+            where: { id },
+            data: {
+                ...(name && { name: name.trim() })
+            },
+            include: {
+                nodes: {
+                    include: {
+                        action: {
+                            include: {
+                                category: true
+                            }
+                        }
+                    }
+                },
+                edges: true,
+            },
+        });
+
+        res.json(updatedWorkflow);
+    } catch (error) {
+        console.error('Error updating workflow:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Delete a workflow
+ */
+export const deleteWorkflow = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.auth?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User ID not found in token' });
+        }
+
+        // Check if workflow exists and belongs to user
+        const existingWorkflow = await prisma.workflow.findFirst({
+            where: {
+                id,
+                userId
+            }
+        });
+
+        if (!existingWorkflow) {
+            return res.status(404).json({ error: 'Workflow not found' });
+        }
+
+        // Delete workflow (nodes and edges will cascade delete due to schema config)
+        await prisma.workflow.delete({
+            where: { id }
+        });
+
+        res.status(200).json({ message: 'Workflow deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting workflow:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
