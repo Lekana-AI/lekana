@@ -41,8 +41,7 @@ RUN npm install --omit=dev && \
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy service account file if exists (optional)
-COPY service-account.json* ./
+
 
 # Change ownership to non-root user
 RUN chown -R nodejs:nodejs /app
