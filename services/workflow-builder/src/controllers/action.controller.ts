@@ -110,3 +110,133 @@ export const getActionsByCategory = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * Create a new action
+ */
+export const createAction = async (req: Request, res: Response) => {
+    try {
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+
+        // Validate required fields
+        if (!name || !categoryId || !outputType || !configSchema) {
+            return res.status(400).json({
+                error: 'name, categoryId, outputType, and configSchema are required'
+            });
+        }
+
+        // Check if category exists
+        const category = await prisma.actionCategory.findUnique({
+            where: { id: categoryId }
+        });
+
+        if (!category) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
+
+        // Check if action with same name already exists
+        const existingAction = await prisma.action.findUnique({
+            where: { name }
+        });
+
+        if (existingAction) {
+            return res.status(409).json({ error: 'Action with this name already exists' });
+        }
+
+        const action = await prisma.action.create({
+            data: {
+                name,
+                description: description || null,
+                icon: icon || 'Zap',
+                categoryId,
+                inputType: inputType || null,
+                outputType,
+                configSchema,
+                configMeta: configMeta || null
+            },
+            include: {
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true
+                    }
+                }
+            }
+        });
+
+        res.status(201).json(transformAction(action));
+    } catch (error) {
+        console.error('Error creating action:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Update an existing action
+ */
+export const updateAction = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+
+        // Check if action exists
+        const existingAction = await prisma.action.findUnique({
+            where: { id }
+        });
+
+        if (!existingAction) {
+            return res.status(404).json({ error: 'Action not found' });
+        }
+
+        // If categoryId is being updated, verify the new category exists
+        if (categoryId && categoryId !== existingAction.categoryId) {
+            const category = await prisma.actionCategory.findUnique({
+                where: { id: categoryId }
+            });
+
+            if (!category) {
+                return res.status(404).json({ error: 'Category not found' });
+            }
+        }
+
+        // If name is being updated, check for duplicates
+        if (name && name !== existingAction.name) {
+            const duplicateAction = await prisma.action.findUnique({
+                where: { name }
+            });
+
+            if (duplicateAction) {
+                return res.status(409).json({ error: 'Action with this name already exists' });
+            }
+        }
+
+        const action = await prisma.action.update({
+            where: { id },
+            data: {
+                ...(name && { name }),
+                ...(description !== undefined && { description }),
+                ...(icon && { icon }),
+                ...(categoryId && { categoryId }),
+                ...(inputType !== undefined && { inputType }),
+                ...(outputType && { outputType }),
+                ...(configSchema && { configSchema }),
+                ...(configMeta !== undefined && { configMeta })
+            },
+            include: {
+                category: {
+                    select: {
+                        id: true,
+                        name: true,
+                        description: true
+                    }
+                }
+            }
+        });
+
+        res.json(transformAction(action));
+    } catch (error) {
+        console.error('Error updating action:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
