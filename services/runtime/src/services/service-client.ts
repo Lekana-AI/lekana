@@ -2,124 +2,17 @@
  * Service Client
  * Handles communication with external microservices
  * 
- * All microservices must follow the standard request/response contract
+ * Service URLs are now loaded from the database (Action.serviceUrl)
+ * and passed through the workflow definition
  */
 
 import axios, { AxiosError } from 'axios';
 
 // ============================================
-// Service Registry - Configure service URLs
+// Default Configuration
 // ============================================
 
-interface ServiceConfig {
-    url: string;
-    timeout: number;
-    retries: number;
-}
-
-// Service URL mapping - configure via environment variables
-const SERVICES: Record<string, ServiceConfig> = {
-    'upload': {
-        url: process.env.UPLOAD_SERVICE_URL || 'http://localhost:4001',
-        timeout: 60000,  // 60s for file uploads
-        retries: 2
-    },
-    'classification': {
-        url: process.env.CLASSIFICATION_SERVICE_URL || 'http://localhost:4002',
-        timeout: 30000,
-        retries: 2
-    },
-    'segmentation': {
-        url: process.env.SEGMENTATION_SERVICE_URL || 'http://localhost:4003',
-        timeout: 60000,  // Longer for multi-page processing
-        retries: 1
-    },
-    'ocr': {
-        url: process.env.OCR_SERVICE_URL || 'http://localhost:4004',
-        timeout: 60000,
-        retries: 2
-    },
-    'validation': {
-        url: process.env.VALIDATION_SERVICE_URL || 'http://localhost:4005',
-        timeout: 10000,
-        retries: 3
-    },
-    'summarization': {
-        url: process.env.SUMMARIZATION_SERVICE_URL || 'http://localhost:4006',
-        timeout: 30000,
-        retries: 1
-    },
-    'duplication': {
-        url: process.env.DUPLICATION_SERVICE_URL || 'http://localhost:4007',
-        timeout: 30000,
-        retries: 2
-    },
-    'human-review': {
-        url: process.env.HUMAN_REVIEW_SERVICE_URL || 'http://localhost:4008',
-        timeout: 10000,
-        retries: 3
-    },
-    'email': {
-        url: process.env.EMAIL_SERVICE_URL || 'http://localhost:4009',
-        timeout: 10000,
-        retries: 3
-    }
-};
-
-// Action name to service mapping (aliases)
-const ACTION_SERVICE_MAP: Record<string, string> = {
-    // Upload service
-    'upload': 'upload',
-    'upload files': 'upload',
-    'file upload': 'upload',
-    'invoice upload': 'upload',
-    'document upload': 'upload',
-
-    // Classification service
-    'classification': 'classification',
-    'classify': 'classification',
-    'classify document': 'classification',
-    'document classification': 'classification',
-
-    // Segmentation service
-    'segmentation': 'segmentation',
-    'segment': 'segmentation',
-    'segment document': 'segmentation',
-    'document segmentation': 'segmentation',
-
-    // OCR service
-    'ocr': 'ocr',
-    'ocr processing': 'ocr',
-    'text extraction': 'ocr',
-    'extract text': 'ocr',
-
-    // Validation service
-    'validation': 'validation',
-    'validate': 'validation',
-    'data validation': 'validation',
-
-    // Summarization service
-    'summarization': 'summarization',
-    'summarize': 'summarization',
-    'summary': 'summarization',
-
-    // Duplication service
-    'duplication': 'duplication',
-    'duplicate detection': 'duplication',
-    'check duplicates': 'duplication',
-
-    // Human review service
-    'human review': 'human-review',
-    'human review ocr': 'human-review',
-    'human review classification': 'human-review',
-    'human review segments': 'human-review',
-
-    // Email service
-    'email': 'email',
-    'send email': 'email',
-    'email notification': 'email',
-    'notify': 'email'
-};
+const DEFAULT_TIMEOUT = 30000;  // 30 seconds
 
 // ============================================
 // Standard Request/Response Types
@@ -175,75 +68,24 @@ export interface ServiceResponse {
 // ============================================
 
 /**
- * Get service key from action name
+ * Call external microservice using a direct URL (from database)
+ * This is the primary method - service URLs come from Action.serviceUrl in the database
  */
-function getServiceKey(actionName: string): string | null {
-    const normalizedName = actionName.toLowerCase().trim();
-    return ACTION_SERVICE_MAP[normalizedName] || null;
-}
-
-/**
- * Get service configuration
- */
-function getServiceConfig(serviceKey: string): ServiceConfig | null {
-    return SERVICES[serviceKey] || null;
-}
-
-/**
- * Check if an action is supported
- */
-export function isActionSupported(actionName: string): boolean {
-    return getServiceKey(actionName) !== null;
-}
-
-/**
- * List all supported actions
- */
-export function listSupportedActions(): string[] {
-    return Object.keys(ACTION_SERVICE_MAP);
-}
-
-/**
- * Call external microservice
- */
-export async function callService(
-    actionName: string,
-    request: ServiceRequest
+export async function callServiceWithUrl(
+    serviceUrl: string,
+    request: ServiceRequest,
+    timeout: number = DEFAULT_TIMEOUT
 ): Promise<ServiceResponse> {
-    const serviceKey = getServiceKey(actionName);
-
-    if (!serviceKey) {
-        // Return mock success for unknown actions (for development)
-        console.warn(`[ServiceClient] Unknown action: ${actionName}, returning mock success`);
-        return {
-            success: true,
-            data: {
-                message: `Action "${actionName}" not implemented yet`,
-                input: request.input
-            },
-            metadata: {
-                processingTime: 0,
-                serviceVersion: 'mock-v1'
-            }
-        };
-    }
-
-    const serviceConfig = getServiceConfig(serviceKey);
-
-    if (!serviceConfig) {
-        throw new Error(`Service configuration not found for: ${serviceKey}`);
-    }
-
     const startTime = Date.now();
 
     try {
-        console.log(`[ServiceClient] Calling ${serviceKey} service at ${serviceConfig.url}`);
+        console.log(`[ServiceClient] Calling service at ${serviceUrl}`);
 
         const response = await axios.post<ServiceResponse>(
-            `${serviceConfig.url}/api/v1/process`,
+            `${serviceUrl}/api/v1/process`,
             request,
             {
-                timeout: serviceConfig.timeout,
+                timeout,
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Correlation-Id': request.metadata?.correlationId || request.executionId,
@@ -254,14 +96,14 @@ export async function callService(
         );
 
         const processingTime = Date.now() - startTime;
-        console.log(`[ServiceClient] ${serviceKey} completed in ${processingTime}ms`);
+        console.log(`[ServiceClient] Service at ${serviceUrl} completed in ${processingTime}ms`);
 
         return {
             ...response.data,
             metadata: {
                 ...response.data.metadata,
                 processingTime,
-                serviceKey
+                serviceUrl
             }
         };
 
@@ -269,18 +111,12 @@ export async function callService(
         const processingTime = Date.now() - startTime;
 
         if (error instanceof AxiosError) {
-            // Service returned an error response
             if (error.response) {
-                console.error(`[ServiceClient] ${serviceKey} error response:`, error.response.status);
-
+                console.error(`[ServiceClient] Service error response:`, error.response.status);
                 return {
                     success: false,
                     data: null,
-                    metadata: {
-                        processingTime,
-                        serviceVersion: 'unknown',
-                        serviceKey
-                    },
+                    metadata: { processingTime, serviceVersion: 'unknown', serviceUrl },
                     error: {
                         code: `SERVICE_ERROR_${error.response.status}`,
                         message: error.response.data?.error?.message || error.message,
@@ -289,62 +125,106 @@ export async function callService(
                 };
             }
 
-            // Network error or timeout
             if (error.code === 'ECONNREFUSED') {
-                console.error(`[ServiceClient] ${serviceKey} service unavailable`);
+                console.error(`[ServiceClient] Service unavailable at ${serviceUrl}`);
                 return {
                     success: false,
                     data: null,
-                    metadata: {
-                        processingTime,
-                        serviceVersion: 'unknown',
-                        serviceKey
-                    },
+                    metadata: { processingTime, serviceVersion: 'unknown', serviceUrl },
                     error: {
                         code: 'SERVICE_UNAVAILABLE',
-                        message: `${serviceKey} service is not available at ${serviceConfig.url}`,
-                        details: { url: serviceConfig.url }
+                        message: `Service is not available at ${serviceUrl}`,
+                        details: { url: serviceUrl }
                     }
                 };
             }
 
             if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
-                console.error(`[ServiceClient] ${serviceKey} timeout`);
+                console.error(`[ServiceClient] Service timeout at ${serviceUrl}`);
                 return {
                     success: false,
                     data: null,
-                    metadata: {
-                        processingTime,
-                        serviceVersion: 'unknown',
-                        serviceKey
-                    },
+                    metadata: { processingTime, serviceVersion: 'unknown', serviceUrl },
                     error: {
                         code: 'SERVICE_TIMEOUT',
-                        message: `${serviceKey} service timed out after ${serviceConfig.timeout}ms`,
-                        details: { timeout: serviceConfig.timeout }
+                        message: `Service timed out after ${timeout}ms`,
+                        details: { timeout }
                     }
                 };
             }
         }
 
-        // Unknown error
         throw error;
     }
 }
 
 /**
- * Health check for all services
+ * Legacy function - returns error if called without serviceUrl
+ * Actions should have serviceUrl set in the database
+ * 
+ * @deprecated Use callServiceWithUrl instead
  */
-export async function checkServicesHealth(): Promise<Record<string, boolean>> {
+export async function callService(
+    actionName: string,
+    request: ServiceRequest
+): Promise<ServiceResponse> {
+    console.error(`[ServiceClient] Action "${actionName}" does not have a serviceUrl configured in the database`);
+
+    return {
+        success: false,
+        data: null,
+        metadata: {
+            processingTime: 0,
+            serviceVersion: 'unknown'
+        },
+        error: {
+            code: 'SERVICE_URL_NOT_CONFIGURED',
+            message: `Action "${actionName}" does not have a serviceUrl configured. Please update the Action in the workflow-builder database.`,
+            details: { actionName }
+        }
+    };
+}
+
+/**
+ * Check if an action has a valid service URL
+ * Actions must have serviceUrl set in the database
+ */
+export function isActionSupported(actionName: string): boolean {
+    // All actions are supported if they have serviceUrl in the database
+    // This function is kept for backward compatibility
+    console.warn(`[ServiceClient] isActionSupported is deprecated. Check action.serviceUrl instead.`);
+    return true;
+}
+
+/**
+ * List all supported actions
+ * @deprecated Actions are now loaded from the database
+ */
+export function listSupportedActions(): string[] {
+    console.warn(`[ServiceClient] listSupportedActions is deprecated. Query actions from the workflow-builder database.`);
+    return [];
+}
+
+/**
+ * Health check for a specific service URL
+ */
+export async function checkServiceHealth(serviceUrl: string): Promise<boolean> {
+    try {
+        await axios.get(`${serviceUrl}/health`, { timeout: 5000 });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Health check for multiple service URLs
+ */
+export async function checkServicesHealth(serviceUrls: string[]): Promise<Record<string, boolean>> {
     const health: Record<string, boolean> = {};
 
-    for (const [serviceKey, config] of Object.entries(SERVICES)) {
-        try {
-            await axios.get(`${config.url}/health`, { timeout: 5000 });
-            health[serviceKey] = true;
-        } catch {
-            health[serviceKey] = false;
-        }
+    for (const url of serviceUrls) {
+        health[url] = await checkServiceHealth(url);
     }
 
     return health;

@@ -4,7 +4,8 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { callService, ServiceRequest, ServiceResponse } from './service-client';
+import { callService, callServiceWithUrl, ServiceRequest, ServiceResponse } from './service-client';
+import { getActionDetails } from './action-lookup.service';
 
 const prisma = new PrismaClient();
 
@@ -14,6 +15,7 @@ interface WorkflowAction {
     name: string;
     description?: string;
     icon?: string;
+    serviceUrl?: string;  // Microservice URL from database
     configSchema?: any;
     configMeta?: any;
 }
@@ -141,6 +143,7 @@ function getNodeInput(nodeId: string, edges: WorkflowEdge[], context: ExecutionC
 /**
  * Execute a single action by calling external microservice
  * Uses the service client for standardized communication
+ * Prefers action.serviceUrl from database, falls back to name-based lookup
  */
 async function executeAction(
     node: WorkflowNode,
@@ -149,7 +152,22 @@ async function executeAction(
     workflowData: { id: string; userId: string }
 ): Promise<ServiceResponse> {
     const actionName = node.action.name;
+
+    // Fetch current serviceUrl from workflow-builder database
+    // Falls back to cached serviceUrl from published workflow if DB unavailable
+    let serviceUrl = node.action.serviceUrl;
+    const currentAction = await getActionDetails(node.actionId);
+    if (currentAction?.serviceUrl) {
+        serviceUrl = currentAction.serviceUrl;
+        console.log(`[Engine] Using current serviceUrl from DB for ${actionName}: ${serviceUrl}`);
+    } else {
+        console.log(`[Engine] Using cached serviceUrl for ${actionName}: ${serviceUrl}`);
+    }
+
     const config = node.config;
+
+    // Debug: Log the action object to see what's being passed
+    console.log(`[Engine] Action data for ${actionName}:`, JSON.stringify(node.action, null, 2));
 
     // Build standard service request
     const serviceRequest: ServiceRequest = {
@@ -171,7 +189,14 @@ async function executeAction(
         }
     };
 
-    // Call external service
+    // Call external service using serviceUrl from database if available
+    if (serviceUrl) {
+        console.log(`[Engine] Using database serviceUrl for ${actionName}: ${serviceUrl}`);
+        return callServiceWithUrl(serviceUrl, serviceRequest);
+    }
+
+    // Fallback to name-based lookup (backward compatibility)
+    console.log(`[Engine] WARNING: serviceUrl not found for ${actionName}. Re-publish the workflow to include serviceUrl from the database.`);
     return callService(actionName, serviceRequest);
 }
 
@@ -383,6 +408,13 @@ export async function executeWorkflowWithInput(
         if (!orderedNodeIds) {
             throw new Error('Workflow contains a cycle and cannot be executed');
         }
+
+        // Debug: Log the execution order
+        console.log(`[Engine] Execution order: ${orderedNodeIds.length} nodes`);
+        orderedNodeIds.forEach((nodeId, i) => {
+            const node = nodes.find(n => n.id === nodeId);
+            console.log(`  [${i}] ${node?.action?.name || 'Unknown'} (${nodeId})`);
+        });
 
         const nodeMap = new Map(nodes.map(n => [n.id, n]));
 
