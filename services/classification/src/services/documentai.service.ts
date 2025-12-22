@@ -18,7 +18,27 @@ export class DocumentAIService {
             logger.warn('Document AI credentials not fully configured');
         }
 
-        this.client = new DocumentProcessorServiceClient();
+        // Parse service account JSON from environment variable
+        const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+        if (serviceAccountJson) {
+            try {
+                const credentials = JSON.parse(serviceAccountJson);
+                this.client = new DocumentProcessorServiceClient({
+                    credentials: {
+                        client_email: credentials.client_email,
+                        private_key: credentials.private_key,
+                    },
+                    projectId: credentials.project_id || this.projectId,
+                });
+                logger.info('Document AI client initialized with service account JSON');
+            } catch (error) {
+                logger.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON', error);
+                this.client = new DocumentProcessorServiceClient();
+            }
+        } else {
+            // Fallback to default credentials (GOOGLE_APPLICATION_CREDENTIALS)
+            this.client = new DocumentProcessorServiceClient();
+        }
     }
 
     /**

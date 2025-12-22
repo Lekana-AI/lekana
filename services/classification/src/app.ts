@@ -2,6 +2,7 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import classificationRoutes from './routes/classification.routes';
+import processRoutes from './routes/process.routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { logger } from './utils/logger.util';
 
@@ -34,6 +35,7 @@ export function createApp(): Application {
 
     // API routes
     app.use('/api/classify', classificationRoutes);
+    app.use('/api/v1', processRoutes);
 
     // 404 handler
     app.use(notFoundHandler);
