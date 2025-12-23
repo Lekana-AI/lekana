@@ -1,16 +1,21 @@
 <script lang="ts">
-  import { BaseEdge, getStraightPath, type EdgeProps } from '@xyflow/svelte';
- 
-  let { id, sourceX, sourceY, targetX, targetY }: EdgeProps = $props();
- 
-  let [edgePath] = $derived(
-    getStraightPath({
-      sourceX,
-      sourceY,
-      targetX,
-      targetY,
-    })
-  );
+	import { BaseEdge, getSmoothStepPath, type EdgeProps } from '@xyflow/svelte';
+
+	let { sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, ...props }: EdgeProps =
+		$props();
+
+	const [edgePath] = $derived(
+		getSmoothStepPath({
+			sourceX,
+			sourceY,
+			sourcePosition,
+			targetX,
+			targetY,
+			targetPosition
+		})
+	);
+
+	const { markerStart, markerEnd, interactionWidth, label, labelStyle } = props;
 </script>
- 
-<BaseEdge color="" {id} path={edgePath} />
+
+<BaseEdge path={edgePath} {markerStart} {markerEnd} {interactionWidth} {label} {labelStyle} />

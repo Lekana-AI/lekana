@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { goto } from '$app/navigation';
 	import {
 		PanelLeftClose,
@@ -14,34 +14,53 @@
 		Settings2
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { SignedIn, UserButton } from 'svelte-clerk';
 
-	let { userName, onSettings, activeWorkflow } = $props();
+	let {
+		userName,
+		activeWorkflow,
+		activeWorkflowName
+	}: { userName: string; activeWorkflow: string; activeWorkflowName?: string } = $props();
+
+	$effect(() => {
+		if (activeWorkflowName && workflows.length > 0) {
+			const index = workflows.findIndex((w: any) => w.id === activeWorkflow);
+			if (index !== -1 && workflows[index].name !== activeWorkflowName) {
+				workflows[index].name = activeWorkflowName;
+			}
+		}
+	});
 
 	let workflowsCollapsed = $state(false);
 	let panelCollapsed = $state(false);
-	let openMenuId = $state(null);
-	let workflows = $state([]);
+	let openMenuId = $state<string | null>(null);
+	let workflows = $state<any[]>([]);
+	let workflowsLoading = $state(false);
 
 	onMount(() => {
 		loadWorkflows();
 	});
 
 	async function loadWorkflows() {
-		const res = await fetch('/api/workflows', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
+		workflowsLoading = true;
+		try {
+			const res = await fetch('/api/workflows', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				throw new Error(`Failed to load workflows: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-
-			throw new Error(`Failed to load workflows: ${res.status}`);
+			workflows = await res.json();
+		} catch (error) {
+			console.error('Failed to load workflows:', error);
+		} finally {
+			workflowsLoading = false;
 		}
-
-		workflows = await res.json();
 	}
 
 	async function createWorkflow() {
@@ -118,7 +137,23 @@
 				</h2>
 			</div>
 		</button>
-		{#if workflows.length > 0}
+		{#if workflowsLoading}
+			<section class="flex h-full w-full flex-col gap-3 px-1">
+				<div class="flex items-center gap-2 p-1">
+					<div class="h-6 w-6 animate-pulse rounded-md bg-white/5"></div>
+					<div
+						class="h-4 w-20 animate-pulse rounded-md bg-white/5 {panelCollapsed ? 'hidden' : ''}"
+					></div>
+				</div>
+				{#if !panelCollapsed}
+					<div class="flex flex-col gap-1">
+						{#each Array(3) as _}
+							<div class="h-10 w-full animate-pulse rounded-lg bg-white/5"></div>
+						{/each}
+					</div>
+				{/if}
+			</section>
+		{:else if workflows.length > 0}
 			<section class="flex h-full w-full flex-col gap-3 px-1">
 				<!-- New Workflow button -->
 				<button
@@ -189,15 +224,15 @@
 									<div
 										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 									>
-										<button
-											onclick={() => onSettings?.(workflow.id)}
+										<a
+											href="/w/{workflow.id}/settings"
 											type="button"
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
 										>
 											<Settings2 class="h-4 w-4" />
 
 											Workflow Settings
-										</button>
+										</a>
 
 										<button
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
@@ -207,7 +242,7 @@
 
 											Duplicate Workflow
 										</button>
-
+<!-- 
 										<button
 											class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
 											onclick={() => console.log('Delete', workflow.id)}
@@ -215,7 +250,7 @@
 											<Trash class="h-4 w-4" />
 
 											Delete Workflow
-										</button>
+										</button> -->
 									</div>
 								{/if}
 							</div>
@@ -228,11 +263,13 @@
 
 	<!-- Bottom welcome strip -->
 	<footer
-		class="flex w-full items-center gap-2 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
+		class="flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
 			? 'justify-center  py-2'
 			: 'p-2'} "
 	>
-		<CircleUser class="h-5 w-5" />
+		<SignedIn>
+			<UserButton />
+		</SignedIn>
 		<p class="flex truncate text-xs {panelCollapsed ? 'hidden' : ''}">
 			Welcome<span class="font-medium">, {userName}</span>
 		</p>

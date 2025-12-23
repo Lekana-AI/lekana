@@ -1,13 +1,6 @@
 <script lang="ts">
 	import { icons } from '$lib/icon';
-	import {
-		Search,
-		Sparkles,
-		ArrowRightToLine,
-		Plus,
-		ArrowUp,
-		LayoutGrid
-	} from 'lucide-svelte';
+	import { Search, Sparkles, ArrowRightToLine, Plus, ArrowUp, LayoutGrid } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
 	let { onAction } = $props();
@@ -16,6 +9,7 @@
 	let activeTab = $state<'actions' | 'assistant'>('actions');
 	let actionSections = $state([]);
 	let prompt = $state('');
+	let actionsLoading = $state(false);
 
 	const assistantQuickActions = [
 		'Summarize Documents',
@@ -28,21 +22,25 @@
 	});
 
 	async function loadActions() {
-		const res = await fetch('/api/categories/with-actions', {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
+		try {
+			actionsLoading = true;
+			const res = await fetch('/api/categories/with-actions', {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				throw new Error(`Failed to load actions: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-
-			throw new Error(`Failed to load actions: ${res.status}`);
+			actionSections = await res.json();
+		} catch (error) {
+			console.error('Failed to load actions:', error);
+		} finally {
+			actionsLoading = false;
 		}
-
-		actionSections = await res.json();
 	}
 </script>
 
@@ -114,34 +112,53 @@
 				<div
 					class="dark-scroll mb-14 flex h-full w-full flex-col items-start justify-start gap-3 overflow-y-auto rounded-xl px-3"
 				>
-					{#each actionSections as section}
-						<section class="flex w-full flex-col gap-2">
-							<div class="inline-flex w-full items-center justify-between pt-1.5">
-								<h2 class="text-xs font-semibold text-zinc-300">
-									{section.category}
-								</h2>
-							</div>
-
-							{#each section.actions as item}
-								{@const Icon = icons[item.icon]}
-								<button
-									onclick={(() => onAction?.(item.id))}
-									type="button"
-									class="border-white/50/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition hover:bg-white/10"
-								>
-									<span class="flex items-center justify-center rounded-full bg-green-700 p-2">
-										<!-- <item.icon class="h-3 w-3 text-white" /> -->
-										<Icon class="h-3 w-3 text-white" />
-										<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
-									</span>
-									<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
-										{item.label}
-									</span>
-									<Plus class="ml-auto h-3 w-3 text-white" />
-								</button>
+					{#if actionsLoading}
+						<div class="flex w-full flex-col gap-4">
+							{#each Array(2) as _}
+								<div class="flex w-full flex-col gap-2">
+									<div class="h-3 w-20 animate-pulse rounded bg-white/5 pt-1.5"></div>
+									{#each Array(3) as _}
+										<div
+											class="flex w-full items-center gap-4 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+										>
+											<div class="h-7 w-7 animate-pulse rounded-full bg-white/5"></div>
+											<div class="h-4 w-24 animate-pulse rounded bg-white/5"></div>
+											<div class="ml-auto h-3 w-3 animate-pulse rounded bg-white/5"></div>
+										</div>
+									{/each}
+								</div>
 							{/each}
-						</section>
-					{/each}
+						</div>
+					{:else}
+						{#each actionSections as section}
+							<section class="flex w-full flex-col gap-2">
+								<div class="inline-flex w-full items-center justify-between pt-1.5">
+									<h2 class="text-xs font-semibold text-zinc-300">
+										{section.category}
+									</h2>
+								</div>
+
+								{#each section.actions as item}
+									{@const Icon = icons[item.icon]}
+									<button
+										onclick={() => onAction?.(item.id)}
+										type="button"
+										class="border-white/50/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition hover:bg-white/10"
+									>
+										<span class="flex items-center justify-center rounded-full bg-green-700 p-2">
+											<!-- <item.icon class="h-3 w-3 text-white" /> -->
+											<Icon class="h-3 w-3 text-white" />
+											<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
+										</span>
+										<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
+											{item.label}
+										</span>
+										<Plus class="ml-auto h-3 w-3 text-white" />
+									</button>
+								{/each}
+							</section>
+						{/each}
+					{/if}
 				</div>
 			{:else}
 				<!-- ASSISTANT VIEW -->

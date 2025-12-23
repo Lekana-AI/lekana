@@ -7,109 +7,120 @@
 	import { goto } from '$app/navigation';
 	import type { User } from 'svelte-clerk/server';
 	import { onMount } from 'svelte';
+	import { Settings2 } from 'lucide-svelte';
+	import { confirmStore } from '$lib/confirm.svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	let { data } = $props();
 
-	const workflow = data?.workflow;
+	let workflow = $state(data?.workflow);
+	// console.log(workflow);
 
 	const user: User = data?.user;
 
-	type Template = {
-		id: number;
-		name: string;
-	};
-
-	const templates: Template[] = [
-		{
-			id: 1,
-			name: 'Start from scratch'
-		},
-		{
-			id: 2,
-			name: 'Summarisation'
-		},
-		{
-			id: 3,
-			name: 'Connect to API'
-		},
-		{
-			id: 4,
-			name: 'Classify'
-		}
-	];
-
 	let propertiesVisible = $state(false);
-	let settingsVisible = $state(false);
 	let actionId: string = $state('');
-
 	let open = $state(false);
-	let selectedScreen = $state('Workflow Designer');
-	let nodes = $state.raw(workflow.nodes);
-	let edges = $state.raw(workflow.edges);
+	let nodes = $state.raw([]);
+	let edges = $state.raw([]);
 
-	const screens = ['Workflow Designer', 'Workflow Settings', 'Workflow Insights'];
+	let reloading = $state(false);
 
-	// const actionSections: {
-	// 	category: string;
-	// 	action: { label: string; icon: IconComponent }[];
-	// }[] = [
-	// 	{
-	// 		category: 'Input & Pre-Processing',
-	// 		action: [
-	// 			{ label: 'Upload files', icon: CloudUpload },
-	// 			{ label: 'Classification', icon: ListChecks },
-	// 			{ label: 'Segmentation', icon: Grid3x3 },
-	// 			{ label: 'OCR', icon: ScanText }
-	// 		]
-	// 	},
-	// 	{
-	// 		category: 'Data Quality & Validation',
-	// 		action: [
-	// 			{ label: 'Validation', icon: ShieldCheck },
-	// 			{ label: 'De-duplication', icon: CopyCheck }
-	// 		]
-	// 	},
-	// 	{
-	// 		category: 'Human Review',
-	// 		action: [
-	// 			{ label: 'Human Review OCR', icon: UserCheck },
-	// 			{ label: 'Human Review Classification', icon: UserCheck },
-	// 			{ label: 'Human Review Segments', icon: UserCheck }
-	// 		]
-	// 	},
-	// 	{
-	// 		category: 'Storage & Integrations',
-	// 		action: [
-	// 			{ label: 'Database', icon: Database },
-	// 			{ label: 'Export to ERP, CRM, DMS', icon: Share2 },
-	// 			{ label: 'Webhook / API', icon: Webhook },
-	// 			{ label: 'Email Notification / API', icon: Mail },
-	// 			{ label: 'Google Sheets', icon: FileSpreadsheet }
-	// 		]
-	// 	},
-	// 	{
-	// 		category: 'Understanding & Structuring',
-	// 		action: [
-	// 			{ label: 'Summarization', icon: FileText },
-	// 			{ label: 'Generate Document', icon: FileOutput }
-	// 		]
-	// 	},
-	// 	{
-	// 		category: 'Logic & Computation',
-	// 		action: [{ label: 'Arithmetic Operations', icon: Calculator }]
-	// 	}
-	// ];
+	async function reloadWorkflow() {
+		reloading = true;
+		const res = await fetch(`/api/workflows/${workflow.id}`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
 
-	nodes = [
-		{
-			id: '1',
-			position: { x: 100, y: 100 },
-			data: { label: 'Upload files' }
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+			throw new Error(`Failed to load workflow: ${res.status}`);
 		}
-	];
 
-	edges = [];
-	// edges = [{ id: 'e1-2', source: '1', target: '2', type: 'smoothstep' }];
+		workflow = await res.json();
+		initFlow();
+		reloading = false;
+	}
+
+	function initFlow() {
+		nodes = workflow.nodes.map((node: any) => ({
+			id: node.id,
+			type: 'activeAction',
+			position: { x: node.positionX, y: node.positionY },
+			data: {
+				label: node.config.stepName,
+				onClick: (value: any) => ((propertiesVisible = true), (actionId = value.id)),
+				onDelete: (value: any) => deleteNode(value.id),
+				...node
+			}
+		}));
+
+		edges = workflow.edges.map((edge: any) => ({
+			id: edge.id,
+			source: edge.sourceNodeId,
+			target: edge.targetNodeId,
+			type: 'smoothstep'
+		}));
+	}
+
+	async function deleteNode(id: string) {
+		const confirmed = await confirmStore.confirm(
+			'Are you sure you want to delete this action?',
+			'Delete Action'
+		);
+		if (!confirmed) return;
+
+		const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+			toast.error('Failed to delete action');
+			throw new Error(`Failed to delete node: ${res.status}`);
+		}
+
+		toast.success('Action deleted');
+		reloadWorkflow();
+	}
+
+	onMount(() => {
+		initFlow();
+	});
+
+	let workflowName = $derived(workflow.name);
+	let wName = $derived(workflow.name);
+
+	async function updateName() {
+		if (!workflowName || workflowName === workflow.name) {
+			workflowName = workflow.name;
+			return;
+		}
+
+		workflow.name = workflowName;
+		const res = await fetch(`/api/workflows/${workflow.id}`, {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ name: workflowName })
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+
+			throw new Error(`Failed to create workflow: ${res.status}`);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -123,83 +134,43 @@
 
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
 	{#if propertiesVisible}
-		<ActionProperties {actionId} onClose={() => (propertiesVisible = false)} />
+		<ActionProperties
+			{actionId}
+			onClose={() => (propertiesVisible = false)}
+			onSubmit={async () => {
+				await reloadWorkflow();
+			}}
+			workflowId={workflow.id}
+		/>
 	{/if}
 	<SidePanel
-		activeWorkflow={workflow.id}
-		userName={user.firstName}
-		onSettings={(value: string) => goto(`/w/${value}/settings`)}
+		activeWorkflow={workflow.id ?? ''}
+		userName={user.firstName ?? 'User'}
+		activeWorkflowName={wName}
 	/>
 	<div class="relative flex h-screen w-full justify-center gap-4 overflow-clip bg-zinc-950 p-4">
 		<div
 			class="absolute top-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 		></div>
 		<section class="z-10 flex h-full w-full flex-col gap-4">
-			<div class="mt-2 flex w-fit flex-col gap-2 rounded-lg px-3">
-				<input
-					class="text-l truncate rounded font-semibold text-zinc-300 outline outline-white/0 focus:px-2 focus:outline-white/50"
-					value={workflow?.name}
-				/>
-			</div>
-
-			<!-- <div class="relative w-fit">
-								<div class="flex items-center gap-4 rounded-md bg-white/10 p-1 px-2 text-gray-300">
-									<p class="text-xs font-medium tracking-wide">{selectedScreen}</p>
-			
-									<button
-										type="button"
-										on:click|stopPropagation={() => (open = !open)}
-										class="flex items-center justify-center rounded-sm p-1 transition-colors duration-300 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none"
-										aria-haspopup="true"
-										aria-expanded={open}
-									>
-										<ChevronDown
-											class="h-4 w-4 transition-transform duration-300 ease-in {open
-												? 'rotate-0'
-												: 'rotate-180'}"
-										/>
-									</button>
-								</div>
-			
-								{#if open}
-									<div
-										class="absolute left-0 z-50 mt-2 min-w-[180px] overflow-hidden rounded-md border border-white/10 bg-zinc-900 shadow-lg"
-									>
-										{#each screens as screen}
-											<button
-												class="block w-full p-3 text-left text-xs {selectedScreen == screen
-													? 'font-semibold  text-gray-100'
-													: 'text-gray-200  hover:bg-white/10'}"
-												on:click={() => {
-													selectedScreen = screen;
-													open = false;
-												}}
-											>
-												{screen}
-											</button>
-										{/each}
-									</div>
-								{/if}
-							</div> -->
-			<div class="flex gap-2">
-				{#each screens as screen}
-					<button
-						class="block rounded-md p-2 px-3 text-left text-xs {selectedScreen == screen
-							? 'bg-zinc-800 text-gray-100'
-							: 'bg-zinc-900 text-gray-200'}"
-						on:click={() => {
-							selectedScreen = screen;
-							open = false;
-						}}
-					>
-						{screen}
-					</button>
-				{/each}
+			<div class="mt-2 flex w-fit items-center gap-2">
+				<a href="/w/{workflow.id}/settings" class="rounded-lg p-3 text-white hover:bg-white/10">
+					<Settings2 class="h-5 w-5" />
+				</a>
+				<div class="flex w-fit flex-col rounded-xl">
+					<input
+						onblur={() => updateName()}
+						class="truncate rounded-lg text-lg font-semibold text-zinc-300 outline outline-white/0 focus:p-2 focus:outline-white/50"
+						bind:value={workflowName}
+					/>
+				</div>
 			</div>
 			<FlowCanvas
 				{nodes}
 				{edges}
 				onNodeClick={(value: string) => ((propertiesVisible = true), (actionId = value))}
+				workflowId={workflow.id}
+				{reloading}
 			/>
 		</section>
 		<Menu onAction={(value: string) => ((propertiesVisible = true), (actionId = value))} />

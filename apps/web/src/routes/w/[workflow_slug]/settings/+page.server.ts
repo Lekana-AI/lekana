@@ -1,18 +1,38 @@
-import { redirect } from '@sveltejs/kit';
+// +page.server.ts
+import { redirect, error } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
 import { clerkClient } from 'svelte-clerk/server';
 
-export const load = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, params, fetch }) => {
+    // auth
     const { userId } = locals.auth();
-
-    // Protect the route by checking if the user is signed in
     if (!userId) {
-        return redirect(307, '/login');
+        throw redirect(307, '/login');
     }
 
-    // Get the user's full `Backend User` object
+    const slug = params.workflow_slug;
+    if (!slug) {
+        throw error(400, 'Missing workflow slug');
+    }
+
     const user = await clerkClient.users.getUser(userId);
 
+    const res = await fetch(`/api/workflows/${slug}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+
+    if (!res.ok) {
+        throw error(400, 'Workflow not found');
+    }
+
+    const workflow = await res.json();
+
+
     return {
-        user: JSON.parse(JSON.stringify(user))
+        user: JSON.parse(JSON.stringify(user)),
+        workflow
     };
 };

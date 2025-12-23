@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Handle, Position, type NodeProps } from '@xyflow/svelte';
+	import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/svelte';
 
 	import {
 		CloudUpload,
@@ -16,7 +16,15 @@
 		FileSpreadsheet,
 		FileText,
 		FileOutput,
-		Calculator
+		Calculator,
+		Trash2,
+		Ellipsis,
+		Settings2,
+		CopyPlus,
+		Trash,
+		Edit,
+		Copy,
+		Settings
 	} from 'lucide-svelte';
 
 	let { id, data }: NodeProps = $props();
@@ -43,16 +51,68 @@
 		'Arithmetic Operations': Calculator
 	};
 
+	let menuOpen = $state(false);
+
 	const Icon = iconMap[data.label] ?? CloudUpload;
+
+	
 </script>
 
+<NodeToolbar align="end" offset="0">
+	<div class="relative flex w-full justify-end">
+		<button
+			onclick={() => (menuOpen = !menuOpen)}
+			class="rounded-lg p-2 text-white hover:bg-white/10"
+		>
+			<Ellipsis class="h-4 w-4" />
+		</button>
+		<!-- DROPDOWN MENU -->
+		<!-- {#if menuOpen}
+			<div
+				class="absolute top-0 left-full z-30 min-w-full rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+			>
+				<button
+					type="button"
+					class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+				>
+					<Settings class="h-4 w-4" />
+
+					Configure
+				</button>
+
+				<button
+					class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+					onclick={() => console.log('Duplicate', id)}
+				>
+					<Copy class="h-4 w-4" />
+
+					Copy
+				</button>
+
+				<button
+					class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
+					onclick={() => data.onDelete?.({ id, ...data })}
+				>
+					<Trash class="h-4 w-4" />
+
+					Delete
+				</button>
+			</div>
+		{/if} -->
+	</div>
+</NodeToolbar>
+
+
 <button
+	oncontextmenu={(e) => {
+		e.preventDefault();
+		menuOpen = true;
+	}}
+	onblur={() => (menuOpen = false)}
 	ondblclick={() => data.onClick?.({ id, ...data })}
 	class="inline-flex w-full items-center justify-start gap-4 rounded-lg border border-white/50 bg-white/5 px-3 py-2 backdrop-blur transition-colors duration-300 hover:bg-white/10"
 >
-	<span
-		class="flex items-center justify-center rounded-full bg-green-700 p-1"
-	>
+	<span class="flex items-center justify-center rounded-full bg-green-700 p-1">
 		<Icon class="h-2 w-2 text-white" />
 	</span>
 

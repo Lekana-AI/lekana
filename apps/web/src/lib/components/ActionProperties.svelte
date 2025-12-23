@@ -4,7 +4,7 @@
 	import Input from './Input.svelte';
 	import { onMount } from 'svelte';
 
-	let { onClose, actionId } = $props();
+	let { onClose, onSubmit, actionId, workflowId } = $props();
 
 	// use step + fields as state; no separate name/description/icon
 	let step = $state(null);
@@ -37,13 +37,36 @@
 		fields = step.uiSchema.fields;
 	}
 
-	function formSubmit() {
+	async function formSubmit() {
 		const result = fields.reduce((acc, field) => {
 			acc[field.name] = field.value;
 			return acc;
 		}, {});
 
-		console.log(result);
+		// console.log(result);
+
+		const res = await fetch(`/api/workflows/${workflowId}/nodes`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				actionId: actionId,
+				positionX: 50,
+				positionY: 150,
+				result
+			})
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Failed to create node:', errorText);
+
+			throw new Error(`Failed to create node: ${res.status}`);
+		}
+
+		onSubmit();
+		onClose();
 	}
 </script>
 
@@ -51,10 +74,10 @@
 	class="absolute inset-0 z-40 flex min-h-screen w-screen items-center justify-center overflow-clip bg-black/40 px-4 py-10 backdrop-blur-xs"
 >
 	<div class="z-10 flex h-full flex-col justify-center gap-8">
-		<div class="h-full max-h-4/5 w-xl rounded-2xl bg-zinc-900 shadow-2xl p-3">
-			<div class="dark-scroll h-full overflow-y-auto p-3">
+		<div class="max-h-4/5 w-xl rounded-2xl bg-zinc-900 p-3 shadow-2xl">
+			<div class="dark-scroll relative h-full overflow-y-auto px-3">
 				<!-- Header -->
-				<div class="flex w-full justify-end">
+				<div class="sticky top-0 right-0 z-10 flex w-full justify-end bg-zinc-900 pt-3">
 					<button
 						onclick={() => onClose?.(false)}
 						class="p-2 text-white/60 transition-colors duration-300 hover:text-white/80"
@@ -81,13 +104,13 @@
 					<div class="space-y-6 py-2">
 						{#each fields as fieldData}
 							<Input onInput {fieldData} />
-							<pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
+							<!-- <pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
 									fieldData
-								)}</pre>
+								)}</pre> -->
 						{/each}
 					</div>
 
-					<div class="mt-7 flex items-center justify-end">
+					<div class="mt-7 flex items-center justify-end pb-6">
 						<button
 							type="button"
 							onclick={formSubmit}
@@ -98,10 +121,29 @@
 						</button>
 					</div>
 				{:else}
-					<div class="flex w-full items-center justify-center py-10">
-						<div
-							class="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"
-						></div>
+					<div class="flex animate-pulse flex-col gap-2 pb-4">
+						<div class="h-3 w-16 rounded bg-white/5"></div>
+						<div class="flex items-center gap-2">
+							<div class="h-8 w-8 rounded bg-white/5"></div>
+							<div class="h-8 w-48 rounded bg-white/5"></div>
+						</div>
+						<div class="mt-2 space-y-2">
+							<div class="h-3 w-full rounded bg-white/5"></div>
+							<div class="h-3 w-5/6 rounded bg-white/5"></div>
+						</div>
+					</div>
+
+					<div class="space-y-6 py-2">
+						{#each Array(3) as _}
+							<div class="space-y-2">
+								<div class="h-3 w-20 rounded bg-white/5"></div>
+								<div class="h-10 w-full rounded-md bg-white/5"></div>
+							</div>
+						{/each}
+					</div>
+
+					<div class="mt-7 flex items-center justify-end pb-6">
+						<div class="h-9 w-40 rounded-md bg-white/5"></div>
 					</div>
 				{/if}
 			</div>
