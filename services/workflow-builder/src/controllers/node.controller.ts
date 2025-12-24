@@ -52,6 +52,9 @@ export const addNode = async (req: Request, res: Response) => {
             }
         });
 
+        // Auto-sync workflow fields for actions that produce output fields
+        await syncWorkflowFields(workflowId, node.id, node.action.name, mergedConfig as Record<string, any>);
+
         res.status(201).json(node);
     } catch (error) {
         console.error('Error adding node:', error);
