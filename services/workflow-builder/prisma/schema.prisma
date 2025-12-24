@@ -24,6 +24,7 @@ model Workflow {
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   edges     WorkflowEdge[]
   nodes     WorkflowNode[]
+  fields    WorkflowField[]
 
   @@index([userId])
 }
@@ -39,6 +40,7 @@ model WorkflowNode {
   incoming   WorkflowEdge[] @relation("TargetEdges")
   action     Action         @relation(fields: [actionId], references: [id])
   workflow   Workflow       @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  fields     WorkflowField[]
 
   @@index([workflowId])
   @@index([actionId])
@@ -71,10 +73,29 @@ model Action {
   categoryId    String
   inputType     String?        // Input data type: "file", "json", "text", "any", null (start node)
   outputType    String         // Output data type: "file", "json", "text"
+  serviceUrl    String?        // Microservice URL: "http://localhost:4002" - used by runtime
   configSchema  Json           // Default values: { stepName: "API Call", method: "GET" }
   configMeta    Json?          // Field metadata: { stepName: { type: "text", label: "Step Name" } }
   category      ActionCategory @relation(fields: [categoryId], references: [id])
   workflowNodes WorkflowNode[]
 
   @@index([categoryId])
+}
+
+// Global registry of fields available in a workflow
+// Auto-populated when nodes (like OCR) are configured with output fields
+model WorkflowField {
+  id           String       @id @default(uuid())
+  workflowId   String
+  sourceNodeId String
+  fieldName    String       // e.g., "invoice_no"
+  fieldPath    String       // Full path: "documents[].result.invoice_no"
+  fieldType    String?      // "string", "number", "boolean", "object"
+  createdAt    DateTime     @default(now())
+
+  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  sourceNode   WorkflowNode @relation(fields: [sourceNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, sourceNodeId, fieldName])
+  @@index([workflowId])
 }

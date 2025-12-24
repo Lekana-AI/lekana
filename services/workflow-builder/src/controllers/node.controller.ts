@@ -178,12 +178,59 @@ export const updateNode = async (req: Request, res: Response) => {
             }
         });
 
+        // Auto-sync workflow fields for actions that produce output fields
+        await syncWorkflowFields(workflowId, nodeId, updatedNode.action.name, updatedNode.config as Record<string, any>);
+
         res.json(updatedNode);
     } catch (error) {
         console.error('Error updating node:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * Sync workflow fields when a node's config changes
+ * This auto-populates WorkflowField table based on node's output fields
+ */
+async function syncWorkflowFields(
+    workflowId: string,
+    nodeId: string,
+    actionName: string,
+    config: Record<string, any>
+) {
+    // Define which actions produce fields and how to extract them
+    const fieldProducers: Record<string, { configKey: string; pathTemplate: string }> = {
+        'OCR': { configKey: 'extractFields', pathTemplate: 'documents[].result.{field}' },
+        // Add more actions here as needed
+    };
+
+    const producer = fieldProducers[actionName];
+    if (!producer) return; // This action doesn't produce fields
+
+    const fields = config[producer.configKey];
+    if (!Array.isArray(fields)) return;
+
+    // Clear old fields from this node
+    await prisma.workflowField.deleteMany({
+        where: { sourceNodeId: nodeId }
+    });
+
+    // Insert new fields
+    for (const fieldName of fields) {
+        if (typeof fieldName !== 'string') continue;
+
+        await prisma.workflowField.create({
+            data: {
+                workflowId,
+                sourceNodeId: nodeId,
+                fieldName,
+                fieldPath: producer.pathTemplate.replace('{field}', fieldName)
+            }
+        });
+    }
+
+    console.log(`[WorkflowFields] Synced ${fields.length} fields for ${actionName} node ${nodeId}`);
+}
 
 /**
  * Delete a node

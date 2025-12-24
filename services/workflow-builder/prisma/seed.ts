@@ -33,6 +33,7 @@ async function main() {
             icon: 'CloudUpload',
             inputType: null,  // Start node - no input
             outputType: 'file',
+            serviceUrl: 'http://localhost:4001',
             configSchema: {
                 stepName: 'Invoice Upload',
                 bulkUpload: false,
@@ -68,6 +69,7 @@ async function main() {
             categoryId: documentProcessingCategory.id,
             inputType: null,  // Start node - no input
             outputType: 'file',
+            serviceUrl: 'http://localhost:4001',
             configSchema: {
                 stepName: 'Invoice Upload',
                 bulkUpload: false,
@@ -105,6 +107,7 @@ async function main() {
             icon: 'ShieldCheck',
             inputType: 'json',
             outputType: 'json',
+            serviceUrl: 'http://localhost:4005',
             configSchema: {
                 stepName: 'Data Validation',
                 validationRules: ''
@@ -121,6 +124,7 @@ async function main() {
             categoryId: dataOperationsCategory.id,
             inputType: 'json',
             outputType: 'json',
+            serviceUrl: 'http://localhost:4005',
             configSchema: {
                 stepName: 'Data Validation',
                 validationRules: ''
