@@ -4,26 +4,37 @@
  */
 
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
 
 const prisma = new PrismaClient();
 
+// Type for workflow fetched from workflow-builder
+interface WorkflowData {
+    id: string;
+    name: string;
+    nodes: any[];
+    edges: any[];
+    extractedFields?: string[];
+    [key: string]: any;
+}
+
 /**
  * POST /api/v1/publish
- * Publish a workflow - stores definition and generates API key
+ * Publish a workflow - fetches from workflow-builder and stores definition with API key
  */
 export const publishWorkflow = async (req: Request, res: Response) => {
     try {
-        const workflow = req.body;
+        const { workflowId } = req.body;
         const userId = req.auth?.sub;
+        const authHeader = req.headers.authorization;
 
         // Validate required fields
-        if (!workflow.id || !workflow.name || !workflow.nodes || !workflow.edges) {
+        if (!workflowId) {
             return res.status(400).json({
-                error: 'Invalid workflow data',
-                message: 'Workflow must have id, name, nodes, and edges'
+                error: 'Invalid request',
+                message: 'workflowId is required'
             });
         }
 
@@ -34,7 +45,36 @@ export const publishWorkflow = async (req: Request, res: Response) => {
             });
         }
 
-        console.log(`Publishing workflow: ${workflow.name} (${workflow.id}) for user ${userId}`);
+        if (!authHeader) {
+            return res.status(401).json({
+                error: 'Unauthorized',
+                message: 'Authorization header is required'
+            });
+        }
+
+        // Fetch workflow from workflow-builder with JWT passthrough
+        const workflowApiUrl = process.env.WORKFLOW_API || 'http://localhost:3001';
+        console.log(`[Publish] Fetching workflow ${workflowId} from ${workflowApiUrl}`);
+
+        const response = await fetch(`${workflowApiUrl}/workflows/${workflowId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': authHeader, // Forward user's JWT token
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({})) as { error?: string };
+            console.error(`[Publish] Failed to fetch workflow: ${response.status}`, errorData);
+            return res.status(response.status).json({
+                error: 'Failed to fetch workflow',
+                message: errorData.error || `Workflow not found or access denied (${response.status})`
+            });
+        }
+
+        const workflow = await response.json() as WorkflowData;
+        console.log(`[Publish] Publishing workflow: ${workflow.name} (${workflow.id}) for user ${userId}`);
 
         // Check if workflow already published
         const existingPublished = await prisma.publishedWorkflow.findUnique({
@@ -48,7 +88,7 @@ export const publishWorkflow = async (req: Request, res: Response) => {
                 where: { id: existingPublished.id },
                 data: {
                     name: workflow.name,
-                    definition: workflow,
+                    definition: workflow as Prisma.InputJsonValue,
                     isActive: true
                 },
                 include: { apiKeys: { where: { isActive: true } } }
@@ -60,6 +100,7 @@ export const publishWorkflow = async (req: Request, res: Response) => {
                 publishedWorkflowId: updated.id,
                 workflowId: workflow.id,
                 workflowName: workflow.name,
+                extractedFields: workflow.extractedFields || [],
                 apiKeys: updated.apiKeys.map(k => ({
                     id: k.id,
                     name: k.name,
@@ -78,7 +119,7 @@ export const publishWorkflow = async (req: Request, res: Response) => {
                 workflowId: workflow.id,
                 userId,
                 name: workflow.name,
-                definition: workflow,
+                definition: workflow as Prisma.InputJsonValue,
                 apiKeys: {
                     create: {
                         key: hash,
@@ -96,6 +137,7 @@ export const publishWorkflow = async (req: Request, res: Response) => {
             publishedWorkflowId: published.id,
             workflowId: workflow.id,
             workflowName: workflow.name,
+            extractedFields: workflow.extractedFields || [],
             apiKey: {
                 key, // Only returned on creation - user must save this!
                 name: 'Default',
