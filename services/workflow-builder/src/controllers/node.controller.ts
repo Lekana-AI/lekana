@@ -53,6 +53,7 @@ export const addNode = async (req: Request, res: Response) => {
         });
 
         // Auto-sync workflow fields for actions that produce output fields
+        console.log(`[addNode] About to call syncWorkflowFields for action: ${node.action.name}`);
         await syncWorkflowFields(workflowId, node.id, node.action.name, mergedConfig as Record<string, any>);
 
         res.status(201).json(node);
@@ -182,6 +183,7 @@ export const updateNode = async (req: Request, res: Response) => {
         });
 
         // Auto-sync workflow fields for actions that produce output fields
+        console.log(`[updateNode] About to call syncWorkflowFields for action: ${updatedNode.action.name}`);
         await syncWorkflowFields(workflowId, nodeId, updatedNode.action.name, updatedNode.config as Record<string, any>);
 
         res.json(updatedNode);
@@ -201,6 +203,12 @@ async function syncWorkflowFields(
     actionName: string,
     config: Record<string, any>
 ) {
+    console.log(`[WorkflowFields] syncWorkflowFields called:`);
+    console.log(`  - workflowId: ${workflowId}`);
+    console.log(`  - nodeId: ${nodeId}`);
+    console.log(`  - actionName: ${actionName}`);
+    console.log(`  - config:`, JSON.stringify(config, null, 2));
+
     // Define which actions produce fields and how to extract them
     const fieldProducers: Record<string, { configKey: string; pathTemplate: string }> = {
         'OCR': { configKey: 'extractFields', pathTemplate: 'documents[].result.{field}' },
@@ -208,31 +216,62 @@ async function syncWorkflowFields(
     };
 
     const producer = fieldProducers[actionName];
-    if (!producer) return; // This action doesn't produce fields
+    if (!producer) {
+        console.log(`[WorkflowFields] Action "${actionName}" is not a field producer, skipping`);
+        return;
+    }
+
+    console.log(`[WorkflowFields] Found producer for "${actionName}": configKey="${producer.configKey}"`);
 
     const fields = config[producer.configKey];
-    if (!Array.isArray(fields)) return;
+    console.log(`[WorkflowFields] Fields from config[${producer.configKey}]:`, fields);
+
+    if (!Array.isArray(fields)) {
+        console.log(`[WorkflowFields] "${producer.configKey}" is not an array, skipping. Type: ${typeof fields}`);
+        return;
+    }
+
+    if (fields.length === 0) {
+        console.log(`[WorkflowFields] "${producer.configKey}" is empty, skipping`);
+        return;
+    }
 
     // Clear old fields from this node
-    await prisma.workflowField.deleteMany({
+    console.log(`[WorkflowFields] Deleting old fields for node ${nodeId}...`);
+    const deleteResult = await prisma.workflowField.deleteMany({
         where: { sourceNodeId: nodeId }
     });
+    console.log(`[WorkflowFields] Deleted ${deleteResult.count} old fields`);
 
-    // Insert new fields
-    for (const fieldName of fields) {
-        if (typeof fieldName !== 'string') continue;
+    // Insert new fields - supports both string[] and {fieldName, fieldPrompt}[] formats
+    console.log(`[WorkflowFields] Inserting ${fields.length} new fields...`);
+    for (const field of fields) {
+        let fieldName: string;
+
+        // Handle old format (string), new format ({fieldName, fieldPrompt}), and keyValue UI ({key, value})
+        if (typeof field === 'string') {
+            fieldName = field;
+        } else if (typeof field === 'object' && field !== null && (field.fieldName || field.key)) {
+            fieldName = field.fieldName || field.key;
+        } else {
+            console.log(`[WorkflowFields] Skipping invalid field:`, field);
+            continue;
+        }
+
+        const fieldPath = producer.pathTemplate.replace('{field}', fieldName);
+        console.log(`[WorkflowFields] Creating field: ${fieldName} -> ${fieldPath}`);
 
         await prisma.workflowField.create({
             data: {
                 workflowId,
                 sourceNodeId: nodeId,
                 fieldName,
-                fieldPath: producer.pathTemplate.replace('{field}', fieldName)
+                fieldPath
             }
         });
     }
 
-    console.log(`[WorkflowFields] Synced ${fields.length} fields for ${actionName} node ${nodeId}`);
+    console.log(`[WorkflowFields] ✅ Synced ${fields.length} fields for ${actionName} node ${nodeId}`);
 }
 
 /**
