@@ -93,6 +93,17 @@
 		}
 	}
 
+	function handleReconnect(oldEdge: Edge | Connection, newConnection: Connection) {
+		if ((oldEdge as Edge).id && !(oldEdge as Edge).id.startsWith('edge-')) {
+			fetch(`/api/workflows/${workflowId}/edges/${(oldEdge as Edge).id}`, {
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' }
+			}).catch((e: any) => console.error('Failed to delete old edge during reconnect', e));
+		}
+		edges = edges.filter((e) => e.id !== (oldEdge as Edge).id);
+		updateEdge(newConnection);
+	}
+
 	let showMiniMap = $state(false);
 
 	let menu: {
@@ -139,6 +150,22 @@
 		onpaneclick={() => (menu = null)}
 		onpointerdown={() => (menu = null)}
 		onconnect={(connection) => updateEdge(connection)}
+		isValidConnection={(connection) => {
+			const sourceNode = nodes.find((n) => n.id === connection.source);
+			const targetNode = nodes.find((n) => n.id === connection.target);
+
+			if (!sourceNode || !targetNode) return false;
+
+			const isValid = sourceNode.data.node.action.outputType === targetNode.data.node.action.inputType;
+
+			if (!isValid) {
+				toast.error(
+					`Cannot connect ${sourceNode.data.node.action.outputType} output to ${targetNode.data.node.action.inputType} input`
+				);
+			}
+
+			return isValid;
+		}}
 		onreconnect={(oldEdge, newConnection) => handleReconnect(oldEdge, newConnection)}
 		onnodedragstop={(value: any) => updateNodePosition(value)}
 		onmovestart={() => (showMiniMap = true)}
@@ -160,7 +187,7 @@
 
 		<Controls />
 		<Background bgColor="#18181b" patternColor="#52525c" />
-		{#if menu}
+		<!-- {#if menu}
 			<ContextMenu
 				onclick={handlePaneClick}
 				id={menu.id}
@@ -169,7 +196,7 @@
 				right={menu.right}
 				bottom={menu.bottom}
 			/>
-		{/if}
+		{/if} -->
 	</SvelteFlow>
 </div>
 

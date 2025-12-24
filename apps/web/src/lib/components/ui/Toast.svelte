@@ -1,10 +1,10 @@
 <script>
 	import { CheckCircle, AlertCircle, Info, X } from 'lucide-svelte';
-	import { fade, slide } from 'svelte/transition';
+	import { fade, slide, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
 
-	let { message, type = 'info', id } = $props();
+	let { message, type = 'info', id, count = 1 } = $props();
 
 	const icons = {
 		success: CheckCircle,
@@ -44,4 +44,13 @@
 	>
 		<X size={16} />
 	</button>
+
+	{#if count > 1}
+		<div
+			class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-black shadow-lg ring-1 ring-black/5"
+			in:scale={{ duration: 200, start: 0.5 }}
+		>
+			{count}
+		</div>
+	{/if}
 </div>

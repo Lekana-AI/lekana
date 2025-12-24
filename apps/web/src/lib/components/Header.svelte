@@ -19,7 +19,7 @@
 			<UserButton />
 		</SignedIn>
 		<SignedOut>
-			<SignInButton />
+			<SignInButton forceRedirectUrl="/dashboard" />
 		</SignedOut>
 		<!-- <div
 				class="glow-btn flex rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"

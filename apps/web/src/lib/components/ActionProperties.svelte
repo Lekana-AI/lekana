@@ -4,17 +4,36 @@
 	import Input from './Input.svelte';
 	import { onMount } from 'svelte';
 
-	let { onClose, onSubmit, actionId, workflowId } = $props();
+	let { onClose, onSubmit, actionId, workflowId, node } = $props();
 
 	// use step + fields as state; no separate name/description/icon
 	let step = $state(null);
 	let fields = $state([]);
 
 	onMount(() => {
-		if (actionId) {
+		if (node) {
+			console.log(node);
+			loadNodeData();
+		} else if (actionId) {
 			loadFields();
 		}
 	});
+
+	function loadNodeData() {
+		step = node.action;
+		// Transform configMeta (object) to fields (array) for Input component
+		if (node.action.configMeta) {
+			fields = Object.entries(node.action.configMeta).map(([key, meta]) => ({
+				name: key,
+				label: meta.label,
+				type: meta.type,
+				value: node.config?.[key] ?? meta.defaultValue,
+				placeholder: meta.description, // using description as placeholder
+				required: meta.required,
+				options: meta.options
+			}));
+		}
+	}
 
 	async function loadFields() {
 		const res = await fetch(`/api/actions/${actionId}`, {
@@ -45,24 +64,40 @@
 
 		// console.log(result);
 
-		const res = await fetch(`/api/workflows/${workflowId}/nodes`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				actionId: actionId,
-				positionX: 50,
-				positionY: 150,
-				result
-			})
-		});
+		let res;
+
+		if (node) {
+			// Update existing node
+			res = await fetch(`/api/workflows/${workflowId}/nodes/${node.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					config: result
+				})
+			});
+		} else {
+			// Create new node
+			res = await fetch(`/api/workflows/${workflowId}/nodes`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					actionId: actionId,
+					positionX: 50,
+					positionY: 150,
+					result
+				})
+			});
+		}
 
 		if (!res.ok) {
 			const errorText = await res.text();
-			console.error('Failed to create node:', errorText);
+			console.error(`Failed to ${node ? 'update' : 'create'} node:`, errorText);
 
-			throw new Error(`Failed to create node: ${res.status}`);
+			throw new Error(`Failed to ${node ? 'update' : 'create'} node: ${res.status}`);
 		}
 
 		onSubmit();
@@ -116,7 +151,7 @@
 							onclick={formSubmit}
 							class="flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors duration-300 hover:bg-green-800 disabled:opacity-50"
 						>
-							Add Action to Workflow
+							{node ? 'Update Action' : 'Add Action to Workflow'}
 							<CornerRightUp class="h-3.5 w-3.5" />
 						</button>
 					</div>

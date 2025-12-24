@@ -20,6 +20,7 @@
 
 	let propertiesVisible = $state(false);
 	let actionId: string = $state('');
+	let actionNode: any = $state(null);
 	let open = $state(false);
 	let nodes = $state.raw([]);
 	let edges = $state.raw([]);
@@ -52,9 +53,13 @@
 			type: 'activeAction',
 			position: { x: node.positionX, y: node.positionY },
 			data: {
-				label: node.config.stepName,
-				onClick: (value: any) => ((propertiesVisible = true), (actionId = value.id)),
+				onClick: (value: any) => (
+					(propertiesVisible = true),
+					(actionNode = value.node),
+					(actionId = '')
+				),
 				onDelete: (value: any) => deleteNode(value.id),
+				node: node,
 				...node
 			}
 		}));
@@ -135,6 +140,7 @@
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
 	{#if propertiesVisible}
 		<ActionProperties
+			node={actionNode}
 			{actionId}
 			onClose={() => (propertiesVisible = false)}
 			onSubmit={async () => {
@@ -168,12 +174,22 @@
 			<FlowCanvas
 				{nodes}
 				{edges}
-				onNodeClick={(value: string) => ((propertiesVisible = true), (actionId = value))}
+				onNodeClick={(value: string) => (
+					(propertiesVisible = true),
+					(actionNode = value),
+					(actionId = '')
+				)}
 				workflowId={workflow.id}
 				{reloading}
 			/>
 		</section>
-		<Menu onAction={(value: string) => ((propertiesVisible = true), (actionId = value))} />
+		<Menu
+			onAction={(value: string) => (
+				(propertiesVisible = true),
+				(actionId = value),
+				(actionNode = null)
+			)}
+		/>
 	</div>
 </main>
 

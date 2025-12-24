@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	import {
 		CloudUpload,
@@ -53,9 +54,7 @@
 
 	let menuOpen = $state(false);
 
-	const Icon = iconMap[data.label] ?? CloudUpload;
-
-	
+	const Icon = iconMap[data.node.config.stepName] ?? CloudUpload;
 </script>
 
 <NodeToolbar align="end" offset="0">
@@ -67,13 +66,14 @@
 			<Ellipsis class="h-4 w-4" />
 		</button>
 		<!-- DROPDOWN MENU -->
-		<!-- {#if menuOpen}
+		{#if menuOpen}
 			<div
-				class="absolute top-0 left-full z-30 min-w-full rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+				class="absolute top-0 left-full z-30 min-w-full overflow-clip rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 			>
 				<button
 					type="button"
 					class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+					onclick={() => data.onClick?.({ node: data.node, ...data })}
 				>
 					<Settings class="h-4 w-4" />
 
@@ -98,10 +98,9 @@
 					Delete
 				</button>
 			</div>
-		{/if} -->
+		{/if}
 	</div>
 </NodeToolbar>
-
 
 <button
 	oncontextmenu={(e) => {
@@ -109,7 +108,7 @@
 		menuOpen = true;
 	}}
 	onblur={() => (menuOpen = false)}
-	ondblclick={() => data.onClick?.({ id, ...data })}
+	ondblclick={() => data.onClick?.({ node: data.node, ...data })}
 	class="inline-flex w-full items-center justify-start gap-4 rounded-lg border border-white/50 bg-white/5 px-3 py-2 backdrop-blur transition-colors duration-300 hover:bg-white/10"
 >
 	<span class="flex items-center justify-center rounded-full bg-green-700 p-1">
@@ -117,9 +116,9 @@
 	</span>
 
 	<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
-		{data.label}
+		{data.node.config.stepName}
 	</span>
 </button>
 
-<Handle type="target" position={Position.Left} />
-<Handle type="source" position={Position.Right} />
+<Handle type="target" class="" position={Position.Top} />
+<Handle type="source" class="" position={Position.Bottom} />

@@ -222,7 +222,7 @@
 								<!-- DROPDOWN MENU -->
 								{#if openMenuId === workflow.id}
 									<div
-										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+										class="absolute overflow-clip top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 									>
 										<a
 											href="/w/{workflow.id}/settings"
