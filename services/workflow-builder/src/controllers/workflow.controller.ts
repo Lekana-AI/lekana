@@ -75,7 +75,19 @@ export const getWorkflow = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Workflow not found' });
         }
 
-        res.json(workflow);
+        // Query extracted fields from WorkflowField table
+        // Using $queryRaw until Prisma client is regenerated
+        const workflowFields = await prisma.$queryRaw<{ fieldName: string }[]>`
+            SELECT DISTINCT "fieldName" FROM "WorkflowField" WHERE "workflowId" = ${id}
+        `;
+
+        // Extract field names
+        const extractedFields = workflowFields.map(f => f.fieldName);
+
+        res.json({
+            ...workflow,
+            extractedFields
+        });
     } catch (error) {
         console.error('Error fetching workflow:', error);
         res.status(500).json({ error: 'Internal server error' });
