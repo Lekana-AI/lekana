@@ -1,0 +1,122 @@
+{
+  "info": {
+    "name": "DB Export Service",
+    "description": "Database Export microservice for Lekana AI workflows. Exports workflow data to SQL databases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4005",
+      "type": "string"
+    },
+    {
+      "key": "testDatabaseUrl",
+      "value": "postgresql://user:password@host:5432/testdb",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process - Auto Create Table (OCR Output)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"executionId\": \"exec-123\",\n  \"nodeId\": \"db-export-node-1\",\n  \"workflowId\": \"workflow-456\",\n  \"userId\": \"user-789\",\n  \"input\": {\n    \"data\": {\n      \"documents\": [\n        {\n          \"filename\": \"invoice1.pdf\",\n          \"result\": {\n            \"invoice_number\": \"INV-001\",\n            \"vendor\": \"Acme Corp\",\n            \"total\": 1500.00,\n            \"date\": \"2024-12-24\"\n          }\n        },\n        {\n          \"filename\": \"invoice2.pdf\",\n          \"result\": {\n            \"invoice_number\": \"INV-002\",\n            \"vendor\": \"Beta Inc\",\n            \"total\": 2500.00,\n            \"date\": \"2024-12-25\"\n          }\n        }\n      ],\n      \"summary\": {\n        \"totalDocuments\": 2\n      }\n    }\n  },\n  \"config\": {\n    \"stepName\": \"Export to Database\",\n    \"databaseUrl\": \"{{testDatabaseUrl}}\",\n    \"tableName\": \"invoices\",\n    \"mode\": \"auto\",\n    \"fieldMapping\": {},\n    \"includeMetadata\": true,\n    \"unmappedFieldStrategy\": \"store_as_json\",\n    \"onConflict\": \"skip\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "process"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process - With Field Mapping",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"executionId\": \"exec-124\",\n  \"nodeId\": \"db-export-node-2\",\n  \"workflowId\": \"workflow-456\",\n  \"userId\": \"user-789\",\n  \"input\": {\n    \"data\": {\n      \"documents\": [\n        {\n          \"filename\": \"invoice3.pdf\",\n          \"result\": {\n            \"invoice_number\": \"INV-003\",\n            \"vendor_name\": \"Gamma LLC\",\n            \"amount\": 3000.00\n          }\n        }\n      ]\n    }\n  },\n  \"config\": {\n    \"stepName\": \"Export Invoices\",\n    \"databaseUrl\": \"{{testDatabaseUrl}}\",\n    \"tableName\": \"mapped_invoices\",\n    \"mode\": \"auto\",\n    \"fieldMapping\": {\n      \"inv_num\": \"invoice_number\",\n      \"vendor\": \"vendor_name\",\n      \"total_amount\": \"amount\"\n    },\n    \"includeMetadata\": true,\n    \"unmappedFieldStrategy\": \"ignore\",\n    \"onConflict\": \"skip\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "process"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process - Existing Table Mode",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"executionId\": \"exec-125\",\n  \"nodeId\": \"db-export-node-3\",\n  \"workflowId\": \"workflow-456\",\n  \"userId\": \"user-789\",\n  \"input\": {\n    \"data\": {\n      \"documents\": [\n        {\n          \"filename\": \"invoice4.pdf\",\n          \"result\": {\n            \"invoice_number\": \"INV-004\",\n            \"vendor\": \"Delta Co\",\n            \"total\": 500.00\n          }\n        }\n      ]\n    }\n  },\n  \"config\": {\n    \"stepName\": \"Export to Existing Table\",\n    \"databaseUrl\": \"{{testDatabaseUrl}}\",\n    \"tableName\": \"invoices\",\n    \"mode\": \"existing\",\n    \"fieldMapping\": {},\n    \"includeMetadata\": true,\n    \"unmappedFieldStrategy\": \"store_as_json\",\n    \"onConflict\": \"skip\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "process"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Process - Simple Object Input",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"executionId\": \"exec-126\",\n  \"nodeId\": \"db-export-node-4\",\n  \"workflowId\": \"workflow-456\",\n  \"userId\": \"user-789\",\n  \"input\": {\n    \"data\": {\n      \"name\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"age\": 30,\n      \"active\": true\n    }\n  },\n  \"config\": {\n    \"stepName\": \"Export User\",\n    \"databaseUrl\": \"{{testDatabaseUrl}}\",\n    \"tableName\": \"users\",\n    \"mode\": \"auto\",\n    \"fieldMapping\": {},\n    \"includeMetadata\": false,\n    \"unmappedFieldStrategy\": \"store_as_json\",\n    \"onConflict\": \"skip\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/process",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "process"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
