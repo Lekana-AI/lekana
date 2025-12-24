@@ -54,10 +54,20 @@
 
 		// build the fields array that the <Input> loop expects
 		fields = step.uiSchema.fields;
+		console.log(fields);
+	}
+
+	function isVisible(field) {
+		if (!field.visibleWhen) return true;
+		return Object.entries(field.visibleWhen).every(([key, value]) => {
+			const dependentField = fields.find((f) => f.name === key);
+			return dependentField && dependentField.value === value;
+		});
 	}
 
 	async function formSubmit() {
-		const result = fields.reduce((acc, field) => {
+		const config = fields.reduce((acc, field) => {
+			if (!isVisible(field)) return acc; // Don't submit hidden fields
 			acc[field.name] = field.value;
 			return acc;
 		}, {});
@@ -74,7 +84,7 @@
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					config: result
+					config
 				})
 			});
 		} else {
@@ -88,7 +98,7 @@
 					actionId: actionId,
 					positionX: 50,
 					positionY: 150,
-					result
+					config
 				})
 			});
 		}
@@ -138,10 +148,12 @@
 
 					<div class="space-y-6 py-2">
 						{#each fields as fieldData}
-							<Input onInput {fieldData} />
-							<!-- <pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
+							{#if isVisible(fieldData)}
+								<Input onInput {fieldData} />
+								<!-- <pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
 									fieldData
 								)}</pre> -->
+							{/if}
 						{/each}
 					</div>
 

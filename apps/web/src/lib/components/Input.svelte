@@ -96,7 +96,7 @@
 		<select
 			id={fieldData.name}
 			bind:value={fieldData.value}
-			class="w-full rounded-lg border border-zinc-700 bg-black px-3.5 py-2.5 text-white"
+			class="w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-white"
 			required={fieldData.required}
 			oninput={(e) => onInput?.(e, fieldData)}
 		>
@@ -192,14 +192,14 @@
 						type="text"
 						bind:value={fieldData.value[index].key}
 						class="w-1/3 border-r border-zinc-700 px-3 py-2 text-sm text-white transition-all outline-none placeholder:text-zinc-500"
-						placeholder="Key"
+						placeholder={fieldData.keyLabel}
 						oninput={() => onInput?.({ target: { value: fieldData.value } }, fieldData)}
 					/>
 					<input
 						type="text"
 						bind:value={fieldData.value[index].value}
 						class="w-2/3 px-3 py-2 text-sm text-white transition-all outline-none placeholder:text-zinc-500"
-						placeholder="Value"
+						placeholder={fieldData.valueLabel}
 						oninput={() => onInput?.({ target: { value: fieldData.value } }, fieldData)}
 					/>
 				</div>

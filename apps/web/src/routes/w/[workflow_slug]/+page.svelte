@@ -14,7 +14,7 @@
 	let { data } = $props();
 
 	let workflow = $state(data?.workflow);
-	// console.log(workflow);
+	console.log(workflow);
 
 	const user: User = data?.user;
 
@@ -154,12 +154,12 @@
 		userName={user.firstName ?? 'User'}
 		activeWorkflowName={wName}
 	/>
-	<div class="relative flex h-screen w-full justify-center gap-4 overflow-clip bg-zinc-950 p-4">
+	<div class="relative flex h-screen w-full justify-center gap-2 overflow-clip bg-zinc-950 p-2">
 		<div
 			class="absolute top-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 		></div>
-		<section class="z-10 flex h-full w-full flex-col gap-4">
-			<div class="mt-2 flex w-fit items-center gap-2">
+		<section class="z-10 flex h-full w-full flex-col gap-2">
+			<div class="flex w-fit items-center gap-2">
 				<a href="/w/{workflow.id}/settings" class="rounded-lg p-3 text-white hover:bg-white/10">
 					<Settings2 class="h-5 w-5" />
 				</a>
