@@ -7,6 +7,9 @@ RUN apk add --no-cache openssl
 # Set the working directory inside the container
 WORKDIR /app
 
+# Create uploads temp directory for multer
+RUN mkdir -p /app/uploads && chmod 777 /app/uploads
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 

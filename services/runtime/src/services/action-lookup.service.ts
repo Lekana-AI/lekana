@@ -17,9 +17,10 @@ export interface ActionDetails {
 
 // Cache to avoid repeated DB lookups within same execution
 const actionCache = new Map<string, ActionDetails>();
+const actionNameCache = new Map<string, ActionDetails>();
 
 /**
- * Fetch action details from workflow-builder database
+ * Fetch action details from workflow-builder database by ID
  * Returns null if WORKFLOW_DB_URL not configured (fallback to cached serviceUrl)
  */
 export async function getActionDetails(actionId: string): Promise<ActionDetails | null> {
@@ -53,9 +54,43 @@ export async function getActionDetails(actionId: string): Promise<ActionDetails 
 }
 
 /**
+ * Fetch action details from workflow-builder database by name
+ * Useful for looking up services like "Upload" without having an actionId
+ */
+export async function getActionByName(actionName: string): Promise<ActionDetails | null> {
+    // Check cache first
+    if (actionNameCache.has(actionName)) {
+        return actionNameCache.get(actionName)!;
+    }
+
+    // If no workflow DB client, return null
+    if (!workflowDb) {
+        return null;
+    }
+
+    try {
+        const actions = await workflowDb.$queryRaw<ActionDetails[]>`
+            SELECT id, name, "serviceUrl" FROM "Action" WHERE name = ${actionName}
+        `;
+
+        if (actions.length > 0) {
+            actionNameCache.set(actionName, actions[0]);
+            return actions[0];
+        }
+
+        return null;
+    } catch (error) {
+        console.error(`[ActionLookup] Failed to fetch action by name ${actionName}:`, error);
+        return null;
+    }
+}
+
+/**
  * Clear action cache
  * Useful for testing or when action details are updated
  */
 export function clearActionCache(): void {
     actionCache.clear();
+    actionNameCache.clear();
 }
+

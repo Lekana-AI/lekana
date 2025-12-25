@@ -421,3 +421,120 @@ export const getPublishedWorkflow = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+/**
+ * POST /api/v1/workflows/:workflowId/run-with-files
+ * Run a published workflow with file uploads (API key auth)
+ * Files are uploaded to the Upload microservice and URLs are passed to the workflow
+ */
+export const runWorkflowWithFiles = async (req: Request, res: Response) => {
+    try {
+        const { workflowId } = req.params;
+        const apiKeyInfo = req.apiKey!;
+        const files = req.files as Express.Multer.File[];
+
+        // Verify the API key is for this workflow
+        if (apiKeyInfo.publishedWorkflow.workflowId !== workflowId) {
+            return res.status(403).json({
+                error: 'Forbidden',
+                message: 'API key is not valid for this workflow'
+            });
+        }
+
+        console.log(`[Run] Running workflow with files: ${apiKeyInfo.publishedWorkflow.name} (${workflowId})`);
+        console.log(`[Run] Files received: ${files?.length || 0}`);
+
+        // Parse JSON input from form data
+        let input: any = {};
+        if (req.body.input) {
+            try {
+                input = typeof req.body.input === 'string' ? JSON.parse(req.body.input) : req.body.input;
+            } catch {
+                input = req.body.input;
+            }
+        }
+
+        // Upload files to Upload service and collect URLs
+        const documents: { url: string; filename: string; mimeType: string }[] = [];
+
+        if (files && files.length > 0) {
+            // Get Upload service URL from database
+            const { getActionByName } = await import('../services/action-lookup.service');
+            const uploadAction = await getActionByName('Upload');
+            const uploadServiceUrl = uploadAction?.serviceUrl || 'http://localhost:4001';
+            console.log(`[Run] Using Upload service: ${uploadServiceUrl}`);
+
+            for (const file of files) {
+                try {
+                    console.log(`[Run] Uploading file: ${file.originalname} (${file.mimetype})`);
+
+                    // Create form data for upload service
+                    const formData = new FormData();
+                    const blob = new Blob([file.buffer], { type: file.mimetype });
+                    formData.append('file', blob, file.originalname);
+
+                    const uploadResponse = await fetch(`${uploadServiceUrl}/api/v1/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorText = await uploadResponse.text();
+                        console.error(`[Run] Upload failed for ${file.originalname}: ${errorText}`);
+                        throw new Error(`Failed to upload ${file.originalname}: ${uploadResponse.status}`);
+                    }
+
+                    const uploadResult = await uploadResponse.json() as {
+                        success: boolean;
+                        data?: { url: string; filename: string; mimeType: string }
+                    };
+
+                    if (uploadResult.success && uploadResult.data) {
+                        documents.push({
+                            url: uploadResult.data.url,
+                            filename: uploadResult.data.filename || file.originalname,
+                            mimeType: uploadResult.data.mimeType || file.mimetype
+                        });
+                        console.log(`[Run] File uploaded successfully: ${uploadResult.data.url}`);
+                    }
+                } catch (uploadError: any) {
+                    console.error(`[Run] Error uploading file ${file.originalname}:`, uploadError.message);
+                    return res.status(500).json({
+                        error: 'Upload failed',
+                        message: `Failed to upload file: ${file.originalname}`,
+                        details: uploadError.message
+                    });
+                }
+            }
+        }
+
+        // Get the workflow definition
+        const workflowDefinition = apiKeyInfo.publishedWorkflow.definition;
+
+        // Execute the workflow with provided input and uploaded documents
+        const executionId = await executeWorkflowWithInput(
+            workflowDefinition,
+            apiKeyInfo.publishedWorkflow.userId,
+            apiKeyInfo.publishedWorkflowId,
+            { input, documents }
+        );
+
+        res.status(202).json({
+            success: true,
+            message: 'Workflow execution started',
+            executionId,
+            workflowId,
+            workflowName: apiKeyInfo.publishedWorkflow.name,
+            filesUploaded: documents.length,
+            documents: documents.map(d => ({ filename: d.filename, mimeType: d.mimeType })),
+            statusEndpoint: `/api/v1/executions/${executionId}`
+        });
+
+    } catch (error: any) {
+        console.error('Error running workflow with files:', error);
+        res.status(500).json({
+            error: 'Failed to run workflow',
+            message: error.message
+        });
+    }
+};
