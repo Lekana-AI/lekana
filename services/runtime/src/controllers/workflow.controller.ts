@@ -138,12 +138,12 @@ export const publishWorkflow = async (req: Request, res: Response) => {
             workflowId: workflow.id,
             workflowName: workflow.name,
             extractedFields: workflow.extractedFields || [],
-            apiKey: {
+            apiKeys: [{
                 key, // Only returned on creation - user must save this!
                 name: 'Default',
                 prefix,
                 warning: 'Save this API key! It will not be shown again.'
-            },
+            }],
             runEndpoint: `/api/v1/workflows/${workflow.id}/run`
         });
 

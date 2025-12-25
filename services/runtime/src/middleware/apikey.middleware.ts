@@ -70,13 +70,27 @@ export const checkApiKey: RequestHandler = async (
         // Hash the provided key to compare with stored hash
         const keyHash = hashApiKey(apiKeyHeader);
 
-        // Find the API key
+        // Find the API key and get fresh workflow data
         const apiKeyRecord = await prisma.apiKey.findUnique({
             where: { key: keyHash },
             include: {
-                publishedWorkflow: true
+                publishedWorkflow: {
+                    select: {
+                        id: true,
+                        workflowId: true,
+                        userId: true,
+                        name: true,
+                        definition: true,
+                        isActive: true,
+                        updatedAt: true  // Force fresh fetch by selecting timestamp
+                    }
+                }
             }
         });
+
+        if (apiKeyRecord) {
+            console.log(`[API Key] Workflow definition updated at: ${apiKeyRecord.publishedWorkflow.updatedAt}`);
+        }
 
         if (!apiKeyRecord) {
             res.status(401).json({
