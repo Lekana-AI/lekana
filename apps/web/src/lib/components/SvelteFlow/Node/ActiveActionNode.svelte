@@ -102,23 +102,25 @@
 	</div>
 </NodeToolbar>
 
-<button
-	oncontextmenu={(e) => {
-		e.preventDefault();
-		menuOpen = true;
-	}}
-	onblur={() => (menuOpen = false)}
-	ondblclick={() => data.onClick?.({ node: data.node, ...data })}
-	class="inline-flex w-full items-center justify-start gap-4 rounded-lg border border-white/50 bg-white/5 px-3 py-2 backdrop-blur transition-colors duration-300 hover:bg-white/10"
->
-	<span class="flex items-center justify-center rounded-full bg-green-700 p-1">
-		<Icon class="h-2 w-2 text-white" />
-	</span>
+<div class="flex flex-col items-center gap-2">
+	<button
+		oncontextmenu={(e) => {
+			e.preventDefault();
+			menuOpen = true;
+		}}
+		onblur={() => (menuOpen = false)}
+		ondblclick={() => data.onClick?.({ node: data.node, ...data })}
+		class="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/5 backdrop-blur transition-all duration-300 hover:scale-105 hover:border-white/40 hover:bg-white/10"
+	>
+		<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600/20 text-green-400">
+			<Icon class="h-5 w-5" />
+		</div>
+		
+		<Handle type="target" class="" position={Position.Left}   />
+		<Handle type="source" class="" position={Position.Right}   />
+	</button>
 
-	<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
+	<span class="max-w-[120px] text-center text-[8px] font-medium tracking-tight text-white/70">
 		{data.node.config.stepName}
 	</span>
-</button>
-
-<Handle type="target" class="" position={Position.Top} />
-<Handle type="source" class="" position={Position.Bottom} />
+</div>

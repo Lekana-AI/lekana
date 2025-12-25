@@ -222,9 +222,10 @@
 								<!-- DROPDOWN MENU -->
 								{#if openMenuId === workflow.id}
 									<div
-										class="absolute overflow-clip top-10 left-full z-30 min-w-full -translate-x-9 rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 overflow-clip rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 									>
 										<a
+											onclick={() => (window.location.href = '/w/' + workflow.id + '/settings')}
 											href="/w/{workflow.id}/settings"
 											type="button"
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
@@ -242,7 +243,7 @@
 
 											Duplicate Workflow
 										</button>
-<!-- 
+										<!-- 
 										<button
 											class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
 											onclick={() => console.log('Delete', workflow.id)}

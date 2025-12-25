@@ -1,7 +1,9 @@
 // src/routes/api/[...path]/+server.ts
 import type { RequestHandler } from '../$types';
 
-const UPSTREAM_BASE = 'https://lekana-ai-workflow-builder-PROJECT_NUMBER.europe-west1.run.app';
+import { env } from '$env/dynamic/private';
+
+const WORKFLOW_BASE = env.WORKFLOW_BASE;
 
 const handler: RequestHandler = async (event) => {
 	const { locals, params, url, fetch, request } = event;
@@ -15,7 +17,7 @@ const handler: RequestHandler = async (event) => {
 
 	// Build upstream URL: base + path + query
 	const path = params.path ? `/${params.path}` : '';
-	const upstreamUrl = new URL(UPSTREAM_BASE + path);
+	const upstreamUrl = new URL(WORKFLOW_BASE + path);
 	upstreamUrl.search = url.search;
 
 	// Prepare headers and body. If we forward a streaming body we must set
