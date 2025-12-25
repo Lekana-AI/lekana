@@ -166,7 +166,9 @@ export class DocumentAIService {
      * Gets MIME type from URL extension
      */
     private getMimeTypeFromUrl(url: string): string | null {
-        const extension = url.split('.').pop()?.toLowerCase();
+        // Remove query parameters before extracting extension (important for signed URLs)
+        const urlWithoutQuery = url.split('?')[0];
+        const extension = urlWithoutQuery.split('.').pop()?.toLowerCase();
         const mimeTypes: Record<string, string> = {
             'pdf': 'application/pdf',
             'png': 'image/png',

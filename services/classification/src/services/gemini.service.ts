@@ -35,13 +35,19 @@ export class GeminiService {
     ): Promise<Classification> {
         try {
             this.ensureInitialized(); // Lazy initialization
-            logger.info('Classifying document with Gemini', { filename, documentUrl });
+            logger.info('=== GEMINI CLASSIFICATION START ===');
+            logger.info('Classifying document with Gemini', { filename, documentUrl: documentUrl.substring(0, 100) + '...' });
 
             const { customLabels, existingCategories } = options;
+            logger.info('Options:', { customLabels, existingCategoriesCount: existingCategories?.length || 0 });
 
             // Fetch document content as base64
+            logger.info('Fetching document as base64...');
             const documentData = await this.fetchDocumentAsBase64(documentUrl);
+            logger.info('Document fetched successfully', { base64Length: documentData.length });
+
             const mimeType = this.getMimeTypeFromUrl(documentUrl);
+            logger.info('Detected MIME type:', { mimeType });
 
             // Build prompt
             const prompt = this.buildClassificationPrompt(
@@ -49,8 +55,10 @@ export class GeminiService {
                 customLabels,
                 existingCategories
             );
+            logger.info('Built prompt:', { promptLength: prompt.length, promptPreview: prompt.substring(0, 200) + '...' });
 
             // Call Gemini with vision
+            logger.info('Calling Gemini API...');
             const result = await this.model.generateContent([
                 {
                     inlineData: {
@@ -63,6 +71,7 @@ export class GeminiService {
 
             const response = await result.response;
             const text = response.text();
+            logger.info('Gemini raw response:', { responseText: text });
 
             // Parse classification from response
             const classification = this.parseClassificationResponse(
@@ -76,10 +85,15 @@ export class GeminiService {
                 label: classification.label,
                 confidence: classification.confidence
             });
+            logger.info('=== GEMINI CLASSIFICATION END ===');
 
             return classification;
         } catch (error) {
-            logger.error('Gemini classification failed', error);
+            logger.error('=== GEMINI CLASSIFICATION FAILED ===');
+            logger.error('Gemini classification failed', {
+                error: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined
+            });
             throw new Error(`Gemini classification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
@@ -89,15 +103,22 @@ export class GeminiService {
      */
     private async fetchDocumentAsBase64(url: string): Promise<string> {
         try {
+            logger.info('Fetching document from URL:', { urlPreview: url.substring(0, 80) + '...' });
             const response = await fetch(url);
+            logger.info('Fetch response:', { status: response.status, statusText: response.statusText });
+
             if (!response.ok) {
-                throw new Error(`Failed to fetch document: ${response.statusText}`);
+                throw new Error(`Failed to fetch document: ${response.status} ${response.statusText}`);
             }
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
+            logger.info('Document buffer size:', { bytes: buffer.length });
             return buffer.toString('base64');
         } catch (error) {
-            logger.error('Error fetching document for Gemini', error);
+            logger.error('Error fetching document for Gemini', {
+                error: error instanceof Error ? error.message : String(error),
+                url: url.substring(0, 80) + '...'
+            });
             throw error;
         }
     }
@@ -192,7 +213,9 @@ Return your response in the following JSON format:
      * Gets MIME type from URL extension
      */
     private getMimeTypeFromUrl(url: string): string {
-        const extension = url.split('.').pop()?.toLowerCase();
+        // Remove query parameters before extracting extension (important for signed URLs)
+        const urlWithoutQuery = url.split('?')[0];
+        const extension = urlWithoutQuery.split('.').pop()?.toLowerCase();
         const mimeTypes: Record<string, string> = {
             'pdf': 'application/pdf',
             'png': 'image/png',
