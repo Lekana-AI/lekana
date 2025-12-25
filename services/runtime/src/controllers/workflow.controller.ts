@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
+import { getActionByName } from '../services/action-lookup.service';
 
 const prisma = new PrismaClient();
 
@@ -458,47 +459,67 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
         const documents: { url: string; filename: string; mimeType: string }[] = [];
 
         if (files && files.length > 0) {
-            // Get Upload service URL from database
-            const { getActionByName } = await import('../services/action-lookup.service');
-            const uploadAction = await getActionByName('Upload');
-            const uploadServiceUrl = uploadAction?.serviceUrl || 'http://localhost:4001';
-            console.log(`[Run] Using Upload service: ${uploadServiceUrl}`);
+            // Get Upload service URL from workflow-builder database
+            let uploadServiceUrl = 'http://localhost:4001'; // fallback
+
+            try {
+                const uploadAction = await getActionByName('Upload files');
+                if (uploadAction?.serviceUrl) {
+                    uploadServiceUrl = uploadAction.serviceUrl;
+                    console.log(`[Run] Using Upload service from DB: ${uploadServiceUrl}`);
+                } else {
+                    console.warn(`[Run] Upload action not found in DB, using fallback: ${uploadServiceUrl}`);
+                }
+            } catch (err) {
+                console.error(`[Run] Error looking up Upload action:`, err);
+            }
 
             for (const file of files) {
                 try {
                     console.log(`[Run] Uploading file: ${file.originalname} (${file.mimetype})`);
 
-                    // Create form data for upload service
+                    // Create form data for upload service using form-data package
+                    const FormData = require('form-data');
+                    const axios = require('axios');
                     const formData = new FormData();
-                    const blob = new Blob([file.buffer], { type: file.mimetype });
-                    formData.append('file', blob, file.originalname);
-
-                    const uploadResponse = await fetch(`${uploadServiceUrl}/api/v1/upload`, {
-                        method: 'POST',
-                        body: formData
+                    formData.append('files', file.buffer, {
+                        filename: file.originalname,
+                        contentType: file.mimetype
                     });
 
-                    if (!uploadResponse.ok) {
-                        const errorText = await uploadResponse.text();
-                        console.error(`[Run] Upload failed for ${file.originalname}: ${errorText}`);
-                        throw new Error(`Failed to upload ${file.originalname}: ${uploadResponse.status}`);
-                    }
+                    // Use axios instead of fetch - it properly handles form-data streams
+                    const uploadResponse = await axios.post(
+                        `${uploadServiceUrl}/api/v1/upload`,
+                        formData,
+                        {
+                            headers: formData.getHeaders(),
+                            maxContentLength: Infinity,
+                            maxBodyLength: Infinity
+                        }
+                    );
 
-                    const uploadResult = await uploadResponse.json() as {
+                    const uploadResult = uploadResponse.data as {
                         success: boolean;
-                        data?: { url: string; filename: string; mimeType: string }
+                        documents?: Array<{ url: string; filename: string; mimeType: string }>;
+                        data?: { uploadedFiles?: Array<{ url: string; filename: string; mimeType: string }> };
                     };
 
-                    if (uploadResult.success && uploadResult.data) {
+                    // Get the first uploaded file from documents array or data.uploadedFiles
+                    const uploadedFile = uploadResult.documents?.[0] || uploadResult.data?.uploadedFiles?.[0];
+
+                    if (uploadResult.success && uploadedFile) {
                         documents.push({
-                            url: uploadResult.data.url,
-                            filename: uploadResult.data.filename || file.originalname,
-                            mimeType: uploadResult.data.mimeType || file.mimetype
+                            url: uploadedFile.url,
+                            filename: uploadedFile.filename || file.originalname,
+                            mimeType: uploadedFile.mimeType || file.mimetype
                         });
-                        console.log(`[Run] File uploaded successfully: ${uploadResult.data.url}`);
+                        console.log(`[Run] File uploaded successfully: ${uploadedFile.url}`);
+                    } else {
+                        console.error(`[Run] Upload succeeded but no file data returned`);
                     }
                 } catch (uploadError: any) {
                     console.error(`[Run] Error uploading file ${file.originalname}:`, uploadError.message);
+
                     return res.status(500).json({
                         error: 'Upload failed',
                         message: `Failed to upload file: ${file.originalname}`,
