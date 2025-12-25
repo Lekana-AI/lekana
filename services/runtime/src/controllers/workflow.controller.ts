@@ -21,6 +21,40 @@ interface WorkflowData {
 }
 
 /**
+ * Sync publish status back to workflow-builder
+ * Non-blocking - errors are logged but don't fail the publish
+ */
+async function syncPublishStatus(
+    workflowId: string,
+    publishedWorkflowId: string,
+    authHeader: string
+): Promise<void> {
+    try {
+        const workflowApiUrl = process.env.WORKFLOW_API || 'http://localhost:3001';
+        const response = await fetch(`${workflowApiUrl}/workflows/${workflowId}/publish-status`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': authHeader,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                publishedWorkflowId,
+                isPublished: true
+            })
+        });
+
+        if (response.ok) {
+            console.log(`[Publish] Synced publish status to workflow-builder for ${workflowId}`);
+        } else {
+            console.warn(`[Publish] Failed to sync publish status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('[Publish] Error syncing publish status:', error);
+    }
+}
+
+
+/**
  * POST /api/v1/publish
  * Publish a workflow - fetches from workflow-builder and stores definition with API key
  */
@@ -94,6 +128,9 @@ export const publishWorkflow = async (req: Request, res: Response) => {
                 include: { apiKeys: { where: { isActive: true } } }
             });
 
+            // Sync publish status to workflow-builder (non-blocking)
+            syncPublishStatus(workflow.id, updated.id, authHeader);
+
             return res.json({
                 success: true,
                 message: 'Workflow updated',
@@ -130,6 +167,9 @@ export const publishWorkflow = async (req: Request, res: Response) => {
             },
             include: { apiKeys: true }
         });
+
+        // Sync publish status to workflow-builder (non-blocking)
+        syncPublishStatus(workflow.id, published.id, authHeader);
 
         res.status(201).json({
             success: true,
