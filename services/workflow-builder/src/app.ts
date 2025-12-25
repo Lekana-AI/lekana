@@ -22,7 +22,9 @@ app.get('/health', (req, res) => {
 });
 
 // Protected Routes - Apply Clerk JWT authentication
-app.use('/workflows', checkJwt, handleAuthError, extractUserInfo, workflowRoutes);
+app.use('/workflows',
+    checkJwt,
+    handleAuthError,extractUserInfo, workflowRoutes);
 app.use('/actions', checkJwt, handleAuthError, extractUserInfo, actionRoutes);
 app.use('/categories', checkJwt, handleAuthError, extractUserInfo, categoryRoutes);
 

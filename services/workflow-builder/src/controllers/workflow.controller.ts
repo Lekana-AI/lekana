@@ -111,7 +111,7 @@ export const getAllWorkflows = async (req: Request, res: Response) => {
             },
         });
 
-        // Return workflows with counts
+        // Return workflows with counts and publish status
         const workflowsWithCounts = workflows.map(workflow => ({
             id: workflow.id,
             name: workflow.name,
@@ -119,6 +119,10 @@ export const getAllWorkflows = async (req: Request, res: Response) => {
             updatedAt: workflow.updatedAt,
             nodeCount: workflow.nodes.length,
             edgeCount: workflow.edges.length,
+            // Publish status
+            isPublished: (workflow as any).isPublished || false,
+            publishedAt: (workflow as any).publishedAt || null,
+            lastPublishedAt: (workflow as any).lastPublishedAt || null,
         }));
 
         res.json(workflowsWithCounts);
@@ -216,6 +220,69 @@ export const deleteWorkflow = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'Workflow deleted successfully' });
     } catch (error) {
         console.error('Error deleting workflow:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
+ * Update publish status (called by runtime after publishing)
+ * PATCH /workflows/:id/publish-status
+ */
+export const updatePublishStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { publishedWorkflowId, isPublished = true } = req.body;
+        const userId = req.auth?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User ID not found in token' });
+        }
+
+        // Check if workflow exists and belongs to user
+        const existingWorkflow = await prisma.workflow.findFirst({
+            where: {
+                id,
+                userId
+            }
+        });
+
+        if (!existingWorkflow) {
+            return res.status(404).json({ error: 'Workflow not found' });
+        }
+
+        const now = new Date();
+        const updateData: any = {
+            isPublished,
+            publishedWorkflowId,
+            lastPublishedAt: now
+        };
+
+        // Set publishedAt only on first publish
+        if (!existingWorkflow.publishedAt && isPublished) {
+            updateData.publishedAt = now;
+        }
+
+        const updatedWorkflow = await prisma.workflow.update({
+            where: { id },
+            data: updateData,
+            select: {
+                id: true,
+                name: true,
+                isPublished: true,
+                publishedWorkflowId: true,
+                publishedAt: true,
+                lastPublishedAt: true
+            }
+        });
+
+        console.log(`[Publish Status] Updated workflow ${id}: isPublished=${isPublished}`);
+
+        res.json({
+            success: true,
+            workflow: updatedWorkflow
+        });
+    } catch (error) {
+        console.error('Error updating publish status:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

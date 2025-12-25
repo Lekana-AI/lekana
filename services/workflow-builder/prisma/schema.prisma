@@ -26,6 +26,12 @@ model Workflow {
   nodes     WorkflowNode[]
   fields    WorkflowField[]
 
+  // Publish status tracking (synced from runtime)
+  isPublished           Boolean   @default(false)
+  publishedWorkflowId   String?   // Runtime's published workflow ID
+  publishedAt           DateTime? // First publish time
+  lastPublishedAt       DateTime? // Most recent publish time
+
   @@index([userId])
 }
 

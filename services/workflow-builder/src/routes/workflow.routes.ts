@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createWorkflow, getWorkflow, getAllWorkflows, updateWorkflow, deleteWorkflow } from '../controllers/workflow.controller';
+import { createWorkflow, getWorkflow, getAllWorkflows, updateWorkflow, deleteWorkflow, updatePublishStatus } from '../controllers/workflow.controller';
 import { addNode, getAllNodes, getNode, updateNode, deleteNode } from '../controllers/node.controller';
 import { addEdge } from '../controllers/edge.controller';
 import { getWorkflowFields, deleteWorkflowField } from '../controllers/field.controller';
@@ -11,6 +11,7 @@ router.get('/', getAllWorkflows);
 router.post('/', createWorkflow);
 router.get('/:id', getWorkflow);
 router.put('/:id', updateWorkflow);
+router.patch('/:id/publish-status', updatePublishStatus);
 router.delete('/:id', deleteWorkflow);
 
 // Node routes
