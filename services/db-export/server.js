@@ -41,7 +41,7 @@ app.get("/health", (req, res) => {
 // ============================================
 app.post(
   "/api/v1/process",
-  checkJwt, // Uncomment for production
+  //checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {
