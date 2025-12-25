@@ -52,7 +52,7 @@ app.get("/health", async (req, res) => {
 // ============================================
 app.post(
   "/api/v1/process",
-  // checkJwt,
+  //checkJwt,
   handleAuthError,
   extractUserInfo,
   upload.array("files", 10),
@@ -130,7 +130,7 @@ app.post(
           uploadedFiles: result.uploadedFiles,
         },
         documents: result.uploadedFiles.map((f) => ({
-          url: f.url,
+          url: f.signedUrl || f.url,
           filename: f.filename,
           mimeType: f.mimeType,
         })),
@@ -179,7 +179,7 @@ app.post(
 // ============================================
 app.post(
   "/api/v1/upload",
-  // checkJwt,
+  //checkJwt,
   handleAuthError,
   extractUserInfo,
   upload.array("files", 10),
@@ -211,7 +211,7 @@ app.post(
           uploadedFiles: result.uploadedFiles,
         },
         documents: result.uploadedFiles.map((f) => ({
-          url: f.url,
+          url: f.signedUrl || f.url,
           filename: f.filename,
           mimeType: f.mimeType,
         })),
