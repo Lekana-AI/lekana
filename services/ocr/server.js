@@ -48,7 +48,7 @@ app.get("/health", (req, res) => {
 // ============================================
 app.post(
   "/api/v1/process",
-  // checkJwt, // Uncomment for production
+ // checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {
@@ -73,12 +73,41 @@ app.post(
       } = config;
       const documents = input.documents || [];
 
+      // Parse extractFields - supports both old format (string[]) and new format ([{fieldName, fieldPrompt}])
+      let targetFields = [];
+      let customPrompts = fieldPrompts || {};
+
+      if (Array.isArray(extractFields) && extractFields.length > 0) {
+        if (typeof extractFields[0] === "string") {
+          // Old format: ["field1", "field2"]
+          targetFields = extractFields;
+        } else if (typeof extractFields[0] === "object") {
+          // New format: [{fieldName, fieldPrompt}] or [{key, value}] from keyValue UI
+          targetFields = [];
+          customPrompts = {};
+          for (const field of extractFields) {
+            const fieldName = field.fieldName || field.key;
+            const fieldPrompt = field.fieldPrompt || field.value;
+            if (fieldName) {
+              targetFields.push(fieldName);
+              if (fieldPrompt) {
+                customPrompts[fieldName] = fieldPrompt;
+              }
+            }
+          }
+        }
+      }
+
+      console.log(`[OCR] Parsed extractFields:`);
+      console.log(`  - targetFields: ${JSON.stringify(targetFields)}`);
+      console.log(`  - customPrompts: ${JSON.stringify(customPrompts)}`);
+
       console.log(
         `[OCR] Processing request - Execution: ${executionId}, Node: ${nodeId}`
       );
       console.log(
         `[OCR] Config: extractFields=${
-          extractFields?.length || 0
+          targetFields?.length || 0
         }, processorType=${processorType || "auto"}`
       );
 
@@ -101,7 +130,7 @@ app.post(
         // Determine processor type
         const useFormParser =
           processorType === "FORM_PARSER" ||
-          (extractFields && extractFields.length > 0);
+          (targetFields && targetFields.length > 0);
 
         if (useFormParser) {
           console.log(
@@ -129,8 +158,8 @@ app.post(
           mimeType,
           previousOcrData: rawOcrData,
           outputMode: outputMode || "auto",
-          targetFields: extractFields,
-          customPrompts: fieldPrompts,
+          targetFields: targetFields,
+          customPrompts: customPrompts,
         });
 
         // Build result based on isRefined flag
@@ -160,9 +189,9 @@ app.post(
           summary: {
             totalDocuments: documents.length,
             processedDocuments: results.length,
-            extractFields: extractFields || [],
+            extractFields: targetFields || [],
             hasFieldPrompts: !!(
-              fieldPrompts && Object.keys(fieldPrompts).length
+              customPrompts && Object.keys(customPrompts).length
             ),
           },
         },
@@ -204,7 +233,7 @@ app.post(
 // ============================================
 app.post(
   "/api/v1/configure",
-  // checkJwt, // Uncomment for production
+ // checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {
@@ -312,7 +341,7 @@ app.post(
 // ============================================
 app.get(
   "/api/v1/configure/status/:operationId",
-  // checkJwt, // Uncomment for production
+  //checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {
