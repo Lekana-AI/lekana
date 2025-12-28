@@ -15,7 +15,8 @@ import {
     FileText,
     FileOutput,
     Globe,
-    Calculator
+    Calculator,
+    Zap
 } from 'lucide-svelte';
 
 export const icons = {
@@ -34,5 +35,6 @@ export const icons = {
     FileText,
     FileOutput,
     Globe,
-    Calculator
+    Calculator,
+    Zap
 };

@@ -1,60 +1,14 @@
 <script lang="ts">
 	import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/svelte';
 	import { toast } from '$lib/toast.svelte';
-
-	import {
-		CloudUpload,
-		ListChecks,
-		Grid3x3,
-		ScanText,
-		ShieldCheck,
-		CopyCheck,
-		UserCheck,
-		Database,
-		Share2,
-		Webhook,
-		Mail,
-		FileSpreadsheet,
-		FileText,
-		FileOutput,
-		Calculator,
-		Trash2,
-		Ellipsis,
-		Settings2,
-		CopyPlus,
-		Trash,
-		Edit,
-		Copy,
-		Settings
-	} from 'lucide-svelte';
+	import { icons } from '$lib/icon';
+	import { Ellipsis, Settings, Copy, Trash } from 'lucide-svelte';
 
 	let { id, data }: NodeProps = $props();
 
-	type IconComponent = typeof CloudUpload;
-
-	const iconMap: Record<string, IconComponent> = {
-		'Upload Files': CloudUpload,
-		Classification: ListChecks,
-		Segmentation: Grid3x3,
-		OCR: ScanText,
-		Validation: ShieldCheck,
-		'De-duplication': CopyCheck,
-		'Human Review OCR': UserCheck,
-		'Human Review Classification': UserCheck,
-		'Human Review Segments': UserCheck,
-		Database: Database,
-		'Export to ERP, CRM, DMS': Share2,
-		'Webhook / API': Webhook,
-		'Email Notification / API': Mail,
-		'Google Sheets': FileSpreadsheet,
-		Summarization: FileText,
-		'Generate Document': FileOutput,
-		'Arithmetic Operations': Calculator
-	};
-
 	let menuOpen = $state(false);
 
-	const Icon = iconMap[data.node.config.stepName] ?? CloudUpload;
+	const Icon = icons[data.node.action.icon] ?? icons.Zap;
 </script>
 
 <NodeToolbar align="end" offset="0">
@@ -115,9 +69,9 @@
 		<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600/20 text-green-400">
 			<Icon class="h-5 w-5" />
 		</div>
-		
-		<Handle type="target" class="" position={Position.Left}   />
-		<Handle type="source" class="" position={Position.Right}   />
+
+		<Handle type="target" class="" position={Position.Left} />
+		<Handle type="source" class="" position={Position.Right} />
 	</button>
 
 	<span class="max-w-[120px] text-center text-[8px] font-medium tracking-tight text-white/70">
