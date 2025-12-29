@@ -88,7 +88,7 @@
 <aside
 	class="flex h-screen {panelCollapsed
 		? 'w-16'
-		: 'w-56'} z-30 flex-col justify-between bg-zinc-900 px-2 py-6 backdrop-blur-md transition-[width] duration-300"
+		: 'w-56'} z-30 flex-col justify-between bg-zinc-900 px-2 py-4 backdrop-blur-md transition-[width] duration-300"
 	aria-label="Workflow sidebar"
 >
 	<div class="flex h-full flex-col gap-3">
@@ -264,7 +264,7 @@
 
 	<!-- Bottom welcome strip -->
 	<footer
-		class="flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
+		class="flex w-full items-center mb-3 gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
 			? 'justify-center  py-2'
 			: 'p-2'} "
 	>

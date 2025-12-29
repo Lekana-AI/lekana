@@ -15,15 +15,19 @@
 		Check,
 		Copy,
 		ExternalLink,
-		RefreshCw
+		RefreshCw,
+		ChevronUp,
+		ArrowUp,
+		KeyRound
 	} from 'lucide-svelte';
 	import { confirmStore } from '$lib/confirm.svelte';
 	import { toast } from '$lib/toast.svelte';
+	import Publish from '$lib/components/Publish.svelte';
 
 	let { data } = $props();
 
 	let workflow = $state(data?.workflow);
-	console.log(workflow);
+	// console.log(workflow);
 
 	const user: User = data?.user;
 
@@ -149,6 +153,8 @@
 			throw new Error(`Failed to create workflow: ${res.status}`);
 		}
 	}
+
+	let showPublishModal = $state(false);
 </script>
 
 <svelte:head>
@@ -161,6 +167,16 @@
 </svelte:head>
 
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
+	{#if showPublishModal}
+		<Publish
+			{workflow}
+			onClose={() => (showPublishModal = false)}
+			onSubmit={async () => {
+				await reloadWorkflow();
+			}}
+		/>
+	{/if}
+
 	{#if propertiesVisible}
 		<ActionProperties
 			node={actionNode}
@@ -177,72 +193,62 @@
 		userName={user.firstName ?? 'User'}
 		activeWorkflowName={wName}
 	/>
-	<div class="relative flex h-screen w-full justify-center gap-2 overflow-clip bg-zinc-950 p-2">
+	<div class="relative h-screen w-full overflow-clip bg-zinc-950 p-2">
 		<div
 			class="absolute top-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 		></div>
 		<section class="z-10 flex h-full w-full flex-col gap-2">
-			<div class="flex w-fit items-center justify-between gap-6">
+			<div class="z-10 flex w-full items-center justify-between gap-6 py-1">
 				<div class="flex items-center gap-2">
-					<a href="/w/{workflow.id}/settings" class="rounded-lg p-3 text-white hover:bg-white/10">
-						<Settings2 class="h-5 w-5" />
+					<a href="/w/{workflow.id}/settings" class="rounded-lg p-2 text-white hover:bg-white/10">
+						<Settings2 class="h-4 w-4" />
 					</a>
-					<div class="flex w-fit flex-col rounded-xl">
+					<div class="flex min-w-[200px] flex-col rounded-lg">
 						<input
 							onblur={() => updateName()}
-							class="w-auto truncate rounded-lg bg-transparent text-lg font-semibold text-zinc-300 transition-all outline-none focus:bg-white/5 focus:px-2"
+							class="w-auto truncate rounded-lg bg-transparent py-1  font-semibold text-zinc-300 transition-all outline-none focus:bg-white/5 focus:px-2"
 							bind:value={workflowName}
 						/>
 					</div>
 				</div>
 
 				<!-- Publication Status Link -->
-				<a
-					href="/w/{workflow.id}/settings"
-					class="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 py-1.5 pr-4 pl-3.5 transition-all hover:bg-white/10 active:scale-95"
+				<button
+					onclick={() => (showPublishModal = true)}
+					class="group flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 active:scale-95
+					{workflow.isPublished ? 'hover:bg-white/10' : 'bg-green-700 hover:bg-green-800'}"
 				>
-					<div class="relative flex h-2 w-2">
-						<div
-							class="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 {workflow.isPublished
-								? 'bg-green-400'
-								: 'bg-zinc-400'}"
-						></div>
-						<div
-							class="relative inline-flex h-2 w-2 rounded-full {workflow.isPublished
-								? 'bg-green-500'
-								: 'bg-zinc-500'}"
-						></div>
-					</div>
-					<div class="flex flex-col items-start leading-none">
-						<span
-							class="text-[10px] font-bold tracking-widest uppercase transition-colors {workflow.isPublished
-								? 'text-green-400'
-								: 'text-zinc-400'}"
-						>
-							{workflow.isPublished ? 'Published' : 'Draft'}
-						</span>
-					</div>
-				</a>
+					{#if workflow.isPublished}
+						<KeyRound class="h-3.5 w-3.5 text-white" />
+					{:else}
+						<ArrowUp class="h-3.5 w-3.5 text-white" />
+					{/if}
+					<span class="text-xs font-medium tracking-wide text-white transition-colors">
+						{workflow.isPublished ? 'Published' : 'Publish'}
+					</span>
+				</button>
 			</div>
-			<FlowCanvas
-				{nodes}
-				{edges}
-				onNodeClick={(value: string) => (
-					(propertiesVisible = true),
-					(actionNode = value),
-					(actionId = '')
-				)}
-				workflowId={workflow.id}
-				{reloading}
-			/>
+			<div class="flex h-full w-full justify-center gap-2">
+				<FlowCanvas
+					{nodes}
+					{edges}
+					onNodeClick={(value: string) => (
+						(propertiesVisible = true),
+						(actionNode = value),
+						(actionId = '')
+					)}
+					workflowId={workflow.id}
+					{reloading}
+				/>
+				<Menu
+					onAction={(value: string) => (
+						(propertiesVisible = true),
+						(actionId = value),
+						(actionNode = null)
+					)}
+				/>
+			</div>
 		</section>
-		<Menu
-			onAction={(value: string) => (
-				(propertiesVisible = true),
-				(actionId = value),
-				(actionNode = null)
-			)}
-		/>
 	</div>
 </main>
 
