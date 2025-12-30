@@ -18,11 +18,15 @@
 		RefreshCw,
 		ChevronUp,
 		ArrowUp,
-		KeyRound
+		KeyRound,
+
+		CheckCheckIcon
+
 	} from 'lucide-svelte';
 	import { confirmStore } from '$lib/confirm.svelte';
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
+	import SettingsModal from '$lib/components/SettingsModal.svelte';
 
 	let { data } = $props();
 
@@ -124,12 +128,15 @@
 		reloadWorkflow();
 	}
 
-	onMount(() => {
-		initFlow();
-	});
+	let showPublishModal = $state(false);
+	let showSettingsModal = $state(false);
 
-	let workflowName = $derived(workflow.name);
+	let workflowName = $state(workflow.name);
 	let wName = $derived(workflow.name);
+
+	$effect(() => {
+		workflowName = workflow.name;
+	});
 
 	async function updateName() {
 		if (!workflowName || workflowName === workflow.name) {
@@ -137,7 +144,6 @@
 			return;
 		}
 
-		workflow.name = workflowName;
 		const res = await fetch(`/api/workflows/${workflow.id}`, {
 			method: 'PUT',
 			headers: {
@@ -149,12 +155,29 @@
 		if (!res.ok) {
 			const errorText = await res.text();
 			console.error('Backend response body:', errorText);
-
-			throw new Error(`Failed to create workflow: ${res.status}`);
+			throw new Error(`Failed to update name: ${res.status}`);
 		}
+		workflow.name = workflowName;
 	}
 
-	let showPublishModal = $state(false);
+	onMount(() => {
+		initFlow();
+		const checkHash = () => {
+			if (window.location.hash === '#settings') {
+				showSettingsModal = true;
+			}
+		};
+		checkHash();
+		window.addEventListener('hashchange', checkHash);
+		return () => window.removeEventListener('hashchange', checkHash);
+	});
+
+	function closeSettings() {
+		showSettingsModal = false;
+		if (window.location.hash === '#settings') {
+			history.pushState('', document.title, window.location.pathname + window.location.search);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -188,6 +211,17 @@
 			workflowId={workflow.id}
 		/>
 	{/if}
+
+	{#if showSettingsModal}
+		<SettingsModal
+			{workflow}
+			onClose={closeSettings}
+			onRename={async (newName) => {
+				workflow.name = newName;
+				await reloadWorkflow();
+			}}
+		/>
+	{/if}
 	<SidePanel
 		activeWorkflow={workflow.id ?? ''}
 		userName={user.firstName ?? 'User'}
@@ -200,13 +234,16 @@
 		<section class="z-10 flex h-full w-full flex-col gap-2">
 			<div class="z-10 flex w-full items-center justify-between gap-6 py-1">
 				<div class="flex items-center gap-2">
-					<a href="/w/{workflow.id}/settings" class="rounded-lg p-2 text-white hover:bg-white/10">
+					<button
+						onclick={() => (showSettingsModal = true)}
+						class="rounded-lg p-2 text-white hover:bg-white/10"
+					>
 						<Settings2 class="h-4 w-4" />
-					</a>
+					</button>
 					<div class="flex min-w-[200px] flex-col rounded-lg">
 						<input
 							onblur={() => updateName()}
-							class="w-auto truncate rounded-lg bg-transparent py-1  font-semibold text-zinc-300 transition-all outline-none focus:bg-white/5 focus:px-2"
+							class="w-auto truncate rounded-lg bg-transparent py-1 font-semibold text-zinc-300 transition-all outline-none focus:bg-white/5 focus:px-2"
 							bind:value={workflowName}
 						/>
 					</div>
@@ -219,13 +256,26 @@
 					{workflow.isPublished ? 'hover:bg-white/10' : 'bg-green-700 hover:bg-green-800'}"
 				>
 					{#if workflow.isPublished}
-						<KeyRound class="h-3.5 w-3.5 text-white" />
+						<!-- <CheckCheckIcon class="h-3.5 w-3.5 text-green-400" /> -->
 					{:else}
 						<ArrowUp class="h-3.5 w-3.5 text-white" />
 					{/if}
-					<span class="text-xs font-medium tracking-wide text-white transition-colors">
+					<span class="text-xs font-medium tracking-wide {workflow.isPublished ? 'text-green-400' : 'text-white'} transition-colors">
 						{workflow.isPublished ? 'Published' : 'Publish'}
 					</span>
+					{#if workflow.isPublished && workflow.lastPublishedAt}
+						<span class=" text-[10px] font-normal opacity-50 text-white">
+							{(() => {
+								const seconds = Math.floor((Date.now() - new Date(workflow.lastPublishedAt).getTime()) / 1000);
+								if (seconds < 60) return 'moments ago';
+								const minutes = Math.floor(seconds / 60);
+								if (minutes < 60) return `${minutes}m ago`;
+								const hours = Math.floor(minutes / 60);
+								if (hours < 24) return `${hours}h ago`;
+								return `${Math.floor(hours / 24)}d ago`;
+							})()}
+						</span>
+					{/if}
 				</button>
 			</div>
 			<div class="flex h-full w-full justify-center gap-2">

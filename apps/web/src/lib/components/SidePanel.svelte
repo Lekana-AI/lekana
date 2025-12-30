@@ -191,8 +191,14 @@
 						{#each workflows as workflow (workflow.id)}
 							<div class="relative">
 								<a
-									onclick={() => (window.location.href = '/w/' + workflow.id)}
 									href="/w/{workflow.id}"
+									onclick={(e) => {
+										if (activeWorkflow === workflow.id) {
+											e.preventDefault();
+										} else {
+											window.location.href = '/w/' + workflow.id;
+										}
+									}}
 									class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
 						{activeWorkflow === workflow.id
 										? 'bg-green-700 font-semibold text-white'
@@ -225,8 +231,8 @@
 										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 overflow-clip rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
 									>
 										<a
-											onclick={() => (window.location.href = '/w/' + workflow.id + '/settings')}
-											href="/w/{workflow.id}/settings"
+											onclick={() => (window.location.href = '/w/' + workflow.id + '#settings')}
+											href="/w/{workflow.id}#settings"
 											type="button"
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
 										>
@@ -264,7 +270,7 @@
 
 	<!-- Bottom welcome strip -->
 	<footer
-		class="flex w-full items-center mb-3 gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
+		class="mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
 			? 'justify-center  py-2'
 			: 'p-2'} "
 	>

@@ -18,7 +18,7 @@ const handler: RequestHandler = async (event) => {
 	// Build upstream URL: base + path + query
 	const path = params.path ? `/${params.path}` : '';
 	const upstreamUrl = new URL(RUNTIME_BASE + '/api/v1' + path);
-	console.log(upstreamUrl);
+	// console.log(upstreamUrl);
 	upstreamUrl.search = url.search;
 
 	// Prepare headers and body. If we forward a streaming body we must set
