@@ -4,7 +4,7 @@
 	import Input from './Input.svelte';
 	import { onMount } from 'svelte';
 
-	let { onClose, onSubmit, actionId, workflowId, node } = $props();
+	let { onClose, onSubmit, actionId, workflowId, node, extractedFields } = $props();
 
 	// use step + fields as state; no separate name/description/icon
 	let step = $state(null);
@@ -65,7 +65,22 @@
 		});
 	}
 
+	let isValid = $derived(
+		fields.every((field) => {
+			if (!isVisible(field) || !field.required) return true;
+			if (field.type === 'keyValue') {
+				return (field.value?.length ?? 0) > 0 && field.value.every((p) => p.key && p.value);
+			}
+			if (field.type === 'array') {
+				return (field.value?.length ?? 0) > 0 && field.value.every((v) => v !== '');
+			}
+			return field.value !== undefined && field.value !== null && field.value !== '';
+		})
+	);
+
 	async function formSubmit() {
+		if (!isValid) return;
+
 		const config = fields.reduce((acc, field) => {
 			if (!isVisible(field)) return acc; // Don't submit hidden fields
 			acc[field.name] = field.value;
@@ -149,7 +164,7 @@
 					<div class="space-y-6 py-2">
 						{#each fields as fieldData}
 							{#if isVisible(fieldData)}
-								<Input onInput {fieldData} />
+								<Input onInput {fieldData} {extractedFields} />
 								<!-- <pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
 									fieldData
 								)}</pre> -->
@@ -161,7 +176,8 @@
 						<button
 							type="button"
 							onclick={formSubmit}
-							class="flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors duration-300 hover:bg-green-800 disabled:opacity-50"
+							disabled={!isValid}
+							class="flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors duration-300 hover:bg-green-800 disabled:bg-zinc-800 disabled:opacity-50"
 						>
 							{node ? 'Update Action' : 'Add Action to Workflow'}
 							<CornerRightUp class="h-3.5 w-3.5" />

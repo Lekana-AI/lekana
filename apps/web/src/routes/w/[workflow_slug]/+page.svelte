@@ -209,6 +209,7 @@
 				await reloadWorkflow();
 			}}
 			workflowId={workflow.id}
+			extractedFields={workflow.extractedFields}
 		/>
 	{/if}
 

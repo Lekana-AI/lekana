@@ -1,6 +1,28 @@
 <script>
-	import { Minus } from 'lucide-svelte';
-	let { fieldData, onInput } = $props();
+	import { Minus, Plus } from 'lucide-svelte';
+	let { fieldData = $bindable(), onInput, extractedFields } = $props();
+
+	$effect(() => {
+		if (fieldData.type === 'keyValue' && fieldData.useExtractedFields && extractedFields) {
+			const currentMapping = fieldData.value || [];
+			const currentKeys = currentMapping.map((m) => m.key);
+
+			let updated = false;
+			const newMapping = [...currentMapping];
+
+			extractedFields.forEach((field) => {
+				if (!currentKeys.includes(field)) {
+					newMapping.push({ key: field, value: '' });
+					updated = true;
+				}
+			});
+
+			if (updated) {
+				fieldData.value = newMapping;
+				onInput?.({ target: { value: fieldData.value } }, fieldData);
+			}
+		}
+	});
 </script>
 
 {#if fieldData.type === 'text'}
@@ -179,7 +201,11 @@
 					onInput?.({ target: { value: fieldData.value } }, fieldData);
 				}}
 			>
-				Add Pair
+				{#if fieldData.useExtractedFields}
+					<Plus size="12" class="mr-1" /> Add Custom
+				{:else}
+					Add Pair
+				{/if}
 			</button>
 		</div>
 
@@ -193,6 +219,7 @@
 						bind:value={fieldData.value[index].key}
 						class="w-1/3 border-r border-zinc-700 px-3 py-2 text-sm text-white transition-all outline-none placeholder:text-zinc-500"
 						placeholder={fieldData.keyLabel}
+						readonly={fieldData.useExtractedFields && extractedFields?.includes(item.key)}
 						oninput={() => onInput?.({ target: { value: fieldData.value } }, fieldData)}
 					/>
 					<input
