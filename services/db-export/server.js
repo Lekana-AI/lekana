@@ -65,12 +65,61 @@ app.post(
         includeMetadata = true,
         unmappedFieldStrategy = "store_as_json", // "store_as_json", "ignore", "error"
         onConflict = "skip", // "skip", "update", "error"
+        flattenFieldsMode = false, // NEW: Auto-extract .value from OCR fields
+        includeExtractionMetadata = false, // NEW: Store confidence/corrected data
       } = config;
 
+      console.log("=".repeat(60));
+      console.log(`[DB-Export] Processing request`);
+      console.log(`[DB-Export] Execution: ${executionId}`);
+      console.log(`[DB-Export] Node: ${nodeId}`);
+      console.log(`[DB-Export] Workflow: ${workflowId}`);
+      console.log("-".repeat(60));
+      console.log(`[DB-Export] CONFIG:`);
+      console.log(`  - tableName: ${tableName}`);
+      console.log(`  - mode: ${mode}`);
+      console.log(`  - includeMetadata: ${includeMetadata}`);
+      console.log(`  - unmappedFieldStrategy: ${unmappedFieldStrategy}`);
+      console.log(`  - onConflict: ${onConflict}`);
+      console.log(`  - flattenFieldsMode: ${flattenFieldsMode}`);
+      // Convert fieldMapping from array format to object format if needed
+      // UI sends [{key: "dob", value: "dob"}] but we need {"dob": "fields.dob.value"}
+      let normalizedFieldMapping = fieldMapping;
+      if (Array.isArray(fieldMapping)) {
+        normalizedFieldMapping = {};
+        for (const item of fieldMapping) {
+          const columnName = item.key || item.columnName;
+          let fieldPath = item.value || item.fieldPath || columnName;
+
+          // If flattenFieldsMode is false and path doesn't include 'fields.',
+          // auto-prepend the path to extract from OCR result structure
+          if (!flattenFieldsMode && !fieldPath.includes(".")) {
+            fieldPath = `fields.${fieldPath}.value`;
+          }
+
+          if (columnName) {
+            normalizedFieldMapping[columnName] = fieldPath;
+          }
+        }
+        console.log(`[DB-Export] Converted fieldMapping from array to object:`);
+        console.log(`  - Original: ${JSON.stringify(fieldMapping)}`);
+        console.log(
+          `  - Normalized: ${JSON.stringify(normalizedFieldMapping)}`
+        );
+      }
+
       console.log(
-        `[DB-Export] Processing request - Execution: ${executionId}, Node: ${nodeId}`
+        `  - includeExtractionMetadata: ${includeExtractionMetadata}`
       );
-      console.log(`[DB-Export] Config: table=${tableName}, mode=${mode}`);
+      console.log(
+        `  - fieldMapping: ${JSON.stringify(normalizedFieldMapping)}`
+      );
+      console.log(
+        `  - databaseUrl: ${
+          databaseUrl ? databaseUrl.replace(/:[^:@]+@/, ":****@") : "NOT SET"
+        }`
+      );
+      console.log("-".repeat(60));
 
       // Validate required config
       if (!databaseUrl) {
@@ -82,6 +131,15 @@ app.post(
 
       // Get data from input
       const inputData = input.data || input;
+      console.log(`[DB-Export] INPUT DATA:`);
+      console.log(
+        JSON.stringify(inputData, null, 2).split("\n").slice(0, 30).join("\n")
+      );
+      if (JSON.stringify(inputData).length > 2000) {
+        console.log("  ... (truncated)");
+      }
+      console.log("-".repeat(60));
+
       if (!inputData || Object.keys(inputData).length === 0) {
         throw new Error("No data provided in input");
       }
@@ -93,11 +151,19 @@ app.post(
         // Extract records from input data
         const { records, inferredSchema } = exportService.extractRecords(
           inputData,
-          fieldMapping,
-          unmappedFieldStrategy
+          normalizedFieldMapping,
+          unmappedFieldStrategy,
+          { flattenFieldsMode, includeExtractionMetadata }
         );
 
-        console.log(`[DB-Export] Extracted ${records.length} records`);
+        console.log(`[DB-Export] EXTRACTED ${records.length} records`);
+        console.log(
+          `[DB-Export] INFERRED SCHEMA: ${JSON.stringify(inferredSchema)}`
+        );
+        if (records.length > 0) {
+          console.log(`[DB-Export] SAMPLE RECORD:`);
+          console.log(JSON.stringify(records[0], null, 2));
+        }
 
         // Handle table creation/validation based on mode
         if (mode === "auto") {

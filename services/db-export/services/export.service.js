@@ -10,16 +10,32 @@ const databaseService = require("./database.service");
  * @param {any} inputData - Raw input from previous node
  * @param {Record<string, string>} fieldMapping - Column to path mapping
  * @param {string} unmappedFieldStrategy - "store_as_json", "ignore", "error"
+ * @param {Object} options - Additional options
+ * @param {boolean} options.flattenFieldsMode - Auto-extract .value from OCR fields
+ * @param {boolean} options.includeExtractionMetadata - Store confidence/corrected data
  * @returns {{ records: any[], inferredSchema: Record<string, string> }}
  */
-function extractRecords(inputData, fieldMapping, unmappedFieldStrategy) {
+function extractRecords(
+  inputData,
+  fieldMapping,
+  unmappedFieldStrategy,
+  options = {}
+) {
+  const { flattenFieldsMode = false, includeExtractionMetadata = false } =
+    options;
   const records = [];
   let inferredSchema = {};
 
   // Handle OCR-style output with documents array
   if (inputData.documents && Array.isArray(inputData.documents)) {
     for (const doc of inputData.documents) {
-      const result = doc.result || {};
+      let result = doc.result || {};
+
+      // If flattenFieldsMode is enabled and we have a fields object, flatten it
+      if (flattenFieldsMode && result.fields) {
+        result = flattenOcrFields(result, includeExtractionMetadata);
+      }
+
       const record = extractSingleRecord(
         result,
         fieldMapping,
@@ -37,8 +53,15 @@ function extractRecords(inputData, fieldMapping, unmappedFieldStrategy) {
   }
   // Handle direct object input
   else if (typeof inputData === "object" && !Array.isArray(inputData)) {
+    let data = inputData;
+
+    // If flattenFieldsMode is enabled and we have a fields object, flatten it
+    if (flattenFieldsMode && data.fields) {
+      data = flattenOcrFields(data, includeExtractionMetadata);
+    }
+
     const record = extractSingleRecord(
-      inputData,
+      data,
       fieldMapping,
       unmappedFieldStrategy
     );
@@ -48,8 +71,15 @@ function extractRecords(inputData, fieldMapping, unmappedFieldStrategy) {
   // Handle array input
   else if (Array.isArray(inputData)) {
     for (const item of inputData) {
+      let data = item;
+
+      // If flattenFieldsMode is enabled and we have a fields object, flatten it
+      if (flattenFieldsMode && data.fields) {
+        data = flattenOcrFields(data, includeExtractionMetadata);
+      }
+
       const record = extractSingleRecord(
-        item,
+        data,
         fieldMapping,
         unmappedFieldStrategy
       );
@@ -69,6 +99,53 @@ function extractRecords(inputData, fieldMapping, unmappedFieldStrategy) {
 }
 
 /**
+ * Flatten OCR fields object - extract just the .value from each field
+ * @param {Object} ocrResult - OCR result with fields object
+ * @param {boolean} includeExtractionMetadata - Whether to store confidence data
+ * @returns {Object} Flattened object with field values as top-level properties
+ */
+function flattenOcrFields(ocrResult, includeExtractionMetadata = false) {
+  const flattened = {};
+  const extractionMetadata = {};
+
+  // Extract values from fields object
+  if (ocrResult.fields && typeof ocrResult.fields === "object") {
+    for (const [fieldName, fieldData] of Object.entries(ocrResult.fields)) {
+      // Extract just the value
+      if (fieldData && typeof fieldData === "object" && "value" in fieldData) {
+        flattened[fieldName] = fieldData.value;
+
+        // Collect metadata if requested
+        if (includeExtractionMetadata) {
+          extractionMetadata[fieldName] = {
+            confidence: fieldData.confidence,
+            corrected: fieldData.corrected,
+            originalValue: fieldData.originalValue,
+          };
+        }
+      } else {
+        // If it's not a field object, use as-is
+        flattened[fieldName] = fieldData;
+      }
+    }
+  }
+
+  // Add other top-level properties (documentType, outputMode, etc.)
+  for (const [key, value] of Object.entries(ocrResult)) {
+    if (key !== "fields") {
+      flattened[key] = value;
+    }
+  }
+
+  // Add extraction metadata if requested
+  if (includeExtractionMetadata && Object.keys(extractionMetadata).length > 0) {
+    flattened._extraction_metadata = extractionMetadata;
+  }
+
+  return flattened;
+}
+
+/**
  * Extract a single record using field mapping
  * @param {Record<string, any>} data
  * @param {Record<string, string>} fieldMapping
@@ -82,12 +159,16 @@ function extractSingleRecord(data, fieldMapping, unmappedFieldStrategy) {
   // If fieldMapping is provided, use it
   if (fieldMapping && Object.keys(fieldMapping).length > 0) {
     for (const [columnName, fieldPath] of Object.entries(fieldMapping)) {
-      const value = getValueByPath(data, fieldPath);
+      // Ensure fieldPath is a string
+      const pathStr = fieldPath != null ? String(fieldPath) : "";
+      const value = getValueByPath(data, pathStr);
       record[columnName] = value;
 
       // Track which source keys were mapped
-      const sourceKey = fieldPath.split(".")[0].split("[")[0];
-      mappedKeys.add(sourceKey);
+      if (pathStr) {
+        const sourceKey = pathStr.split(".")[0].split("[")[0];
+        mappedKeys.add(sourceKey);
+      }
     }
   } else {
     // No field mapping - use all top-level fields
@@ -139,7 +220,9 @@ function extractSingleRecord(data, fieldMapping, unmappedFieldStrategy) {
 function getValueByPath(obj, path) {
   if (!path) return obj;
 
-  const parts = path.split(/\.|\[|\]/).filter(Boolean);
+  // Ensure path is a string
+  const pathStr = typeof path === "string" ? path : String(path);
+  const parts = pathStr.split(/\.|\[|\]/).filter(Boolean);
   let current = obj;
 
   for (const part of parts) {
@@ -230,4 +313,5 @@ module.exports = {
   extractSingleRecord,
   getValueByPath,
   insertRecords,
+  flattenOcrFields,
 };

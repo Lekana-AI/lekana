@@ -41,7 +41,22 @@ async function disconnect(client) {
  */
 async function query(client, queryText, params = []) {
   try {
+    // Log query details
+    console.log(
+      "[Database] QUERY:",
+      queryText.replace(/\s+/g, " ").substring(0, 200) +
+        (queryText.length > 200 ? "..." : "")
+    );
+    if (params.length > 0) {
+      const truncatedParams = params.map((p) => {
+        const str = String(p);
+        return str.length > 50 ? str.substring(0, 50) + "..." : str;
+      });
+      console.log("[Database] PARAMS:", JSON.stringify(truncatedParams));
+    }
+
     const result = await client.query(queryText, params);
+    console.log(`[Database] Query OK - ${result.rowCount ?? 0} rows affected`);
     return result;
   } catch (error) {
     console.error("[Database] Query error:", error.message);

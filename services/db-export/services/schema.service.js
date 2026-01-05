@@ -75,12 +75,152 @@ async function tableExists(client, tableName) {
  * @param {Record<string, string>} schema
  * @param {boolean} includeMetadata
  */
+/**
+ * Get existing columns for a table
+ * @param {Client} client
+ * @param {string} tableName
+ * @returns {Promise<Set<string>>} Set of column names (lowercase)
+ */
+async function getExistingColumns(client, tableName) {
+  const result = await databaseService.query(
+    client,
+    `SELECT column_name 
+     FROM information_schema.columns 
+     WHERE table_name = $1`,
+    [tableName]
+  );
+  return new Set(result.rows.map((row) => row.column_name.toLowerCase()));
+}
+
+/**
+ * Add missing columns to an existing table
+ * @param {Client} client
+ * @param {string} tableName
+ * @param {Record<string, string>} schema
+ * @param {Set<string>} existingColumns
+ */
+async function addMissingColumns(client, tableName, schema, existingColumns) {
+  const columnsToAdd = [];
+
+  for (const [columnName, columnType] of Object.entries(schema)) {
+    // Skip internal columns - they're handled by ensureMetadataColumns
+    if (columnName.startsWith("_")) continue;
+
+    const safeName = sanitizeColumnName(columnName);
+    if (!existingColumns.has(safeName)) {
+      columnsToAdd.push({ name: safeName, type: columnType });
+    }
+  }
+
+  if (columnsToAdd.length === 0) {
+    return;
+  }
+
+  console.log(
+    `[Schema] Adding ${
+      columnsToAdd.length
+    } missing column(s) to "${tableName}": ${columnsToAdd
+      .map((c) => c.name)
+      .join(", ")}`
+  );
+
+  for (const col of columnsToAdd) {
+    const alterQuery = `ALTER TABLE "${tableName}" ADD COLUMN "${col.name}" ${col.type}`;
+    await databaseService.query(client, alterQuery);
+    console.log(`[Schema] Added column "${col.name}" (${col.type})`);
+  }
+}
+
+/**
+ * Ensure metadata columns exist in the table
+ * @param {Client} client
+ * @param {string} tableName
+ * @param {Set<string>} existingColumns
+ * @param {boolean} includeMetadata
+ */
+async function ensureMetadataColumns(
+  client,
+  tableName,
+  existingColumns,
+  includeMetadata
+) {
+  console.log(
+    `[Schema] ensureMetadataColumns called, includeMetadata=${includeMetadata}`
+  );
+  const metadataColumns = [];
+
+  // _source_filename is ALWAYS added to records, so always ensure it exists
+  if (!existingColumns.has("_source_filename")) {
+    metadataColumns.push({ name: "_source_filename", type: "TEXT" });
+  }
+
+  // These metadata columns are optional based on config
+  if (includeMetadata) {
+    if (!existingColumns.has("_execution_id")) {
+      metadataColumns.push({ name: "_execution_id", type: "TEXT" });
+    }
+    if (!existingColumns.has("_workflow_id")) {
+      metadataColumns.push({ name: "_workflow_id", type: "TEXT" });
+    }
+    if (!existingColumns.has("_created_at")) {
+      metadataColumns.push({
+        name: "_created_at",
+        type: "TIMESTAMP DEFAULT NOW()",
+      });
+    }
+  }
+
+  // Always ensure _extra_data exists
+  if (!existingColumns.has("_extra_data")) {
+    metadataColumns.push({ name: "_extra_data", type: "JSONB" });
+  }
+
+  if (metadataColumns.length === 0) {
+    return;
+  }
+
+  console.log(
+    `[Schema] Adding ${
+      metadataColumns.length
+    } missing metadata column(s) to "${tableName}": ${metadataColumns
+      .map((c) => c.name)
+      .join(", ")}`
+  );
+
+  for (const col of metadataColumns) {
+    const alterQuery = `ALTER TABLE "${tableName}" ADD COLUMN "${col.name}" ${col.type}`;
+    await databaseService.query(client, alterQuery);
+    console.log(`[Schema] Added metadata column "${col.name}"`);
+  }
+}
+
 async function ensureTable(client, tableName, schema, includeMetadata = true) {
   const exists = await tableExists(client, tableName);
 
   if (exists) {
     console.log(`[Schema] Table "${tableName}" already exists`);
-    // TODO: Could add ALTER TABLE logic here to add missing columns
+    // Auto-add missing columns
+    const existingColumns = await getExistingColumns(client, tableName);
+    console.log(
+      `[Schema] Existing columns: ${[...existingColumns].join(", ")}`
+    );
+
+    try {
+      await addMissingColumns(client, tableName, schema, existingColumns);
+    } catch (error) {
+      console.error(`[Schema] Error adding missing columns: ${error.message}`);
+    }
+
+    try {
+      await ensureMetadataColumns(
+        client,
+        tableName,
+        existingColumns,
+        includeMetadata
+      );
+    } catch (error) {
+      console.error(`[Schema] Error adding metadata columns: ${error.message}`);
+    }
     return;
   }
 
@@ -96,9 +236,11 @@ async function ensureTable(client, tableName, schema, includeMetadata = true) {
     columns.push(`"${safeName}" ${columnType}`);
   }
 
-  // Add metadata columns if enabled
+  // _source_filename is always added to records
+  columns.push(`"_source_filename" TEXT`);
+
+  // Add optional metadata columns if enabled
   if (includeMetadata) {
-    columns.push(`"_source_filename" TEXT`);
     columns.push(`"_execution_id" TEXT`);
     columns.push(`"_workflow_id" TEXT`);
     columns.push(`"_created_at" TIMESTAMP DEFAULT NOW()`);
@@ -122,11 +264,18 @@ async function ensureTable(client, tableName, schema, includeMetadata = true) {
  * @returns {string}
  */
 function sanitizeColumnName(name) {
-  // Replace special characters with underscores
-  return name
-    .replace(/[^a-zA-Z0-9_]/g, "_")
-    .replace(/^_+/, "")
-    .toLowerCase();
+  // Check if it's an internal column (starts with _)
+  const isInternal = name.startsWith("_");
+
+  // Replace special characters with underscores, keep leading underscore for internal columns
+  let sanitized = name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+
+  // Only strip leading underscores from non-internal columns
+  if (!isInternal) {
+    sanitized = sanitized.replace(/^_+/, "");
+  }
+
+  return sanitized;
 }
 
 module.exports = {
