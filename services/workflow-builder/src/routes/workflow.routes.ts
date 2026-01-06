@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { createWorkflow, getWorkflow, getAllWorkflows, updateWorkflow, deleteWorkflow, updatePublishStatus } from '../controllers/workflow.controller';
+import { generateAIWorkflow } from '../controllers/ai.controller';
 import { addNode, getAllNodes, getNode, updateNode, deleteNode } from '../controllers/node.controller';
 import { addEdge } from '../controllers/edge.controller';
 import { getWorkflowFields, deleteWorkflowField } from '../controllers/field.controller';
@@ -9,6 +10,7 @@ const router = Router();
 // Workflow routes
 router.get('/', getAllWorkflows);
 router.post('/', createWorkflow);
+router.post('/generate', generateAIWorkflow);
 router.get('/:id', getWorkflow);
 router.put('/:id', updateWorkflow);
 router.patch('/:id/publish-status', updatePublishStatus);

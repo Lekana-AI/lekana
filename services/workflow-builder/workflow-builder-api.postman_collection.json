@@ -5,11 +5,31 @@
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
-		{"key": "base_url", "value": "http://localhost:3001", "type": "string"},
-		{"key": "workflow_id", "value": "", "type": "string"},
-		{"key": "node_id", "value": "", "type": "string"},
-		{"key": "action_id", "value": "", "type": "string"},
-		{"key": "field_id", "value": "", "type": "string"}
+		{
+			"key": "base_url",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "workflow_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "node_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "action_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "field_id",
+			"value": "",
+			"type": "string"
+		}
 	],
 	"item": [
 		{
@@ -20,7 +40,15 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": {"raw": "{{base_url}}/", "host": ["{{base_url}}"], "path": [""]}
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						}
 					}
 				}
 			]
@@ -32,101 +60,319 @@
 					"name": "Get All Workflows",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows", "host": ["{{base_url}}"], "path": ["workflows"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows"
+							]
+						}
 					}
 				},
 				{
 					"name": "Create Workflow",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"name\": \"My New Workflow\"\n}"},
-						"url": {"raw": "{{base_url}}/workflows", "host": ["{{base_url}}"], "path": ["workflows"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"My New Workflow\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows"
+							]
+						}
+					}
+				},
+				{
+					"name": "Generate AI Workflow",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"prompt\": \"Build an invoice processing workflow that uploads an invoice and then calls an external API.\",\n    \"workflowId\": \"{{workflow_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/generate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"generate"
+							]
+						},
+						"description": "Generate or refine a workflow using AI streaming. Provide prompt and optional workflowId for refinement."
 					}
 				},
 				{
 					"name": "Get Workflow by ID",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Update Workflow",
 					"request": {
 						"method": "PUT",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"name\": \"Updated Workflow Name\"\n}"},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated Workflow Name\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Delete Workflow",
 					"request": {
 						"method": "DELETE",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Get All Nodes",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "nodes"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes"
+							]
+						}
 					}
 				},
 				{
 					"name": "Add Node",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"actionId\": \"{{action_id}}\",\n    \"positionX\": 150,\n    \"positionY\": 250,\n    \"config\": {\n        \"stepName\": \"My Step\"\n    }\n}"},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "nodes"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"actionId\": \"{{action_id}}\",\n    \"positionX\": 150,\n    \"positionY\": 250,\n    \"config\": {\n        \"stepName\": \"My Step\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes"
+							]
+						}
 					}
 				},
 				{
 					"name": "Get Node by ID",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "nodes", "{{node_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes",
+								"{{node_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Update Node",
 					"request": {
 						"method": "PUT",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"positionX\": 200,\n    \"positionY\": 300,\n    \"config\": {\n        \"stepName\": \"Updated Step\",\n        \"extractFields\": [\"invoice_number\", \"vendor\", \"total\"]\n    }\n}"},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "nodes", "{{node_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"positionX\": 200,\n    \"positionY\": 300,\n    \"config\": {\n        \"stepName\": \"Updated Step\",\n        \"extractFields\": [\"invoice_number\", \"vendor\", \"total\"]\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes",
+								"{{node_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Delete Node",
 					"request": {
 						"method": "DELETE",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "nodes", "{{node_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes",
+								"{{node_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Add Edge",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"sourceNodeId\": \"source-node-id\",\n    \"targetNodeId\": \"target-node-id\"\n}"},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/edges", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "edges"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sourceNodeId\": \"source-node-id\",\n    \"targetNodeId\": \"target-node-id\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/edges",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"edges"
+							]
+						}
 					}
 				},
 				{
 					"name": "Get Workflow Fields",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/fields", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "fields"]},
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/fields",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"fields"
+							]
+						},
 						"description": "Get all fields available in a workflow. Returns fields from OCR extractFields and other field-producing nodes."
 					}
 				},
@@ -134,8 +380,24 @@
 					"name": "Delete Workflow Field",
 					"request": {
 						"method": "DELETE",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/fields/{{field_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "fields", "{{field_id}}"]},
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/fields/{{field_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"fields",
+								"{{field_id}}"
+							]
+						},
 						"description": "Delete a specific field from the workflow field registry."
 					}
 				}
@@ -148,42 +410,116 @@
 					"name": "Get All Actions",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/actions", "host": ["{{base_url}}"], "path": ["actions"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/actions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions"
+							]
+						}
 					}
 				},
 				{
 					"name": "Get Action by ID",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/actions/{{action_id}}", "host": ["{{base_url}}"], "path": ["actions", "{{action_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/actions/{{action_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"{{action_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Create Action",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"name\": \"Database Export\",\n    \"description\": \"Export workflow data to a SQL database\",\n    \"icon\": \"Database\",\n    \"categoryId\": \"category-id-here\",\n    \"inputType\": \"json\",\n    \"outputType\": \"json\",\n    \"serviceUrl\": \"http://localhost:4005\",\n    \"configSchema\": {\n        \"stepName\": \"Database Export\",\n        \"databaseUrl\": \"\",\n        \"tableName\": \"\",\n        \"mode\": \"auto\",\n        \"fieldMapping\": {},\n        \"includeMetadata\": true,\n        \"unmappedFieldStrategy\": \"store_as_json\",\n        \"onConflict\": \"skip\"\n    },\n    \"configMeta\": {\n        \"stepName\": {\"type\": \"text\", \"label\": \"Step Name\", \"required\": true},\n        \"databaseUrl\": {\"type\": \"password\", \"label\": \"Database URL\", \"required\": true},\n        \"tableName\": {\"type\": \"text\", \"label\": \"Table Name\", \"required\": true},\n        \"mode\": {\"type\": \"select\", \"label\": \"Mode\", \"options\": [{\"label\": \"Auto Create\", \"value\": \"auto\"}, {\"label\": \"Existing Table\", \"value\": \"existing\"}]},\n        \"includeMetadata\": {\"type\": \"checkbox\", \"label\": \"Include Metadata\"}\n    }\n}"},
-						"url": {"raw": "{{base_url}}/actions", "host": ["{{base_url}}"], "path": ["actions"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Database Export\",\n    \"description\": \"Export workflow data to a SQL database\",\n    \"icon\": \"Database\",\n    \"categoryId\": \"category-id-here\",\n    \"inputType\": \"json\",\n    \"outputType\": \"json\",\n    \"serviceUrl\": \"http://localhost:4005\",\n    \"configSchema\": {\n        \"stepName\": \"Database Export\",\n        \"databaseUrl\": \"\",\n        \"tableName\": \"\",\n        \"mode\": \"auto\",\n        \"fieldMapping\": {},\n        \"includeMetadata\": true,\n        \"unmappedFieldStrategy\": \"store_as_json\",\n        \"onConflict\": \"skip\"\n    },\n    \"configMeta\": {\n        \"stepName\": {\"type\": \"text\", \"label\": \"Step Name\", \"required\": true},\n        \"databaseUrl\": {\"type\": \"password\", \"label\": \"Database URL\", \"required\": true},\n        \"tableName\": {\"type\": \"text\", \"label\": \"Table Name\", \"required\": true},\n        \"mode\": {\"type\": \"select\", \"label\": \"Mode\", \"options\": [{\"label\": \"Auto Create\", \"value\": \"auto\"}, {\"label\": \"Existing Table\", \"value\": \"existing\"}]},\n        \"includeMetadata\": {\"type\": \"checkbox\", \"label\": \"Include Metadata\"}\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/actions",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions"
+							]
+						}
 					}
 				},
 				{
 					"name": "Update Action",
 					"request": {
 						"method": "PUT",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"description\": \"Updated description\",\n    \"serviceUrl\": \"http://localhost:4005\"\n}"},
-						"url": {"raw": "{{base_url}}/actions/{{action_id}}", "host": ["{{base_url}}"], "path": ["actions", "{{action_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"description\": \"Updated description\",\n    \"serviceUrl\": \"http://localhost:4005\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/actions/{{action_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"{{action_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Delete Action",
 					"request": {
 						"method": "DELETE",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/actions/{{action_id}}", "host": ["{{base_url}}"], "path": ["actions", "{{action_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/actions/{{action_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actions",
+								"{{action_id}}"
+							]
+						}
 					}
 				}
 			]
@@ -195,17 +531,46 @@
 					"name": "Get All Categories",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
 					}
 				},
 				{
 					"name": "Create Category",
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"body": {"mode": "raw", "raw": "{\n    \"name\": \"Utilities\",\n    \"description\": \"Utility actions for data processing\"\n}"},
-						"url": {"raw": "{{base_url}}/categories", "host": ["{{base_url}}"], "path": ["categories"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Utilities\",\n    \"description\": \"Utility actions for data processing\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/categories",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
 					}
 				}
 			]
