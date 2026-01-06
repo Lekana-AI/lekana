@@ -2,15 +2,51 @@
 	import { goto } from '$app/navigation';
 	import SidePanel from '$lib/components/SidePanel.svelte';
 	import { Plus, ArrowUp, ArrowRight } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	import type { User } from 'svelte-clerk/server';
-	let prompt = '';
+	let prompt = $state('');
+	let generating = $state(false);
+
+	async function handleGenerate() {
+		if (!prompt || generating) return;
+
+		try {
+			generating = true;
+			const res = await fetch('/api/workflows', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: 'Untitled' })
+			});
+
+			if (!res.ok) {
+				throw new Error(`Failed to create workflow: ${res.status}`);
+			}
+
+			const workflow = await res.json();
+			goto(`/w/${workflow.id}?prompt=${encodeURIComponent(prompt)}`);
+		} catch (error) {
+			console.error('Failed to start generation:', error);
+			generating = false;
+		}
+	}
+
+	onMount(() => {
+		const pendingPrompt = localStorage.getItem('pending_prompt');
+		if (pendingPrompt) {
+			localStorage.removeItem('pending_prompt');
+			prompt = pendingPrompt;
+			handleGenerate();
+		}
+	});
 
 	type Template = {
 		id: number;
 		name: string;
 	};
 
-	export let data;
+	let { data }: { data: any } = $props();
 
 	const user: User = data?.user;
 
@@ -69,24 +105,31 @@
 				>
 					<textarea
 						bind:value={prompt}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+								e.preventDefault();
+								handleGenerate();
+							}
+						}}
 						rows="5"
 						autocomplete="off"
 						placeholder="Ask Lekana to create a workflow that ...."
 						class="dark-scroll max-h-64 min-h-20 w-full resize-none p-1 text-white outline-none"
 					></textarea>
 
-					<div class="inline-flex items-center justify-between self-stretch">
+					<div class="inline-flex items-center justify-end self-stretch">
 						<button
-							class="rounded-lg bg-zinc-900 px-4 py-2 text-white transition-colors duration-300 hover:bg-green-950"
-						>
-							<Plus size="20" />
-						</button>
-
-						<button
+							onclick={handleGenerate}
 							class="rounded-lg bg-white px-4 py-2 text-black transition-colors duration-300 disabled:bg-zinc-400"
-							disabled={!prompt}
+							disabled={!prompt || generating}
 						>
-							<ArrowUp size="20" />
+							{#if generating}
+								<div
+									class="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"
+								></div>
+							{:else}
+								<ArrowUp size="20" />
+							{/if}
 						</button>
 					</div>
 				</div>

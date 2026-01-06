@@ -5,6 +5,7 @@
 	import Menu from '$lib/components/Menu.svelte';
 	import ActionProperties from '$lib/components/ActionProperties.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import type { User } from 'svelte-clerk/server';
 	import { onMount } from 'svelte';
 	import {
@@ -273,9 +274,9 @@
 							class="group flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 transition-all duration-300 hover:bg-green-800 active:scale-95"
 						>
 							<ArrowUp class="h-3.5 w-3.5 text-white" />
-							<!-- <span class="text-xs font-medium tracking-wide text-white transition-colors">
+							<span class="text-xs font-medium tracking-wide text-white transition-colors">
 								Publish
-							</span> -->
+							</span>
 						</button>
 					{:else}
 						<a
@@ -307,11 +308,16 @@
 					{reloading}
 				/>
 				<Menu
+					workflowId={workflow.id}
+					initialPrompt={page.url.searchParams.get('prompt') || ''}
 					onAction={(value: string) => (
 						(propertiesVisible = true),
 						(actionId = value),
 						(actionNode = null)
 					)}
+					onGenerate={async () => {
+						await reloadWorkflow();
+					}}
 				/>
 			</div>
 		</section>

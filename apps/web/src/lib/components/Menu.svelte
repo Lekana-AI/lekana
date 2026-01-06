@@ -2,23 +2,51 @@
 	import { icons } from '$lib/icon';
 	import { Search, Sparkles, ArrowRightToLine, Plus, ArrowUp, LayoutGrid } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { marked } from 'marked';
 
-	let { onAction } = $props();
+	let {
+		onAction,
+		workflowId,
+		onGenerate,
+		initialPrompt
+	}: {
+		onAction?: (id: string) => void;
+		workflowId?: string;
+		onGenerate?: () => Promise<void> | void;
+		initialPrompt?: string;
+	} = $props();
+
+	let thoughts = $state('');
+	let sentPrompt = $state('');
+	let generating = $state(false);
+
+	let parsedThoughts = $derived.by(() => {
+		try {
+			return marked.parse(thoughts);
+		} catch (e) {
+			return thoughts;
+		}
+	});
 
 	let collapsed = $state(false);
-	let activeTab = $state<'actions' | 'assistant'>('actions');
-	let actionSections = $state([]);
+	let activeTab = $state<'actions' | 'assistant'>(initialPrompt ? 'assistant' : 'actions');
+	let actionSections = $state<any[]>([]);
 	let prompt = $state('');
 	let actionsLoading = $state(false);
 
-	const assistantQuickActions = [
-		'Summarize Documents',
-		'Validate field data',
-		'Extract data into Spreadsheet'
-	];
-
 	onMount(() => {
 		loadActions();
+		if (initialPrompt) {
+			prompt = initialPrompt;
+			generateWorkflow();
+
+			// Clear the prompt from URL to avoid re-triggering on refresh
+			const url = new URL(window.location.href);
+			if (url.searchParams.has('prompt')) {
+				url.searchParams.delete('prompt');
+				window.history.replaceState({}, '', url.toString());
+			}
+		}
 	});
 
 	async function loadActions() {
@@ -40,6 +68,69 @@
 			console.error('Failed to load actions:', error);
 		} finally {
 			actionsLoading = false;
+		}
+	}
+
+	async function generateWorkflow() {
+		if (!prompt || generating) return;
+
+		try {
+			generating = true;
+			thoughts = '';
+			sentPrompt = prompt;
+			prompt = '';
+			const res = await fetch('/api/workflows/generate', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					prompt: sentPrompt,
+					workflowId
+				})
+			});
+
+			if (!res.ok) {
+				throw new Error(`Failed to generate: ${res.status}`);
+			}
+
+			const reader = res.body?.getReader();
+			if (!reader) return;
+
+			const decoder = new TextDecoder();
+			let buffer = '';
+			while (true) {
+				const { done, value } = await reader.read();
+				if (done) break;
+
+				buffer += decoder.decode(value, { stream: true });
+				const lines = buffer.split('\n');
+				buffer = lines.pop() || '';
+
+				for (const line of lines) {
+					const trimmedLine = line.trim();
+					if (!trimmedLine || !trimmedLine.startsWith('data:')) continue;
+
+					try {
+						const jsonStr = trimmedLine.replace(/^data:\s*/, '');
+						const data = JSON.parse(jsonStr);
+
+						if (data.type === 'text' && data.content) {
+							thoughts += data.content;
+						}
+					} catch (e) {
+						console.error('Error parsing stream line:', trimmedLine, e);
+					}
+				}
+			}
+
+			// After generation is complete, trigger reload
+			await onGenerate?.();
+		} catch (error) {
+			console.error('Failed to generate workflow:', error);
+			thoughts = 'Error: Failed to generate workflow. Please try again.';
+		} finally {
+			generating = false;
 		}
 	}
 </script>
@@ -99,7 +190,7 @@
 			{#if activeTab === 'actions'}
 				<!-- Search -->
 				<div
-					class="inline-flex w-full min-w-2xs items-center justify-between rounded border border-white/10 bg-white/0 px-4 py-1.5 text-xs text-white/50"
+					class="inline-flex w-full min-w-xs items-center justify-between rounded border border-white/10 bg-white/0 px-4 py-1.5 text-xs text-white/50"
 				>
 					<input
 						type="search"
@@ -139,7 +230,7 @@
 								</div>
 
 								{#each section.actions as item}
-									{@const Icon = icons[item.icon]}
+									{@const Icon = (icons as any)[item.icon]}
 									<button
 										onclick={() => onAction?.(item.id)}
 										type="button"
@@ -163,19 +254,44 @@
 			{:else}
 				<!-- ASSISTANT VIEW -->
 				<div
-					class="flex w-full min-w-2xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900"
+					class="flex w-xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900 p-2"
 				>
-					<!-- Quick actions -->
-					{#each assistantQuickActions as label}
-						<button
-							type="button"
-							class="inline-flex items-center justify-center gap-1.5 rounded bg-stone-900 px-3 py-1 text-[10px] leading-5 text-white transition hover:bg-stone-800"
-							onclick={() => (prompt = label)}
+					{#if thoughts || generating || sentPrompt}
+						<div
+							class="dark-scroll flex w-full flex-1 flex-col gap-4 overflow-y-auto px-2 py-4 text-xs"
 						>
-							<Sparkles class="h-3 w-3" />
-							<span>{label}</span>
-						</button>
-					{/each}
+							{#if sentPrompt}
+								<div class="flex flex-col items-end gap-1.5">
+									<div class="flex items-center gap-2 text-zinc-500">
+										<span class="text-[10px] font-semibold tracking-wider uppercase">You</span>
+									</div>
+									<div
+										class="max-w-[85%] rounded-2xl rounded-tr-sm bg-neutral-800 px-3 py-2 text-white/90"
+									>
+										{sentPrompt}
+									</div>
+								</div>
+							{/if}
+
+							{#if thoughts || generating}
+								<div class="flex flex-col items-start gap-1.5">
+									<div class="flex items-center gap-2 text-green-500">
+										<Sparkles class="h-3 w-3" />
+										<span class="text-[10px] font-semibold tracking-wider uppercase">Assistant</span
+										>
+									</div>
+									<div
+										class="markdown-content dark-scroll max-w-[90%] leading-relaxed text-white/70"
+									>
+										{@html parsedThoughts}
+										{#if generating && !thoughts}
+											<span class="animate-pulse">Thinking...</span>
+										{/if}
+									</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
 
 					<!-- Main assistant card -->
 					<div class="glow-btn flex w-full rounded-t-2xl pt-0.5 shadow-lg">
@@ -184,24 +300,37 @@
 						>
 							<textarea
 								bind:value={prompt}
+								onkeydown={(e) => {
+									if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+										e.preventDefault();
+										generateWorkflow();
+									}
+								}}
 								rows="5"
 								autocomplete="off"
 								placeholder="Ask Lekana to create a workflow that ...."
 								class="dark-scroll max-h-32 min-h-20 w-full resize-none p-1 text-xs text-white outline-none"
 							></textarea>
 
-							<div class="inline-flex items-center justify-between self-stretch">
-								<button
+							<div class="inline-flex items-center justify-end self-stretch">
+								<!-- <button
 									class="rounded-md bg-zinc-900 px-3 py-2 text-white transition-colors duration-300 hover:bg-green-950"
 								>
 									<Plus size="12" />
-								</button>
+								</button> -->
 
 								<button
+									onclick={generateWorkflow}
 									class="rounded-md bg-white px-3 py-2 text-black transition-colors duration-300 disabled:bg-zinc-400"
-									disabled={!prompt}
+									disabled={!prompt || generating}
 								>
-									<ArrowUp size="12" />
+									{#if generating}
+										<div
+											class="h-3 w-3 animate-spin rounded-full border-2 border-black border-t-transparent"
+										></div>
+									{:else}
+										<ArrowUp size="12" />
+									{/if}
 								</button>
 							</div>
 						</div>
@@ -229,5 +358,81 @@
 	.dark-scroll {
 		scrollbar-width: thin;
 		scrollbar-color: gray transparent;
+	}
+
+	.markdown-content :global(strong) {
+		color: #fff;
+		font-weight: 700;
+	}
+
+	.markdown-content :global(ul),
+	.markdown-content :global(ol) {
+		margin: 0.5rem 0;
+		padding-left: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.markdown-content :global(ul) {
+		list-style-type: disc;
+	}
+
+	.markdown-content :global(ol) {
+		list-style-type: decimal;
+	}
+
+	.markdown-content :global(li) {
+		line-height: 1.5;
+	}
+
+	.markdown-content :global(p) {
+		margin-bottom: 0.5rem;
+	}
+
+	.markdown-content :global(p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.markdown-content :global(h1),
+	.markdown-content :global(h2),
+	.markdown-content :global(h3),
+	.markdown-content :global(h4) {
+		font-weight: 600;
+		margin-top: 1rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.markdown-content :global(h1) {
+		font-size: 1.125rem;
+	}
+	.markdown-content :global(h2) {
+		font-size: 1rem;
+	}
+	.markdown-content :global(h3) {
+		font-size: 0.875rem;
+	}
+
+	.markdown-content :global(code) {
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.125rem 0.25rem;
+		border-radius: 0.25rem;
+		font-family: monospace;
+		font-size: 0.9em;
+	}
+
+	.markdown-content :global(pre) {
+		background: rgba(0, 0, 0, 0.3);
+		padding: 0.75rem;
+		border-radius: 0.5rem;
+		overflow-x: auto;
+		margin: 0.75rem 0;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.markdown-content :global(pre code) {
+		background: none;
+		padding: 0;
+		font-size: 0.85rem;
 	}
 </style>

@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { SignUp, SignedOut } from 'svelte-clerk';
+	import { page } from '$app/state';
 
+	let afterSignUpUrl = $derived(page.url.searchParams.get('redirect_url') || '/dashboard');
 </script>
 
 <SignedOut>
 	<main class="flex h-screen w-screen bg-zinc-900 py-12">
 		<div class="flex h-full w-full flex-col items-center justify-center gap-12 px-8 md:px-24">
 			<div class="">
-					<p class="text-xs font-semibold tracking-[0.2em] text-green-400/80 uppercase">signup</p>
-					<h1 class="mt-3 text-3xl font-semibold text-white md:text-5xl">Join Lekana</h1>
-				</div>
+				<p class="text-xs font-semibold tracking-[0.2em] text-green-400/80 uppercase">signup</p>
+				<h1 class="mt-3 text-3xl font-semibold text-white md:text-5xl">Join Lekana</h1>
+			</div>
 
 			<div class="flex w-full max-w-md flex-col items-center gap-6">
-				<SignUp signInUrl="/login" afterSignUpUrl="/getting-started" />
+				<SignUp signInUrl="/login" {afterSignUpUrl} />
 			</div>
 		</div>
 		<div

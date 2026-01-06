@@ -14,6 +14,7 @@
 		Plus,
 		ArrowUp
 	} from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 
 	const steps = [
 		{
@@ -34,7 +35,40 @@
 		}
 	];
 
-	let prompt = '';
+	let prompt = $state('');
+	let generating = $state(false);
+
+	async function handleGenerate() {
+		if (!prompt || generating) return;
+
+		try {
+			generating = true;
+			const res = await fetch('/api/workflows', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: 'Untitled' })
+			});
+
+			if (res.status === 401) {
+				// Save prompt and redirect to login
+				localStorage.setItem('pending_prompt', prompt);
+				goto('/login?redirect_url=/dashboard');
+				return;
+			}
+
+			if (!res.ok) {
+				throw new Error(`Failed to create workflow: ${res.status}`);
+			}
+
+			const workflow = await res.json();
+			goto(`/w/${workflow.id}?prompt=${encodeURIComponent(prompt)}`);
+		} catch (error) {
+			console.error('Failed to start generation:', error);
+			generating = false;
+		}
+	}
 
 	let data = {
 		name: '',
@@ -120,7 +154,7 @@
 	</style>
 
 	<div
-		class="absolute top-1/12 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60% md:-top-16 md:scale-150 animate-[pulse_5s_ease-in-out_infinite]"
+		class="absolute top-1/12 aspect-square w-full scale-200 animate-[pulse_5s_ease-in-out_infinite] justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60% md:-top-16 md:scale-150"
 	></div>
 	<section
 		class="relative z-10 flex min-h-screen w-full max-w-xs flex-col items-center justify-center gap-8 py-16 pt-36 text-white md:max-w-6xl"
@@ -139,24 +173,31 @@
 			>
 				<textarea
 					bind:value={prompt}
+					onkeydown={(e) => {
+						if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+							e.preventDefault();
+							handleGenerate();
+						}
+					}}
 					rows="5"
 					autocomplete="off"
 					placeholder="Ask Lekana to create a workflow that ...."
 					class="dark-scroll max-h-64 min-h-20 w-full resize-none p-1 text-white outline-none"
 				></textarea>
 
-				<div class="inline-flex items-center justify-between self-stretch">
+				<div class="inline-flex items-center justify-end self-stretch">
 					<button
-						class="rounded-lg bg-zinc-900 px-4 py-2 transition-colors duration-300 hover:bg-green-950"
-					>
-						<Plus size="20" />
-					</button>
-
-					<button
+						onclick={handleGenerate}
 						class="rounded-lg bg-white px-4 py-2 text-black transition-colors duration-300 disabled:bg-zinc-400"
-						disabled={!prompt}
+						disabled={!prompt || generating}
 					>
-						<ArrowUp size="20" />
+						{#if generating}
+							<div
+								class="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent"
+							></div>
+						{:else}
+							<ArrowUp size="20" />
+						{/if}
 					</button>
 				</div>
 			</div>
@@ -292,9 +333,9 @@
 						<h3 class="text-lg font-semibold text-white md:text-xl">Fully managed from day one</h3>
 						<p class="mt-3 leading-relaxed text-gray-400">
 							Most “automation” tools still expect you to wire up APIs, build pipelines, and manage
-							models. Lekana is different. We operate as a managed intake layer for your
-							business: we connect to your inboxes, storage, or uploads, and deliver structured,
-							validated data where it needs to go — with humans completely out of the loop.
+							models. Lekana is different. We operate as a managed intake layer for your business:
+							we connect to your inboxes, storage, or uploads, and deliver structured, validated
+							data where it needs to go — with humans completely out of the loop.
 						</p>
 					</div>
 
@@ -381,8 +422,7 @@
 			<p
 				class="mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-gray-400 md:text-base"
 			>
-				Answers to the most common questions about how Lekana fits into your stack and
-				operations.
+				Answers to the most common questions about how Lekana fits into your stack and operations.
 			</p>
 
 			<div class="mx-auto mt-10 space-y-6">

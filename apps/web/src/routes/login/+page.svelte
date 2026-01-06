@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { SignIn, SignedOut } from 'svelte-clerk';
+	import { page } from '$app/state';
 
+	let afterSignInUrl = $derived(page.url.searchParams.get('redirect_url') || '/dashboard');
 </script>
 
 <SignedOut>
@@ -14,14 +16,11 @@
 			</div>
 
 			<div class="flex w-full max-w-md flex-col items-center gap-6">
-				<SignIn
-					signUpUrl="/signup"
-					afterSignInUrl="/dashboard"
-				/>
+				<SignIn signUpUrl="/signup" {afterSignInUrl} />
 			</div>
 		</div>
 		<div
-			class="relative md:flex hidden h-full w-full items-center justify-center overflow-clip rounded-l-2xl bg-black"
+			class="relative hidden h-full w-full items-center justify-center overflow-clip rounded-l-2xl bg-black md:flex"
 		>
 			<div class="z-10 flex items-center gap-4">
 				<img src="/logo.svg" alt="logo" class="h-12 w-12" />
