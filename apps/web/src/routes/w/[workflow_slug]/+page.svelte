@@ -19,14 +19,15 @@
 		ChevronUp,
 		ArrowUp,
 		KeyRound,
-
-		CheckCheckIcon
-
+		CheckCheckIcon,
+		Play
 	} from 'lucide-svelte';
 	import { confirmStore } from '$lib/confirm.svelte';
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
+	import Monitoring from '$lib/components/Monitoring.svelte';
+	import { Activity, LineChart } from 'lucide-svelte';
 
 	let { data } = $props();
 
@@ -38,6 +39,7 @@
 	let propertiesVisible = $state(false);
 	let actionId: string = $state('');
 	let actionNode: any = $state(null);
+	let sourceNodeId: string = $state('');
 	let open = $state(false);
 	let nodes = $state.raw([]);
 	let edges = $state.raw([]);
@@ -87,6 +89,7 @@
 				onClick: (value: any) => (
 					(propertiesVisible = true),
 					(actionNode = value.node),
+					(sourceNodeId = value.sourceNodeId),
 					(actionId = '')
 				),
 				onDelete: (value: any) => deleteNode(value.id),
@@ -129,6 +132,7 @@
 	}
 
 	let showPublishModal = $state(false);
+	let showMonitoringModal = $state(false);
 	let showSettingsModal = $state(false);
 
 	let workflowName = $state(workflow.name);
@@ -200,16 +204,27 @@
 		/>
 	{/if}
 
+	{#if showMonitoringModal}
+		<Monitoring
+			{workflow}
+			onClose={() => (showMonitoringModal = false)}
+			onPublish={() => {
+				showMonitoringModal = false;
+				showPublishModal = true;
+			}}
+		/>
+	{/if}
+
 	{#if propertiesVisible}
 		<ActionProperties
 			node={actionNode}
+			{sourceNodeId}
 			{actionId}
 			onClose={() => (propertiesVisible = false)}
 			onSubmit={async () => {
 				await reloadWorkflow();
 			}}
-			workflowId={workflow.id}
-			extractedFields={workflow.extractedFields}
+			{workflow}
 		/>
 	{/if}
 
@@ -250,34 +265,34 @@
 					</div>
 				</div>
 
-				<!-- Publication Status Link -->
-				<button
-					onclick={() => (showPublishModal = true)}
-					class="group flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 active:scale-95
-					{workflow.isPublished ? 'hover:bg-white/10' : 'bg-green-700 hover:bg-green-800'}"
-				>
-					{#if workflow.isPublished}
-						<!-- <CheckCheckIcon class="h-3.5 w-3.5 text-green-400" /> -->
+				<div class="flex items-center gap-2">
+					<!-- Publication Status Link -->
+					{#if !workflow.isPublished}
+						<button
+							onclick={() => (showPublishModal = true)}
+							class="group flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 transition-all duration-300 hover:bg-green-800 active:scale-95"
+						>
+							<ArrowUp class="h-3.5 w-3.5 text-white" />
+							<!-- <span class="text-xs font-medium tracking-wide text-white transition-colors">
+								Publish
+							</span> -->
+						</button>
 					{:else}
-						<ArrowUp class="h-3.5 w-3.5 text-white" />
+						<a
+							href="{workflow.id}/run"
+							target="_blank"
+							class="rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 hover:bg-white/10 active:scale-95"
+						>
+							<Play class="h-3.5 w-3.5 text-white" />
+						</a>
+						<button
+							onclick={() => (showMonitoringModal = true)}
+							class="group flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 hover:bg-white/10 active:scale-95"
+						>
+							<Activity class="h-3.5 w-3.5 text-green-400" />
+						</button>
 					{/if}
-					<span class="text-xs font-medium tracking-wide {workflow.isPublished ? 'text-green-400' : 'text-white'} transition-colors">
-						{workflow.isPublished ? 'Published' : 'Publish'}
-					</span>
-					{#if workflow.isPublished && workflow.lastPublishedAt}
-						<span class=" text-[10px] font-normal opacity-50 text-white">
-							{(() => {
-								const seconds = Math.floor((Date.now() - new Date(workflow.lastPublishedAt).getTime()) / 1000);
-								if (seconds < 60) return 'moments ago';
-								const minutes = Math.floor(seconds / 60);
-								if (minutes < 60) return `${minutes}m ago`;
-								const hours = Math.floor(minutes / 60);
-								if (hours < 24) return `${hours}h ago`;
-								return `${Math.floor(hours / 24)}d ago`;
-							})()}
-						</span>
-					{/if}
-				</button>
+				</div>
 			</div>
 			<div class="flex h-full w-full justify-center gap-2">
 				<FlowCanvas

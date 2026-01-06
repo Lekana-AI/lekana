@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/svelte';
+	import { Handle, NodeToolbar, Position, type NodeProps, useEdges } from '@xyflow/svelte';
 	import { toast } from '$lib/toast.svelte';
 	import { icons } from '$lib/icon';
 	import { Ellipsis, Settings, Copy, Trash } from 'lucide-svelte';
@@ -7,6 +7,10 @@
 	let { id, data }: NodeProps = $props();
 
 	let menuOpen = $state(false);
+
+	const edges = useEdges();
+	const incomingEdge = $derived(edges.current.find((e) => e.target === id));
+	const sourceNodeId = $derived(incomingEdge?.source);
 
 	const Icon = icons[data.node.action.icon] ?? icons.Zap;
 </script>
@@ -27,7 +31,7 @@
 				<button
 					type="button"
 					class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-					onclick={() => data.onClick?.({ node: data.node, ...data })}
+					onclick={() => data.onClick?.({ node: data.node, sourceNodeId, ...data })}
 				>
 					<Settings class="h-4 w-4" />
 
@@ -63,7 +67,7 @@
 			menuOpen = true;
 		}}
 		onblur={() => (menuOpen = false)}
-		ondblclick={() => data.onClick?.({ node: data.node, ...data })}
+		ondblclick={() => data.onClick?.({ node: data.node, sourceNodeId, ...data })}
 		class="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/5 backdrop-blur transition-all duration-300 hover:scale-105 hover:border-white/40 hover:bg-white/10"
 	>
 		<div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-600/20 text-green-400">

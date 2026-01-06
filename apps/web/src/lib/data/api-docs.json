@@ -1,0 +1,129 @@
+{
+    "introduction": {
+        "title": "Welcome to Lekana API",
+        "content": "The Lekana API allows you to programmatically interact with our document processing engine. You can trigger workflows, check execution status, and retrieve processed data seamlessly from your own applications. Our API is built on RESTful principles, using standard HTTP methods and JSON for communication."
+    },
+    "authentication": {
+        "title": "Authentication",
+        "content": "To authenticate with the Lekana API, you must include your private API key in the `X-API-Key` header of every request. You can manage your API keys in the developer settings of your Lekana dashboard. Treat your API key as a secret—never share it or commit it to version control.",
+        "header_example": "X-API-Key: YOUR_API_KEY"
+    },
+    "core_concepts": [
+        {
+            "title": "Workflows",
+            "content": "A workflow is a sequence of actions defined in the Lekana editor. Each workflow has a unique ID and must be published before it can be triggered via the API."
+        },
+        {
+            "title": "Executions",
+            "content": "When you run a workflow, an 'Execution' is created. This process is asynchronous. The API will return an `executionId` which you can use to poll for status or receive results via webhooks."
+        }
+    ],
+    "categories": [
+        {
+            "name": "Workflows",
+            "description": "Trigger and manage your document processing pipelines.",
+            "endpoints": [
+                {
+                    "name": "Run Workflow (URL)",
+                    "id": "run-workflow-url",
+                    "method": "POST",
+                    "path": "/workflows/:workflow_id/run",
+                    "description": "Trigger a workflow using documents hosted at public URLs.",
+                    "long_description": "Use this endpoint when you already have your documents hosted online. It accepts a JSON payload containing a message and document URLs. The message will be passed as an input variable to your workflow.",
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json",
+                            "description": "Specifies that the request body is in JSON format."
+                        },
+                        {
+                            "key": "X-API-Key",
+                            "value": "{{api_key}}",
+                            "description": "Your unique API key for authentication."
+                        }
+                    ],
+                    "body": {
+                        "type": "json",
+                        "raw": "{\n  \"input\": {\n    \"message\": \"Analyze this invoice for high priority processing.\"\n  },\n  \"documents\": [\n    {\n      \"url\": \"https://example.com/invoice.pdf\",\n      \"filename\": \"invoice.pdf\",\n      \"mimeType\": \"application/pdf\"\n    }\n  ]\n}",
+                        "fields": [
+                            {
+                                "name": "input.message",
+                                "type": "string",
+                                "description": "A message or prompt that will be passed to the workflow as an input variable."
+                            },
+                            {
+                                "name": "documents",
+                                "type": "array",
+                                "description": "An array of document objects. Each object must contain 'url', 'filename', and 'mimeType'."
+                            }
+                        ]
+                    },
+                    "responses": [
+                        {
+                            "status": 202,
+                            "description": "Accepted - The workflow execution has successfully started.",
+                            "body": "{\n  \"id\": \"exec_abc123\",\n  \"status\": \"pending\",\n  \"message\": \"Workflow started successfully\"\n}"
+                        }
+                    ]
+                },
+                {
+                    "name": "Run Workflow (File Upload)",
+                    "id": "run-workflow-files",
+                    "method": "POST",
+                    "path": "/workflows/:workflow_id/run-with-files",
+                    "description": "Trigger a workflow by uploading document files directly.",
+                    "long_description": "Use this endpoint to upload files directly from your application. This endpoint requires a multipart/form-data request body containing the files and an optional message.",
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "multipart/form-data",
+                            "description": "Specifies that the request contains file data."
+                        },
+                        {
+                            "key": "X-API-Key",
+                            "value": "{{api_key}}",
+                            "description": "Your unique API key for authentication."
+                        }
+                    ],
+                    "body": {
+                        "type": "form-data",
+                        "raw": "curl -X POST https://api.lekana.io/workflows/:workflow_id/run-with-files \\\n  -H \"X-API-Key: YOUR_API_KEY\" \\\n  -F \"message=Analyze these documents\" \\\n  -F \"files=@/path/to/document.pdf\"",
+                        "fields": [
+                            {
+                                "name": "message",
+                                "type": "string",
+                                "description": "The message or prompt to pass to the workflow."
+                            },
+                            {
+                                "name": "files",
+                                "type": "file[]",
+                                "description": "One or more files to be processed by the workflow."
+                            }
+                        ]
+                    },
+                    "responses": [
+                        {
+                            "status": 202,
+                            "description": "Accepted - Files uploaded and workflow started.",
+                            "body": "{\n  \"id\": \"exec_xyz789\",\n  \"status\": \"pending\",\n  \"message\": \"Files uploaded successfully\"\n}"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "error_codes": [
+        {
+            "code": "400 Bad Request",
+            "description": "The request was malformed or missing required parameters."
+        },
+        {
+            "code": "401 Unauthorized",
+            "description": "The API key is missing or invalid."
+        },
+        {
+            "code": "404 Not Found",
+            "description": "The requested workflow or resource does not exist."
+        }
+    ]
+}

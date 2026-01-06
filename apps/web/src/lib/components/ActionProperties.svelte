@@ -4,39 +4,21 @@
 	import Input from './Input.svelte';
 	import { onMount } from 'svelte';
 
-	let { onClose, onSubmit, actionId, workflowId, node, extractedFields } = $props();
+	let { onClose, onSubmit, actionId, workflow, node, sourceNodeId } = $props();
 
 	// use step + fields as state; no separate name/description/icon
 	let step = $state(null);
 	let fields = $state([]);
 
 	onMount(() => {
-		if (node) {
-			console.log(node);
-			loadNodeData();
-		} else if (actionId) {
-			loadFields();
-		}
+		loadFields();
 	});
 
-	function loadNodeData() {
-		step = node.action;
-		// Transform configMeta (object) to fields (array) for Input component
-		if (node.action.configMeta) {
-			fields = Object.entries(node.action.configMeta).map(([key, meta]) => ({
-				name: key,
-				label: meta.label,
-				type: meta.type,
-				value: node.config?.[key] ?? meta.defaultValue,
-				placeholder: meta.description, // using description as placeholder
-				required: meta.required,
-				options: meta.options
-			}));
-		}
-	}
-
 	async function loadFields() {
-		const res = await fetch(`/api/actions/${actionId}`, {
+		const idToFetch = node?.action?.id || actionId;
+		if (!idToFetch) return;
+
+		const res = await fetch(`/api/actions/${idToFetch}`, {
 			method: 'GET',
 			headers: {
 				'Content-Type': 'application/json'
@@ -53,9 +35,21 @@
 		step = data; // full action object
 
 		// build the fields array that the <Input> loop expects
-		fields = step.uiSchema.fields;
-		console.log(fields);
+		// dynamically match node.config with step.uiSchema.fields
+		fields = step.uiSchema.fields.map((field) => ({
+			...field,
+			value: node?.config?.[field.name] ?? field.value ?? field.defaultValue
+		}));
 	}
+
+	let extractedFields = $derived.by(() => {
+		const sourceNode = workflow?.nodes?.find((n) => n.id === sourceNodeId);
+		const fields = sourceNode?.config?.extractFields;
+		if (Array.isArray(fields)) {
+			return fields.map((f) => (typeof f === 'string' ? f : f.key));
+		}
+		return [];
+	});
 
 	function isVisible(field) {
 		if (!field.visibleWhen) return true;
@@ -93,7 +87,7 @@
 
 		if (node) {
 			// Update existing node
-			res = await fetch(`/api/workflows/${workflowId}/nodes/${node.id}`, {
+			res = await fetch(`/api/workflows/${workflow.id}/nodes/${node.id}`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
@@ -104,7 +98,7 @@
 			});
 		} else {
 			// Create new node
-			res = await fetch(`/api/workflows/${workflowId}/nodes`, {
+			res = await fetch(`/api/workflows/${workflow.id}/nodes`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

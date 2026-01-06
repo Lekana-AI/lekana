@@ -12,8 +12,9 @@
 	</a>
 
 	<div class="hidden items-center gap-8 text-sm text-gray-300 md:flex">
-		<a href="#about" class="transition-colors duration-300 hover:text-green-500">About</a>
-		<a href="#faq" class="transition-colors duration-300 hover:text-green-500">FAQ</a>
+		<a href="/#about" class="transition-colors duration-300 hover:text-green-500">About</a>
+		<a href="/#faq" class="transition-colors duration-300 hover:text-green-500">FAQ</a>
+		<a href="/docs" class="transition-colors duration-300 hover:text-green-500">Docs</a>
 
 		<SignedIn>
 			<UserButton />

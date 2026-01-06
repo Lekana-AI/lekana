@@ -48,6 +48,7 @@
 	}
 
 	async function updateEdge(connection: Connection) {
+		// console.log(connection);
 		const tempId = `edge-${Date.now()}`;
 		const newEdge = {
 			...connection,
@@ -57,7 +58,6 @@
 		};
 
 		edges = addEdge(newEdge, edges);
-
 		try {
 			const res = await fetch(`/api/workflows/${workflowId}/edges`, {
 				method: 'POST',
@@ -156,7 +156,8 @@
 
 			if (!sourceNode || !targetNode) return false;
 
-			const isValid = sourceNode.data.node.action.outputType === targetNode.data.node.action.inputType;
+			const isValid =
+				sourceNode.data.node.action.outputType === targetNode.data.node.action.inputType;
 
 			if (!isValid) {
 				toast.error(

@@ -14,7 +14,9 @@
 		ChevronDown,
 		AlertTriangle,
 		ShieldAlert,
-		ArrowRight
+		ArrowRight,
+		BookOpen,
+		Play
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 
@@ -317,6 +319,17 @@
 								>{workflow.name}</span
 							>.
 						</p>
+
+						<div class="mt-4 flex items-center gap-3">
+							<a
+								href="/docs"
+								target="_blank"
+								class="flex items-center gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-[10px] font-medium text-white transition-colors duration-300 hover:bg-zinc-700"
+							>
+								<BookOpen class="h-3 w-3" />
+								Documentation
+							</a>
+						</div>
 
 						{#if workflow.isPublished || publishResult}
 							<!-- Subtle Endpoint Display -->
