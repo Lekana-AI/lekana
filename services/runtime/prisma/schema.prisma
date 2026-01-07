@@ -111,6 +111,7 @@ enum ExecutionStatus {
   COMPLETED
   FAILED
   CANCELLED
+  SKIPPED
 }
 
 enum LogLevel {

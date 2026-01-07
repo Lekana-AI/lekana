@@ -12,7 +12,7 @@ import axios, { AxiosError } from 'axios';
 // Default Configuration
 // ============================================
 
-const DEFAULT_TIMEOUT = 30000;  // 30 seconds
+const DEFAULT_TIMEOUT = 60000;  // 30 seconds
 
 // ============================================
 // Standard Request/Response Types

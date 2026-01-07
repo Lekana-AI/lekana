@@ -300,6 +300,37 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
             // Get input from previous nodes
             const input = getNodeInput(nodeId, workflow.edges, context);
 
+            // Check if previous node returned skipped flag - propagate skip to downstream nodes
+            const isSkipped = input?.data?.skipped === true || input?.metadata?.skipped === true;
+
+            if (isSkipped) {
+                await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (upstream returned skipped)`);
+
+                // Store skipped output for downstream nodes (propagate the skip)
+                const skippedOutput = {
+                    success: true,
+                    data: { skipped: true, reason: 'Upstream node returned skipped' },
+                    metadata: { skipped: true }
+                };
+                context.nodeOutputs.set(nodeId, skippedOutput);
+
+                // Update node as skipped
+                await prisma.nodeExecution.updateMany({
+                    where: {
+                        workflowExecutionId: execution.id,
+                        nodeId: node.id
+                    },
+                    data: {
+                        status: 'SKIPPED',
+                        output: skippedOutput as any,
+                        input: input,
+                        completedAt: new Date()
+                    }
+                });
+
+                continue; // Skip to next node
+            }
+
             try {
                 // Execute the action via external microservice
                 const output = await executeAction(node, input, context, { id: workflow.id, userId: workflow.userId });
