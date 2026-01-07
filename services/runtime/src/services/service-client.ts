@@ -38,57 +38,44 @@ function isCloudRunUrl(url: string): boolean {
  * Returns null if running locally or if unable to get token
  */
 async function getIdTokenForService(serviceUrl: string): Promise<string | null> {
-    console.log(`[ServiceClient] === IAM Token Request ===`);
-    console.log(`[ServiceClient] Service URL: ${serviceUrl}`);
+  
 
     // Skip for localhost
     if (serviceUrl.includes('localhost') || serviceUrl.includes('127.0.0.1')) {
-        console.log(`[ServiceClient] Skipping IAM token - localhost detected`);
+       
         return null;
     }
 
     // Only get token for Cloud Run URLs
     if (!isCloudRunUrl(serviceUrl)) {
-        console.log(`[ServiceClient] Skipping IAM token - not a Cloud Run URL`);
+       
         return null;
     }
-
-    console.log(`[ServiceClient] Cloud Run URL detected - generating IAM token...`);
 
     try {
         // Extract the base URL (audience) for the ID token
         const url = new URL(serviceUrl);
         const audience = `${url.protocol}//${url.host}`;
-        console.log(`[ServiceClient] Audience: ${audience}`);
 
         // Check cache first
         if (!tokenClientCache.has(audience)) {
-            console.log(`[ServiceClient] Creating new ID token client for ${audience}`);
             const client = await auth.getIdTokenClient(audience);
             tokenClientCache.set(audience, client);
-            console.log(`[ServiceClient] ID token client created and cached`);
-        } else {
-            console.log(`[ServiceClient] Using cached ID token client`);
-        }
+        } 
 
         const client = tokenClientCache.get(audience);
 
         // Pass the URL to getRequestHeaders
         const headers = await client.getRequestHeaders(audience);
-        console.log(`[ServiceClient] Headers received:`, Object.keys(headers));
 
         const token = headers.Authorization?.replace('Bearer ', '') || headers.authorization?.replace('Bearer ', '');
 
         if (token) {
-            console.log(`[ServiceClient] ✅ IAM token generated successfully (length: ${token.length})`);
-            console.log(`[ServiceClient] Token preview: ${token.substring(0, 50)}...`);
-        } else {
-            console.log(`[ServiceClient] ❌ No token in Authorization header`);
-            console.log(`[ServiceClient] Full headers:`, JSON.stringify(headers));
+                    } else {
+           
 
             // Fallback: try to get token from client credentials directly
             if (client.credentials && client.credentials.id_token) {
-                console.log(`[ServiceClient] Using fallback: client.credentials.id_token`);
                 return client.credentials.id_token;
             }
         }
