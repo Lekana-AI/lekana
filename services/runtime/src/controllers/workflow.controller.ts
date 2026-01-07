@@ -481,18 +481,46 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                     // Create form data for upload service using form-data package
                     const FormData = require('form-data');
                     const axios = require('axios');
+                    const { GoogleAuth } = require('google-auth-library');
+
                     const formData = new FormData();
                     formData.append('files', file.buffer, {
                         filename: file.originalname,
                         contentType: file.mimetype
                     });
 
+                    // Get headers including form-data headers
+                    const headers: Record<string, string> = {
+                        ...formData.getHeaders()
+                    };
+
+                    // Add IAM token for Cloud Run URLs
+                    if (uploadServiceUrl.includes('.run.app')) {
+                        try {
+                            console.log(`[Run] Getting IAM token for ${uploadServiceUrl}`);
+                            const auth = new GoogleAuth();
+                            const url = new URL(uploadServiceUrl);
+                            const audience = `${url.protocol}//${url.host}`;
+                            const client = await auth.getIdTokenClient(audience);
+                            const authHeaders = await client.getRequestHeaders(audience);
+                            if (authHeaders.Authorization) {
+                                headers['Authorization'] = authHeaders.Authorization;
+                                console.log(`[Run] IAM token added for upload`);
+                            } else if (client.credentials?.id_token) {
+                                headers['Authorization'] = `Bearer ${client.credentials.id_token}`;
+                                console.log(`[Run] IAM token (from credentials) added for upload`);
+                            }
+                        } catch (authError: any) {
+                            console.error(`[Run] Failed to get IAM token for upload:`, authError.message);
+                        }
+                    }
+
                     // Use axios instead of fetch - it properly handles form-data streams
                     const uploadResponse = await axios.post(
                         `${uploadServiceUrl}/api/v1/upload`,
                         formData,
                         {
-                            headers: formData.getHeaders(),
+                            headers,
                             maxContentLength: Infinity,
                             maxBodyLength: Infinity
                         }
