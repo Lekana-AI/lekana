@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Documentation
+README.md
+*.md
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.js
+*.spec.js
+coverage/
+__tests__/
+
+# Development files
+nodemon.json
+.prettierrc
+.eslintrc*
