@@ -72,14 +72,25 @@ async function getIdTokenForService(serviceUrl: string): Promise<string | null> 
         }
 
         const client = tokenClientCache.get(audience);
-        const headers = await client.getRequestHeaders();
-        const token = headers.Authorization?.replace('Bearer ', '');
+
+        // Pass the URL to getRequestHeaders
+        const headers = await client.getRequestHeaders(audience);
+        console.log(`[ServiceClient] Headers received:`, Object.keys(headers));
+
+        const token = headers.Authorization?.replace('Bearer ', '') || headers.authorization?.replace('Bearer ', '');
 
         if (token) {
             console.log(`[ServiceClient] ✅ IAM token generated successfully (length: ${token.length})`);
             console.log(`[ServiceClient] Token preview: ${token.substring(0, 50)}...`);
         } else {
             console.log(`[ServiceClient] ❌ No token in Authorization header`);
+            console.log(`[ServiceClient] Full headers:`, JSON.stringify(headers));
+
+            // Fallback: try to get token from client credentials directly
+            if (client.credentials && client.credentials.id_token) {
+                console.log(`[ServiceClient] Using fallback: client.credentials.id_token`);
+                return client.credentials.id_token;
+            }
         }
 
         return token || null;
