@@ -4,15 +4,72 @@
  * 
  * Service URLs are now loaded from the database (Action.serviceUrl)
  * and passed through the workflow definition
+ * 
+ * Cloud Run IAM Authentication:
+ * - Automatically detects Cloud Run URLs (*.run.app)
+ * - Generates ID tokens for authenticated service-to-service calls
+ * - Skips auth for localhost (local development)
  */
 
 import axios, { AxiosError } from 'axios';
+import { GoogleAuth } from 'google-auth-library';
 
 // ============================================
 // Default Configuration
 // ============================================
 
-const DEFAULT_TIMEOUT = 60000;  // 30 seconds
+const DEFAULT_TIMEOUT = 60000;  // 60 seconds
+
+// GoogleAuth instance for generating ID tokens
+const auth = new GoogleAuth();
+
+// Cache for ID token clients to avoid recreating them
+const tokenClientCache = new Map<string, any>();
+
+/**
+ * Check if a URL is a Cloud Run URL that requires IAM authentication
+ */
+function isCloudRunUrl(url: string): boolean {
+    return url.includes('.run.app');
+}
+
+/**
+ * Get an ID token for authenticating with a Cloud Run service
+ * Returns null if running locally or if unable to get token
+ */
+async function getIdTokenForService(serviceUrl: string): Promise<string | null> {
+    // Skip for localhost
+    if (serviceUrl.includes('localhost') || serviceUrl.includes('127.0.0.1')) {
+        return null;
+    }
+
+    // Only get token for Cloud Run URLs
+    if (!isCloudRunUrl(serviceUrl)) {
+        return null;
+    }
+
+    try {
+        // Extract the base URL (audience) for the ID token
+        const url = new URL(serviceUrl);
+        const audience = `${url.protocol}//${url.host}`;
+
+        // Check cache first
+        if (!tokenClientCache.has(audience)) {
+            const client = await auth.getIdTokenClient(audience);
+            tokenClientCache.set(audience, client);
+        }
+
+        const client = tokenClientCache.get(audience);
+        const headers = await client.getRequestHeaders();
+        const token = headers.Authorization?.replace('Bearer ', '');
+
+        console.log(`[ServiceClient] Generated IAM token for ${audience}`);
+        return token || null;
+    } catch (error) {
+        console.warn(`[ServiceClient] Failed to get ID token for ${serviceUrl}:`, error);
+        return null;
+    }
+}
 
 // ============================================
 // Standard Request/Response Types
@@ -81,17 +138,29 @@ export async function callServiceWithUrl(
     try {
         console.log(`[ServiceClient] Calling service at ${serviceUrl}`);
 
+        // Get IAM token for Cloud Run services
+        const idToken = await getIdTokenForService(serviceUrl);
+
+        // Build headers
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            'X-Correlation-Id': request.metadata?.correlationId || request.executionId,
+            'X-Workflow-Id': request.workflowId,
+            'X-Execution-Id': request.executionId
+        };
+
+        // Add Authorization header if we have an ID token
+        if (idToken) {
+            headers['Authorization'] = `Bearer ${idToken}`;
+            console.log(`[ServiceClient] Using IAM token for Cloud Run service`);
+        }
+
         const response = await axios.post<ServiceResponse>(
             `${serviceUrl}/api/v1/process`,
             request,
             {
                 timeout,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Correlation-Id': request.metadata?.correlationId || request.executionId,
-                    'X-Workflow-Id': request.workflowId,
-                    'X-Execution-Id': request.executionId
-                }
+                headers
             }
         );
 
