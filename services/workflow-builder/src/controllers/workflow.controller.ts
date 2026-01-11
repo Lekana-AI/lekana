@@ -7,9 +7,8 @@ export const createWorkflow = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
 
-        // Get userId and email from custom Clerk JWT claims
+        // Get userId from custom Clerk JWT claims
         const userId = req.auth?.userId;
-        const userEmail = req.auth?.email;
 
         if (!name) {
             return res.status(400).json({ error: 'Name is required' });
@@ -19,17 +18,12 @@ export const createWorkflow = async (req: Request, res: Response) => {
             return res.status(401).json({ error: 'User ID not found in token' });
         }
 
-        if (!userEmail) {
-            return res.status(401).json({ error: 'User email not found in token' });
-        }
-
         // Ensure user exists in local DB (sync with Auth provider)
         await prisma.user.upsert({
             where: { id: userId },
-            update: { email: userEmail }, // Update email if it changed
+            update: {}, // Nothing to update
             create: {
-                id: userId,
-                email: userEmail
+                id: userId
             }
         });
 
