@@ -3,7 +3,9 @@ import cors from 'cors';
 import workflowRoutes from './routes/workflow.routes';
 import actionRoutes from './routes/action.routes';
 import categoryRoutes from './routes/category.routes';
+import roleRoutes from './routes/role.routes';
 import { checkJwt, handleAuthError, extractUserInfo } from './middleware/auth.middleware';
+import { getUserWorkflowRoles } from './controllers/role.controller';
 
 const app = express();
 
@@ -28,6 +30,13 @@ app.use('/workflows',
 app.use('/actions', checkJwt, handleAuthError, extractUserInfo, actionRoutes);
 app.use('/categories', checkJwt, handleAuthError, extractUserInfo, categoryRoutes);
 
+// Role management routes (nested under workflows)
+app.use('/workflows/:id/roles', checkJwt, handleAuthError, extractUserInfo, roleRoutes);
+
+// User-specific role endpoints
+app.get('/user/workflow-roles', checkJwt, handleAuthError, extractUserInfo, getUserWorkflowRoles);
+
 export default app;
+
 
 

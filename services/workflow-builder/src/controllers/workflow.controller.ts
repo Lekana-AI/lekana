@@ -1,5 +1,12 @@
 import { Request, Response } from 'express';
+<<<<<<< Updated upstream
 import prisma from '../lib/prisma';
+=======
+import { PrismaClient } from '@prisma/client';
+import { createDefaultRoles } from './role.controller';
+
+const prisma = new PrismaClient({});
+>>>>>>> Stashed changes
 
 export const createWorkflow = async (req: Request, res: Response) => {
     try {
@@ -31,6 +38,9 @@ export const createWorkflow = async (req: Request, res: Response) => {
                 userId,
             },
         });
+
+        // Create default system roles for this workflow
+        await createDefaultRoles(workflow.id);
 
         res.status(201).json(workflow);
     } catch (error) {
