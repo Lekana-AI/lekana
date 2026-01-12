@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { icons } from '$lib/icon';
-	import { Search, Sparkles, ArrowRightToLine, Plus, ArrowUp, LayoutGrid } from 'lucide-svelte';
+	import { Search, Sparkles, ArrowRightToLine, Plus, ArrowUp, LayoutGrid, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
 
@@ -19,6 +19,12 @@
 	let thoughts = $state('');
 	let sentPrompt = $state('');
 	let generating = $state(false);
+	const examplePrompts = [
+		"Build a workflow that extracts and exports data from insurance claims.",
+		"Create a workflow that automatically processes and exports invoices.",
+		"Build a workflow that classifies documents and routes them to the correct databases.",
+		"Create a workflow that extracts, cleans, and exports data from documents."
+	];
 
 	let parsedThoughts = $derived.by(() => {
 		try {
@@ -32,7 +38,20 @@
 	let activeTab = $state<'actions' | 'assistant'>(initialPrompt ? 'assistant' : 'actions');
 	let actionSections = $state<any[]>([]);
 	let prompt = $state('');
+	let searchQuery = $state('');
 	let actionsLoading = $state(false);
+
+	let filteredSections = $derived.by(() => {
+		if (!searchQuery.trim()) return actionSections;
+
+		const query = searchQuery.toLowerCase();
+		return actionSections
+			.map((section) => ({
+				...section,
+				actions: section.actions.filter((action: any) => action.label.toLowerCase().includes(query))
+			}))
+			.filter((section) => section.actions.length > 0);
+	});
 
 	onMount(() => {
 		loadActions();
@@ -120,6 +139,8 @@
 						}
 					} catch (e) {
 						console.error('Error parsing stream line:', trimmedLine, e);
+					} finally {
+						generating = false;
 					}
 				}
 			}
@@ -129,9 +150,11 @@
 		} catch (error) {
 			console.error('Failed to generate workflow:', error);
 			thoughts = 'Error: Failed to generate workflow. Please try again.';
-		} finally {
-			generating = false;
 		}
+	}
+	async function generateExample(text: string) {
+		prompt = text;
+		generateWorkflow();
 	}
 </script>
 
@@ -160,13 +183,11 @@
 		<!-- Main content -->
 		<div class="flex h-full w-full flex-col items-start justify-start gap-3">
 			<!-- Tabs -->
-			<div class="inline-flex w-full items-center justify-start gap-2.5 px-4 pb-1">
+			<div class="inline-flex w-full items-center justify-start gap-2.5 px-3 pb-1">
 				<button
 					type="button"
-					class={`flex items-center gap-1.5 rounded px-2 py-1 text-xs transition ${
-						activeTab === 'actions'
-							? 'border border-white/50 bg-white/10 text-white'
-							: 'text-white/80 hover:text-white'
+					class={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition ${
+						activeTab === 'actions' ? 'bg-white/10 text-white' : 'text-white/80 hover:text-white'
 					}`}
 					onclick={() => (activeTab = 'actions')}
 				>
@@ -175,10 +196,8 @@
 
 				<button
 					type="button"
-					class={`flex items-center gap-1.5 rounded px-2 py-1 text-xs transition ${
-						activeTab === 'assistant'
-							? 'border border-white/50 bg-white/10 text-white'
-							: 'text-white/80 hover:text-white'
+					class={`flex items-center gap-1.5 rounded-sm px-3 py-1.5 text-xs transition ${
+						activeTab === 'assistant' ? 'bg-white/10 text-white' : 'text-white/80 hover:text-white'
 					}`}
 					onclick={() => (activeTab = 'assistant')}
 				>
@@ -189,15 +208,24 @@
 			<!-- ACTIONS VIEW -->
 			{#if activeTab === 'actions'}
 				<!-- Search -->
-				<div
-					class="inline-flex w-full min-w-xs items-center justify-between rounded border border-white/10 bg-white/0 px-4 py-1.5 text-xs text-white/50"
-				>
-					<input
-						type="search"
-						placeholder="Search"
-						class="flex-1 bg-transparent text-xs text-white/70 outline-none placeholder:text-white/40"
-					/>
-					<Search class="h-3 w-3 text-white/60" />
+				<div class="w-full min-w-xs px-3">
+					<div
+						class="inline-flex w-full items-center justify-between rounded bg-white/5 px-4 text-xs text-white/50 transition-colors duration-300 focus-within:bg-white/10"
+					>
+						<input
+							type="text"
+							placeholder="Search"
+							bind:value={searchQuery}
+							class="flex-1 bg-transparent text-sm  py-2 text-white/70 outline-none placeholder:text-white/40"
+						/>
+						{#if searchQuery}
+							<button class="h-full py-2  text-white/60 hover:text-white">
+								<X class="h-3 w-3" onclick={() => (searchQuery = '')} />
+							</button>
+						{:else}
+							<Search class="h-3 w-3 text-white/60" />
+						{/if}
+					</div>
 				</div>
 
 				<div
@@ -210,51 +238,53 @@
 									<div class="h-3 w-20 animate-pulse rounded bg-white/5 pt-1.5"></div>
 									{#each Array(3) as _}
 										<div
-											class="flex w-full items-center gap-4 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
+											class="flex w-full items-center gap-4 rounded-lg bg-white/5 px-3 py-3"
 										>
-											<div class="h-7 w-7 animate-pulse rounded-full bg-white/5"></div>
+											<div class="h-7 w-7 animate-pulse rounded-md bg-white/5"></div>
 											<div class="h-4 w-24 animate-pulse rounded bg-white/5"></div>
-											<div class="ml-auto h-3 w-3 animate-pulse rounded bg-white/5"></div>
+											<div class="ml-auto h-4 w-4 animate-pulse rounded bg-white/5"></div>
 										</div>
 									{/each}
 								</div>
 							{/each}
 						</div>
 					{:else}
-						{#each actionSections as section}
-							<section class="flex w-full flex-col gap-2">
-								<div class="inline-flex w-full items-center justify-between pt-1.5">
-									<h2 class="text-xs font-semibold text-zinc-300">
-										{section.category}
-									</h2>
-								</div>
+						{#each filteredSections as section}
+							{#if section.actions.length !== 0}
+								<section class="flex w-full flex-col gap-2">
+									<div class="inline-flex w-full items-center justify-between pt-1.5">
+										<h2 class="text-xs font-semibold text-zinc-300">
+											{section.category}
+										</h2>
+									</div>
 
-								{#each section.actions as item}
-									{@const Icon = (icons as any)[item.icon]}
-									<button
-										onclick={() => onAction?.(item.id)}
-										type="button"
-										class="border-white/50/50 inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 backdrop-blur transition hover:bg-white/10"
-									>
-										<span class="flex items-center justify-center rounded-full bg-green-700 p-2">
-											<!-- <item.icon class="h-3 w-3 text-white" /> -->
-											<Icon class="h-3 w-3 text-white" />
-											<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
-										</span>
-										<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
-											{item.label}
-										</span>
-										<Plus class="ml-auto h-3 w-3 text-white" />
-									</button>
-								{/each}
-							</section>
+									{#each section.actions as item}
+										{@const Icon = (icons as any)[item.icon]}
+										<button
+											onclick={() => onAction?.(item.id)}
+											type="button"
+											class="inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 pr-5 py-2 backdrop-blur transition group "
+										>
+											<span class="flex items-center justify-center rounded-md bg-green-950/40 group-hover:bg-green-950/80 transition-colors p-2">
+												<!-- <item.icon class="h-3 w-3 text-white" /> -->
+												<Icon class="h-5 w-5 text-green-400" />
+												<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
+											</span>
+											<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
+												{item.label}
+											</span>
+											<Plus class="ml-auto h-4 w-4 text-white/50 group-hover:text-white transition-colors" />
+										</button>
+									{/each}
+								</section>
+							{/if}
 						{/each}
 					{/if}
 				</div>
 			{:else}
 				<!-- ASSISTANT VIEW -->
 				<div
-					class="flex w-xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900 p-2"
+					class="flex w-xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900 p-"
 				>
 					{#if thoughts || generating || sentPrompt}
 						<div
@@ -281,7 +311,7 @@
 										>
 									</div>
 									<div
-										class="markdown-content dark-scroll max-w-[90%] leading-relaxed text-white/70"
+										class="markdown-content dark-scroll max-w-[95%] w-full leading-relaxed text-white/70"
 									>
 										{@html parsedThoughts}
 										{#if generating && !thoughts}
@@ -290,6 +320,41 @@
 									</div>
 								</div>
 							{/if}
+						</div>
+					{:else}
+						<div class="flex h-full w-full flex-col items-center justify-between p-3">
+							<div class="mb-4 flex flex-col items-center gap-3 text-center h-full justify-center">
+								<img src="/logo.svg" alt="Lekana Logo" class="h-12 w-12" />
+								<h2 class="text-lg font-bold text-white">Lekana Assistant</h2>
+								<p class="text-[12px] leading-relaxed text-white/60">
+									I can help you build powerful automation workflows, find the right actions, and
+									connect them with logic effortlessly.
+								</p>
+							</div>
+
+							<div class="flex w-full flex-col gap-2.5">
+								<h3 class="px-2 text-[10px] font-semibold tracking-wider text-white/40 uppercase">
+									Try these examples
+								</h3>
+								<div class="flex flex-col gap-2">
+									{#each examplePrompts as example}
+										<button
+											onclick={() => generateExample(example)}
+											class="group relative flex w-full flex-col items-start gap-1 rounded-2xl rounded-tl-sm bg-white/5 px-4 py-3 text-left transition-all  hover:bg-white/10 active:scale-[0.98]"
+										>
+											<span class="text-xs text-white/80 transition-colors group-hover:text-white"
+												>
+												{example}
+												<!-- <Sparkles class="h-2.5 w-2.5 text-green-500" /> -->
+											</span>
+										</button>
+									{/each}
+								</div>
+							</div>
+						</div>
+
+						<div class="px-1 text-[10px] text-white/30">
+							AI may make mistakes. Double-check all generated content.
 						</div>
 					{/if}
 

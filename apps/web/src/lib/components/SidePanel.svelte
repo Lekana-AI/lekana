@@ -15,6 +15,7 @@
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
+	import { toast } from '$lib/toast.svelte';
 
 	let {
 		userName,
@@ -80,6 +81,27 @@
 		}
 
 		let workflow = await res.json();
+
+		window.location.replace(`/w/${workflow.id}`);
+	}
+
+	async function duplicateWorkflow(id: string) {
+		const res = await fetch(`/api/workflows/${id}/duplicate`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+			toast.error('Failed to duplicate workflow');
+			throw new Error(`Failed to duplicate workflow: ${res.status}`);
+		}
+
+		let workflow = await res.json();
+		toast.success('Workflow duplicated');
 
 		window.location.replace(`/w/${workflow.id}`);
 	}
@@ -243,7 +265,7 @@
 
 										<button
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-											onclick={() => console.log('Duplicate', workflow.id)}
+											onclick={() => duplicateWorkflow(workflow.id)}
 										>
 											<CopyPlus class="h-4 w-4" />
 
@@ -283,4 +305,4 @@
 	</footer>
 </aside>
 
-<svelte:window on:click={(openMenuId = null)} />
+<svelte:window onclick={() => (openMenuId = null)} />

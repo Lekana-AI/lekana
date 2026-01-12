@@ -21,13 +21,14 @@
 		ArrowUp,
 		KeyRound,
 		CheckCheckIcon,
-		Play
+		Play,
+		BookOpen,
+		CornerRightUp
 	} from 'lucide-svelte';
 	import { confirmStore } from '$lib/confirm.svelte';
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
-	import Monitoring from '$lib/components/Monitoring.svelte';
 	import { Activity, LineChart } from 'lucide-svelte';
 
 	let { data } = $props();
@@ -94,6 +95,7 @@
 					(actionId = '')
 				),
 				onDelete: (value: any) => deleteNode(value.id),
+				onDuplicate: (value: any) => duplicateNode(value.id),
 				node: node,
 				...node
 			}
@@ -103,7 +105,7 @@
 			id: edge.id,
 			source: edge.sourceNodeId,
 			target: edge.targetNodeId,
-			type: 'smoothstep'
+			type: 'custom-edge'
 		}));
 	}
 
@@ -132,8 +134,26 @@
 		reloadWorkflow();
 	}
 
+	async function duplicateNode(id: string) {
+		const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}/duplicate`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (!res.ok) {
+			const errorText = await res.text();
+			console.error('Backend response body:', errorText);
+			toast.error('Failed to duplicate action');
+			throw new Error(`Failed to duplicate node: ${res.status}`);
+		}
+
+		toast.success('Action duplicated');
+		reloadWorkflow();
+	}
+
 	let showPublishModal = $state(false);
-	let showMonitoringModal = $state(false);
 	let showSettingsModal = $state(false);
 
 	let workflowName = $state(workflow.name);
@@ -205,17 +225,6 @@
 		/>
 	{/if}
 
-	{#if showMonitoringModal}
-		<Monitoring
-			{workflow}
-			onClose={() => (showMonitoringModal = false)}
-			onPublish={() => {
-				showMonitoringModal = false;
-				showPublishModal = true;
-			}}
-		/>
-	{/if}
-
 	{#if propertiesVisible}
 		<ActionProperties
 			node={actionNode}
@@ -267,7 +276,15 @@
 				</div>
 
 				<div class="flex items-center gap-2">
-					<!-- Publication Status Link -->
+					<a
+						href="/docs"
+						target="_blank"
+						class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
+					>
+						<BookOpen class="h-3.5 w-3.5" />
+						<span>Docs</span>
+					</a>
+
 					{#if !workflow.isPublished}
 						<button
 							onclick={() => (showPublishModal = true)}
@@ -282,15 +299,25 @@
 						<a
 							href="{workflow.id}/run"
 							target="_blank"
-							class="rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 hover:bg-white/10 active:scale-95"
+							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
 						>
 							<Play class="h-3.5 w-3.5 text-white" />
+							<span>Run</span>
 						</a>
-						<button
-							onclick={() => (showMonitoringModal = true)}
-							class="group flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 transition-all duration-300 hover:bg-white/10 active:scale-95"
+						<a
+							href="{workflow.id}/monitor"
+							target="_blank"
+							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
 						>
 							<Activity class="h-3.5 w-3.5 text-green-400" />
+							<span>Monitor</span>
+						</a>
+						<button
+							onclick={() => (showPublishModal = true)}
+							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
+						>
+							<CornerRightUp class="h-3.5 w-3.5" />
+							<span>Publish</span>
 						</button>
 					{/if}
 				</div>
