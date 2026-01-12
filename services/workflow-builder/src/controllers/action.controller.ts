@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import { generateUiSchema } from '../utils/config.utils';
-
-const prisma = new PrismaClient({});
 
 /**
  * Transform action to include computed uiSchema

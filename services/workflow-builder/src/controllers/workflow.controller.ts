@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient({});
+import prisma from '../lib/prisma';
 
 export const createWorkflow = async (req: Request, res: Response) => {
     try {
@@ -49,10 +47,14 @@ export const getWorkflow = async (req: Request, res: Response) => {
         const workflow = await prisma.workflow.findFirst({
             where: {
                 id,
-                userId // Ensure user owns the workflow
+                userId, // Ensure user owns the workflow
+                isDeleted: false
             },
             include: {
                 nodes: {
+                    where: {
+                        isDeleted: false
+                    },
                     include: {
                         action: {
                             include: {
@@ -61,7 +63,11 @@ export const getWorkflow = async (req: Request, res: Response) => {
                         }
                     }
                 },
-                edges: true,
+                edges: {
+                    where: {
+                        isDeleted: false
+                    }
+                },
             },
         });
 
@@ -72,7 +78,9 @@ export const getWorkflow = async (req: Request, res: Response) => {
         // Query extracted fields from WorkflowField table
         // Using $queryRaw until Prisma client is regenerated
         const workflowFields = await prisma.$queryRaw<{ fieldName: string }[]>`
-            SELECT DISTINCT "fieldName" FROM "WorkflowField" WHERE "workflowId" = ${id}
+            SELECT DISTINCT "fieldName" FROM "WorkflowField" 
+            WHERE "workflowId" = ${id} 
+            AND "sourceNodeId" IN (SELECT "id" FROM "WorkflowNode" WHERE "workflowId" = ${id} AND "isDeleted" = false)
         `;
 
         // Extract field names
@@ -94,11 +102,20 @@ export const getAllWorkflows = async (req: Request, res: Response) => {
 
         const workflows = await prisma.workflow.findMany({
             where: {
-                userId // Filter by user's workflows only
+                userId, // Filter by user's workflows only
+                isDeleted: false
             },
             include: {
-                nodes: true,
-                edges: true,
+                nodes: {
+                    where: {
+                        isDeleted: false
+                    }
+                },
+                edges: {
+                    where: {
+                        isDeleted: false
+                    }
+                },
             },
             orderBy: {
                 updatedAt: 'desc',
@@ -143,7 +160,8 @@ export const updateWorkflow = async (req: Request, res: Response) => {
         const existingWorkflow = await prisma.workflow.findFirst({
             where: {
                 id,
-                userId
+                userId,
+                isDeleted: false
             }
         });
 
@@ -163,6 +181,9 @@ export const updateWorkflow = async (req: Request, res: Response) => {
             },
             include: {
                 nodes: {
+                    where: {
+                        isDeleted: false
+                    },
                     include: {
                         action: {
                             include: {
@@ -171,7 +192,11 @@ export const updateWorkflow = async (req: Request, res: Response) => {
                         }
                     }
                 },
-                edges: true,
+                edges: {
+                    where: {
+                        isDeleted: false
+                    }
+                },
             },
         });
 
@@ -198,7 +223,8 @@ export const deleteWorkflow = async (req: Request, res: Response) => {
         const existingWorkflow = await prisma.workflow.findFirst({
             where: {
                 id,
-                userId
+                userId,
+                isDeleted: false
             }
         });
 
@@ -206,9 +232,21 @@ export const deleteWorkflow = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Workflow not found' });
         }
 
-        // Delete workflow (nodes and edges will cascade delete due to schema config)
-        await prisma.workflow.delete({
-            where: { id }
+        // Soft delete workflow
+        await prisma.workflow.update({
+            where: { id },
+            data: { isDeleted: true }
+        });
+
+        // Also soft delete nodes and edges
+        await prisma.workflowNode.updateMany({
+            where: { workflowId: id },
+            data: { isDeleted: true }
+        });
+
+        await prisma.workflowEdge.updateMany({
+            where: { workflowId: id },
+            data: { isDeleted: true }
         });
 
         res.status(200).json({ message: 'Workflow deleted successfully' });
@@ -236,7 +274,8 @@ export const updatePublishStatus = async (req: Request, res: Response) => {
         const existingWorkflow = await prisma.workflow.findFirst({
             where: {
                 id,
-                userId
+                userId,
+                isDeleted: false
             }
         });
 

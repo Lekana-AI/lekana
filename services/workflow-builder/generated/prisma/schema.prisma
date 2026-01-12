@@ -1,0 +1,104 @@
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  workflows Workflow[]
+}
+
+model Workflow {
+  id                  String          @id @default(uuid())
+  name                String
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  userId              String
+  isPublished         Boolean         @default(false)
+  lastPublishedAt     DateTime?
+  publishedAt         DateTime?
+  publishedWorkflowId String?
+  isDeleted           Boolean         @default(false)
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edges               WorkflowEdge[]
+  fields              WorkflowField[]
+  nodes               WorkflowNode[]
+
+  @@index([userId])
+}
+
+model WorkflowNode {
+  id         String          @id @default(uuid())
+  workflowId String
+  config     Json
+  positionX  Float
+  positionY  Float
+  actionId   String
+  outgoing   WorkflowEdge[]  @relation("SourceEdges")
+  incoming   WorkflowEdge[]  @relation("TargetEdges")
+  fields     WorkflowField[]
+  action     Action          @relation(fields: [actionId], references: [id])
+  isDeleted  Boolean         @default(false)
+  workflow   Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@index([actionId])
+}
+
+model WorkflowEdge {
+  id           String       @id @default(uuid())
+  workflowId   String
+  sourceNodeId String
+  targetNodeId String
+  sourceNode   WorkflowNode @relation("SourceEdges", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNode   WorkflowNode @relation("TargetEdges", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  isDeleted    Boolean      @default(false)
+  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+}
+
+model ActionCategory {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  actions     Action[]
+}
+
+model Action {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  description   String?
+  categoryId    String
+  configSchema  Json
+  configMeta    Json?
+  inputType     String?
+  outputType    String
+  icon          String
+  serviceUrl    String?
+  category      ActionCategory @relation(fields: [categoryId], references: [id])
+  workflowNodes WorkflowNode[]
+
+  @@index([categoryId])
+}
+
+model WorkflowField {
+  id           String       @id @default(uuid())
+  workflowId   String
+  sourceNodeId String
+  fieldName    String
+  fieldPath    String
+  fieldType    String?
+  createdAt    DateTime     @default(now())
+  sourceNode   WorkflowNode @relation(fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@unique([workflowId, sourceNodeId, fieldName])
+  @@index([workflowId])
+}

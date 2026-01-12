@@ -29,6 +29,11 @@
 			"key": "field_id",
 			"value": "",
 			"type": "string"
+		},
+		{
+			"key": "edge_id",
+			"value": "",
+			"type": "string"
 		}
 	],
 	"item": [
@@ -348,6 +353,30 @@
 								"workflows",
 								"{{workflow_id}}",
 								"edges"
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Edge",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/edges/{{edge_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"edges",
+								"{{edge_id}}"
 							]
 						}
 					}

@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import { validateConfigKeys, mergeConfig } from '../utils/config.utils';
-
-const prisma = new PrismaClient({});
 
 export const addNode = async (req: Request, res: Response) => {
     try {
@@ -71,7 +69,10 @@ export const getAllNodes = async (req: Request, res: Response) => {
         const { id: workflowId } = req.params;
 
         const nodes = await prisma.workflowNode.findMany({
-            where: { workflowId },
+            where: {
+                workflowId,
+                isDeleted: false
+            },
             include: {
                 action: {
                     include: {
@@ -101,7 +102,8 @@ export const getNode = async (req: Request, res: Response) => {
         const node = await prisma.workflowNode.findFirst({
             where: {
                 id: nodeId,
-                workflowId
+                workflowId,
+                isDeleted: false
             },
             include: {
                 action: {
@@ -109,8 +111,12 @@ export const getNode = async (req: Request, res: Response) => {
                         category: true
                     }
                 },
-                outgoing: true,
-                incoming: true
+                outgoing: {
+                    where: { isDeleted: false }
+                },
+                incoming: {
+                    where: { isDeleted: false }
+                }
             }
         });
 
@@ -137,7 +143,8 @@ export const updateNode = async (req: Request, res: Response) => {
         const existingNode = await prisma.workflowNode.findFirst({
             where: {
                 id: nodeId,
-                workflowId
+                workflowId,
+                isDeleted: false
             },
             include: {
                 action: true
@@ -285,7 +292,8 @@ export const deleteNode = async (req: Request, res: Response) => {
         const existingNode = await prisma.workflowNode.findFirst({
             where: {
                 id: nodeId,
-                workflowId
+                workflowId,
+                isDeleted: false
             }
         });
 
@@ -293,9 +301,21 @@ export const deleteNode = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Node not found' });
         }
 
-        // Delete node (edges will cascade delete due to schema config)
-        await prisma.workflowNode.delete({
-            where: { id: nodeId }
+        // Soft delete node
+        await prisma.workflowNode.update({
+            where: { id: nodeId },
+            data: { isDeleted: true }
+        });
+
+        // Also soft delete edges connected to this node
+        await prisma.workflowEdge.updateMany({
+            where: {
+                OR: [
+                    { sourceNodeId: nodeId },
+                    { targetNodeId: nodeId }
+                ]
+            },
+            data: { isDeleted: true }
         });
 
         res.status(200).json({ message: 'Node deleted successfully' });

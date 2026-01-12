@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../lib/prisma';
 import { streamWorkflowGeneration, WorkflowSnapshot } from '../utils/ai.utils';
-
-const prisma = new PrismaClient({});
 
 /**
  * Endpoint to generate or refine a workflow using AI
@@ -67,34 +65,106 @@ export const generateAIWorkflow = async (req: Request, res: Response) => {
         const stream = streamWorkflowGeneration(prompt, actions, currentState);
 
         let isStreamingJson = false;
+        const START_MARKER = '---JSON_START---';
+        const END_MARKER = '---JSON_END---';
+
+        let reasoningSentLength = 0;
+        const BUFFER_SIZE = 20; // Enough to hold '---JSON_START---' and some change
 
         for await (const chunk of stream) {
             fullText += chunk;
 
-            // Check if we hit the JSON marker
-            if (fullText.includes('---JSON_START---')) {
-                isStreamingJson = true;
-            }
-
-            // Only send reasoning/text chunks to client if we haven't hit JSON part
             if (!isStreamingJson) {
-                res.write(`data: ${JSON.stringify({ type: 'text', content: chunk })}\n\n`);
+                const markerIndex = fullText.indexOf(START_MARKER);
+                const markdownIndex = fullText.search(/```json|```/);
+                const braceIndex = fullText.search(/\n\s*\{/);
+
+                const triggerIndex = [markerIndex, markdownIndex, braceIndex]
+                    .filter(i => i !== -1)
+                    .sort((a, b) => a - b)[0];
+
+                if (triggerIndex !== undefined) {
+                    isStreamingJson = true;
+
+                    // Flush everything from reasoningSentLength to triggerIndex
+                    const toSend = fullText.slice(reasoningSentLength, triggerIndex);
+                    if (toSend.trim()) {
+                        res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
+                    }
+                    reasoningSentLength = triggerIndex;
+                } else {
+                    // We haven't found a trigger yet. 
+                    // Send everything up to (fullText.length - BUFFER_SIZE) to avoid leaking partial markers
+                    const safeLimit = Math.max(0, fullText.length - BUFFER_SIZE);
+                    if (safeLimit > reasoningSentLength) {
+                        const toSend = fullText.slice(reasoningSentLength, safeLimit);
+                        res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
+                        reasoningSentLength = safeLimit;
+                    }
+                }
             }
         }
 
-        // 4. Extract JSON from fullText using the specific markers
-        const jsonMatch = fullText.match(/---JSON_START---([\s\S]*?)---JSON_END---/);
+        // Before moving to JSON extraction, flush any remaining reasoning if we NEVER hit isStreamingJson (error case)
+        // or if there's a tiny bit of reasoning left before the trigger that was in the buffer
+        if (!isStreamingJson && reasoningSentLength < fullText.length) {
+            const finalReasoning = fullText.slice(reasoningSentLength).trim();
+            if (finalReasoning) {
+                res.write(`data: ${JSON.stringify({ type: 'text', content: finalReasoning })}\n\n`);
+            }
+        }
 
-        if (!jsonMatch) {
+        // console.log('--- FULL AI RESPONSE ---');
+        // console.log(fullText);
+        // console.log('-------------------------');
+
+        // 4. Extract JSON from fullText using a more robust approach
+        let jsonContent = '';
+        let startIndex = fullText.indexOf(START_MARKER);
+
+        if (startIndex !== -1) {
+            startIndex += START_MARKER.length;
+        } else {
+            // FALLBACK: Find the first curly bracket if marker is missing
+            const curlyIndex = fullText.indexOf('{');
+            if (curlyIndex !== -1) {
+                startIndex = curlyIndex;
+            }
+        }
+
+        if (startIndex !== -1) {
+            const endIndex = fullText.indexOf(END_MARKER, startIndex);
+            if (endIndex !== -1) {
+                jsonContent = fullText.slice(startIndex, endIndex).trim();
+            } else {
+                // Fallback: AI might have missed the end marker or wrapped it in markdown
+                // Try to find the last closing brace if END_MARKER is missing
+                const lastBraceIndex = fullText.lastIndexOf('}');
+                if (lastBraceIndex > startIndex) {
+                    jsonContent = fullText.slice(startIndex, lastBraceIndex + 1).trim();
+                } else {
+                    jsonContent = fullText.slice(startIndex).trim();
+                }
+            }
+        }
+
+        // Final cleanup of markdown leakage
+        jsonContent = jsonContent
+            .replace(/^```json\s*/g, '')
+            .replace(/^```\s*/g, '')
+            .replace(/\s*```$/g, '')
+            .trim();
+
+        if (!jsonContent) {
             res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to generate valid workflow JSON' })}\n\n`);
             return res.end();
         }
 
         let workflowData: WorkflowSnapshot;
         try {
-            workflowData = JSON.parse(jsonMatch[1].trim());
+            workflowData = JSON.parse(jsonContent);
         } catch (e) {
-            console.error('Failed to parse JSON:', jsonMatch[1]);
+            console.error('Failed to parse JSON:', jsonContent);
             res.write(`data: ${JSON.stringify({ type: 'error', message: 'Failed to parse generated JSON' })}\n\n`);
             return res.end();
         }

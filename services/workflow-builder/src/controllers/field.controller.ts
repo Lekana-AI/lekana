@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient({});
+import prisma from '../lib/prisma';
 
 /**
  * Get all fields available in a workflow
@@ -12,7 +10,12 @@ export const getWorkflowFields = async (req: Request, res: Response) => {
         const { id: workflowId } = req.params;
 
         const fields = await prisma.workflowField.findMany({
-            where: { workflowId },
+            where: {
+                workflowId,
+                sourceNode: {
+                    isDeleted: false
+                }
+            },
             include: {
                 sourceNode: {
                     include: {
