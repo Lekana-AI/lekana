@@ -201,6 +201,53 @@ export const updateNode = async (req: Request, res: Response) => {
 };
 
 /**
+ * Duplicate a node within the same workflow
+ */
+export const duplicateNode = async (req: Request, res: Response) => {
+    try {
+        const { id: workflowId, nodeId } = req.params;
+
+        // Check if node exists and belongs to workflow
+        const existingNode = await prisma.workflowNode.findFirst({
+            where: {
+                id: nodeId,
+                workflowId,
+                isDeleted: false
+            },
+            include: {
+                action: true
+            }
+        });
+
+        if (!existingNode) {
+            return res.status(404).json({ error: 'Node not found' });
+        }
+
+        // Create new node with offset position
+        const newNode = await prisma.workflowNode.create({
+            data: {
+                workflowId,
+                actionId: existingNode.actionId,
+                config: existingNode.config as any,
+                positionX: existingNode.positionX + 20,
+                positionY: existingNode.positionY + 20,
+            },
+            include: {
+                action: true
+            }
+        });
+
+        // Auto-sync workflow fields for the new node
+        await syncWorkflowFields(workflowId, newNode.id, newNode.action.name, newNode.config as Record<string, any>);
+
+        res.status(201).json(newNode);
+    } catch (error) {
+        console.error('Error duplicating node:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
  * Sync workflow fields when a node's config changes
  * This auto-populates WorkflowField table based on node's output fields
  */
