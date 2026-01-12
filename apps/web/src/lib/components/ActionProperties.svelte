@@ -45,11 +45,34 @@
 
 	let extractedFields = $derived.by(() => {
 		const sourceNode = workflow?.nodes?.find((n) => n.id === sourceNodeId);
-		const fields = sourceNode?.config?.extractFields;
+		if (!sourceNode) return [];
+
+		// Get the field source key from the source action's configMeta
+		// This allows any action to define which config key provides downstream fields
+		const sourceAction = sourceNode?.action;
+		const fieldSourceKey = sourceAction?.configMeta?.outputFieldsSource;
+
+		// Fallback to 'extractFields' for backward compatibility
+		const configKey = fieldSourceKey || 'extractFields';
+		const fields = sourceNode?.config?.[configKey];
+
 		if (Array.isArray(fields)) {
 			return fields.map((f) => (typeof f === 'string' ? f : f.key));
 		}
 		return [];
+	});
+
+	// Get upstream output variables for dynamic field selection (e.g., label, confidence)
+	let upstreamOutputVariables = $derived.by(() => {
+		const sourceNode = workflow?.nodes?.find((n) => n.id === sourceNodeId);
+		if (!sourceNode) return [];
+
+		// Get outputVariables from source node's config or action's configSchema
+		const variables = sourceNode?.config?.outputVariables 
+			|| sourceNode?.action?.configSchema?.outputVariables 
+			|| [];
+
+		return variables;
 	});
 
 	function isVisible(field) {
@@ -165,7 +188,7 @@
 					<div class="space-y-6 py-2">
 						{#each fields as fieldData}
 							{#if isVisible(fieldData)}
-								<Input onInput {fieldData} {extractedFields} />
+								<Input onInput {fieldData} {extractedFields} {upstreamOutputVariables} />
 								<!-- <pre class="text-xs leading-4 text-wrap text-zinc-400">Field: {JSON.stringify(
 									fieldData
 								)}</pre> -->

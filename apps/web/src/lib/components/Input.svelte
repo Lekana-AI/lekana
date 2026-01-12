@@ -1,6 +1,6 @@
 <script>
 	import { Minus, Plus } from 'lucide-svelte';
-	let { fieldData = $bindable(), onInput, extractedFields } = $props();
+	let { fieldData = $bindable(), onInput, extractedFields, upstreamOutputVariables = [] } = $props();
 
 	$effect(() => {
 		if (fieldData.type === 'keyValue' && fieldData.useExtractedFields && extractedFields) {
@@ -258,5 +258,57 @@
 			required={fieldData.required}
 			oninput={(e) => onInput?.(e, fieldData)}
 		></textarea>
+	</div>
+{:else if fieldData.type === 'dynamicSelect'}
+	<!-- Dropdown populated from upstream's outputVariables -->
+	<div class="flex flex-col gap-2 text-sm">
+		<label for={fieldData.name} class="text-zinc-200">
+			{fieldData.label}
+		</label>
+		<select
+			id={fieldData.name}
+			bind:value={fieldData.value}
+			class="w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-white"
+			oninput={(e) => onInput?.(e, fieldData)}
+		>
+			<option value="">Select field...</option>
+			{#each upstreamOutputVariables as variable}
+				<option value={variable}>{variable}</option>
+			{/each}
+		</select>
+		{#if fieldData.description}
+			<p class="text-xs text-zinc-500">{fieldData.description}</p>
+		{/if}
+	</div>
+{:else if fieldData.type === 'dynamicSelectValues'}
+	<!-- Dropdown + text input for values from upstream -->
+	<div class="flex flex-col gap-2 text-sm">
+		<label for={fieldData.name} class="text-zinc-200">
+			{fieldData.label}
+		</label>
+		{#if extractedFields && extractedFields.length > 0}
+			<select
+				bind:value={fieldData.value}
+				class="w-full rounded-lg border border-zinc-700 bg-black px-3 py-2 text-white"
+				oninput={(e) => onInput?.(e, fieldData)}
+			>
+				<option value="">Select value...</option>
+				{#each extractedFields as field}
+					<option value={field}>{field}</option>
+				{/each}
+			</select>
+		{/if}
+		{#if fieldData.allowCustom || !extractedFields || extractedFields.length === 0}
+			<input
+				type="text"
+				bind:value={fieldData.value}
+				placeholder={extractedFields?.length > 0 ? "Or type custom value..." : "Enter value..."}
+				class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 text-white"
+				oninput={(e) => onInput?.(e, fieldData)}
+			/>
+		{/if}
+		{#if fieldData.description}
+			<p class="text-xs text-zinc-500">{fieldData.description}</p>
+		{/if}
 	</div>
 {/if}
