@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Users, Shield, Plus, Trash2, UserPlus, ChevronDown } from 'lucide-svelte';
+	import { X, Users, Shield, Plus, Trash2, UserPlus, ChevronDown, Loader2 } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/toast.svelte';
 
@@ -33,6 +33,12 @@
 	let showAssignForm = $state(false);
 	let assignUserEmail = $state('');
 
+	// Loading states for actions
+	let creatingRole = $state(false);
+	let deletingRoleId = $state<string | null>(null);
+	let assigningUser = $state(false);
+	let revokingAssignmentId = $state<string | null>(null);
+
 	onMount(async () => {
 		await loadRoles();
 	});
@@ -63,8 +69,9 @@
 	}
 
 	async function createRole() {
-		if (!newRoleName.trim()) return;
+		if (!newRoleName.trim() || creatingRole) return;
 
+		creatingRole = true;
 		try {
 			const res = await fetch(`/api/workflows/${workflow.id}/roles`, {
 				method: 'POST',
@@ -90,10 +97,15 @@
 		} catch (error) {
 			console.error('Error creating role:', error);
 			toast.error('Failed to create role');
+		} finally {
+			creatingRole = false;
 		}
 	}
 
 	async function deleteRole(roleId: string) {
+		if (deletingRoleId) return;
+
+		deletingRoleId = roleId;
 		try {
 			const res = await fetch(`/api/workflows/${workflow.id}/roles/${roleId}`, {
 				method: 'DELETE'
@@ -113,11 +125,13 @@
 		} catch (error) {
 			console.error('Error deleting role:', error);
 			toast.error('Failed to delete role');
+		} finally {
+			deletingRoleId = null;
 		}
 	}
 
 	async function assignUser() {
-		if (!selectedRole || !assignUserEmail.trim()) return;
+		if (!selectedRole || !assignUserEmail.trim() || assigningUser) return;
 
 		// Basic email validation
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -126,6 +140,7 @@
 			return;
 		}
 
+		assigningUser = true;
 		try {
 			const res = await fetch(
 				`/api/workflows/${workflow.id}/roles/${selectedRole.id}/assignments`,
@@ -153,12 +168,15 @@
 		} catch (error) {
 			console.error('Error assigning user:', error);
 			toast.error('Failed to assign user');
+		} finally {
+			assigningUser = false;
 		}
 	}
 
 	async function revokeAssignment(assignmentId: string) {
-		if (!selectedRole) return;
+		if (!selectedRole || revokingAssignmentId) return;
 
+		revokingAssignmentId = assignmentId;
 		try {
 			const res = await fetch(
 				`/api/workflows/${workflow.id}/roles/${selectedRole.id}/assignments/${assignmentId}`,
@@ -174,6 +192,8 @@
 		} catch (error) {
 			console.error('Error revoking assignment:', error);
 			toast.error('Failed to revoke assignment');
+		} finally {
+			revokingAssignmentId = null;
 		}
 	}
 
@@ -250,9 +270,14 @@
 												e.stopPropagation();
 												deleteRole(role.id);
 											}}
-											class="rounded p-1 text-red-400 hover:bg-red-500/20"
+											disabled={deletingRoleId === role.id}
+											class="rounded p-1 text-red-400 hover:bg-red-500/20 disabled:opacity-50"
 										>
-											<Trash2 class="h-3.5 w-3.5" />
+											{#if deletingRoleId === role.id}
+												<Loader2 class="h-3.5 w-3.5 animate-spin" />
+											{:else}
+												<Trash2 class="h-3.5 w-3.5" />
+											{/if}
 										</button>
 									{/if}
 								</button>
@@ -304,9 +329,15 @@
 								</button>
 								<button
 									onclick={createRole}
-									class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700"
+									disabled={creatingRole}
+									class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
 								>
-									Create
+									{#if creatingRole}
+										<Loader2 class="h-3.5 w-3.5 animate-spin" />
+										Creating...
+									{:else}
+										Create
+									{/if}
 								</button>
 							</div>
 						</div>
@@ -373,9 +404,15 @@
 											</button>
 											<button
 												onclick={assignUser}
-												class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700"
+												disabled={assigningUser}
+												class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
 											>
-												Assign
+												{#if assigningUser}
+													<Loader2 class="h-3.5 w-3.5 animate-spin" />
+													Assigning...
+												{:else}
+													Assign
+												{/if}
 											</button>
 										</div>
 									</div>
@@ -398,9 +435,14 @@
 											</div>
 											<button
 												onclick={() => revokeAssignment(assignment.id)}
-												class="rounded p-1.5 text-red-400 hover:bg-red-500/20"
+												disabled={revokingAssignmentId === assignment.id}
+												class="rounded p-1.5 text-red-400 hover:bg-red-500/20 disabled:opacity-50"
 											>
-												<Trash2 class="h-3.5 w-3.5" />
+												{#if revokingAssignmentId === assignment.id}
+													<Loader2 class="h-3.5 w-3.5 animate-spin" />
+												{:else}
+													<Trash2 class="h-3.5 w-3.5" />
+												{/if}
 											</button>
 										</div>
 									{:else}
