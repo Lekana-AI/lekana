@@ -11,8 +11,13 @@
 	let selectedRole = $state<any>(null);
 	let assignments = $state<any[]>([]);
 
-	// Permission descriptions
-	const permissionDescriptions: Record<string, string> = {
+	// Permission data - loaded dynamically from backend
+	let availablePermissions = $state<string[]>([]);
+	let permissionDescriptions = $state<Record<string, string>>({});
+	let permissionsLoading = $state(true);
+
+	// Fallback permissions if API fails
+	const fallbackPermissions: Record<string, string> = {
 		WORKFLOW_VIEW: 'View workflow',
 		WORKFLOW_EDIT: 'Edit workflow',
 		WORKFLOW_PUBLISH: 'Publish/unpublish',
@@ -40,8 +45,30 @@
 	let revokingAssignmentId = $state<string | null>(null);
 
 	onMount(async () => {
-		await loadRoles();
+		await Promise.all([loadRoles(), loadPermissions()]);
 	});
+
+	async function loadPermissions() {
+		permissionsLoading = true;
+		try {
+			const res = await fetch('/api/permissions/available');
+			if (res.ok) {
+				const data = await res.json();
+				availablePermissions = data.permissions || [];
+				permissionDescriptions = data.descriptions || {};
+			} else {
+				// Use fallback if API fails
+				availablePermissions = Object.keys(fallbackPermissions);
+				permissionDescriptions = fallbackPermissions;
+			}
+		} catch (error) {
+			console.error('Error loading permissions:', error);
+			// Use fallback on error
+			availablePermissions = Object.keys(fallbackPermissions);
+			permissionDescriptions = fallbackPermissions;
+		}
+		permissionsLoading = false;
+	}
 
 	async function loadRoles() {
 		loading = true;
@@ -304,21 +331,28 @@
 								<span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500"
 									>Permissions</span
 								>
-								<div class="grid grid-cols-2 gap-1">
-									{#each Object.keys(permissionDescriptions) as perm}
-										<label
-											class="flex cursor-pointer items-center gap-2 rounded-md p-1.5 hover:bg-white/5"
-										>
-											<input
-												type="checkbox"
-												checked={newRolePermissions.includes(perm)}
-												onchange={() => togglePermission(perm)}
-												class="h-3 w-3 accent-green-500"
-											/>
-											<span class="text-[10px] text-zinc-300">{permissionDescriptions[perm]}</span>
-										</label>
-									{/each}
+								{#if permissionsLoading}
+									<div class="flex items-center gap-2 py-2 text-xs text-zinc-500">
+										<Loader2 class="h-3 w-3 animate-spin" />
+										Loading permissions...
+									</div>
+								{:else}
+									<div class="grid grid-cols-2 gap-1">
+										{#each availablePermissions as perm}
+											<label
+												class="flex cursor-pointer items-center gap-2 rounded-md p-1.5 hover:bg-white/5"
+											>
+												<input
+													type="checkbox"
+													checked={newRolePermissions.includes(perm)}
+													onchange={() => togglePermission(perm)}
+													class="h-3 w-3 accent-green-500"
+												/>
+												<span class="text-[10px] text-zinc-300">{permissionDescriptions[perm]}</span>
+											</label>
+										{/each}
 								</div>
+								{/if}
 							</div>
 							<div class="flex gap-2">
 								<button
