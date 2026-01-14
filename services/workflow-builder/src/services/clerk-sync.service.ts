@@ -28,6 +28,13 @@ export async function buildUserRoleMetadata(userId: string): Promise<Record<stri
                 include: {
                     workflow: {
                         select: { id: true, name: true }
+                    },
+                    rolePermissions: {
+                        include: {
+                            permission: {
+                                select: { code: true }
+                            }
+                        }
                     }
                 }
             }
@@ -51,10 +58,11 @@ export async function buildUserRoleMetadata(userId: string): Promise<Record<stri
 
         roleMap[workflowId].roles.push(workflowRole.name);
 
-        // Add permissions, avoiding duplicates
-        for (const perm of workflowRole.permissions) {
-            if (!roleMap[workflowId].permissions.includes(perm)) {
-                roleMap[workflowId].permissions.push(perm);
+        // Add permissions from junction table, avoiding duplicates
+        for (const rp of workflowRole.rolePermissions) {
+            const permCode = rp.permission.code;
+            if (!roleMap[workflowId].permissions.includes(permCode)) {
+                roleMap[workflowId].permissions.push(permCode);
             }
         }
     }

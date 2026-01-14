@@ -49,6 +49,16 @@ export type Action = $Result.DefaultSelection<Prisma.$ActionPayload>
  */
 export type WorkflowField = $Result.DefaultSelection<Prisma.$WorkflowFieldPayload>
 /**
+ * Model Permission
+ * 
+ */
+export type Permission = $Result.DefaultSelection<Prisma.$PermissionPayload>
+/**
+ * Model WorkflowRolePermission
+ * 
+ */
+export type WorkflowRolePermission = $Result.DefaultSelection<Prisma.$WorkflowRolePermissionPayload>
+/**
  * Model WorkflowRole
  * 
  */
@@ -58,29 +68,6 @@ export type WorkflowRole = $Result.DefaultSelection<Prisma.$WorkflowRolePayload>
  * 
  */
 export type WorkflowRoleAssignment = $Result.DefaultSelection<Prisma.$WorkflowRoleAssignmentPayload>
-
-/**
- * Enums
- */
-export namespace $Enums {
-  export const Permission: {
-  WORKFLOW_VIEW: 'WORKFLOW_VIEW',
-  WORKFLOW_EDIT: 'WORKFLOW_EDIT',
-  WORKFLOW_PUBLISH: 'WORKFLOW_PUBLISH',
-  WORKFLOW_DELETE: 'WORKFLOW_DELETE',
-  REVIEW_VIEW: 'REVIEW_VIEW',
-  REVIEW_APPROVE: 'REVIEW_APPROVE',
-  REVIEW_REJECT: 'REVIEW_REJECT',
-  ROLE_MANAGE: 'ROLE_MANAGE'
-};
-
-export type Permission = (typeof Permission)[keyof typeof Permission]
-
-}
-
-export type Permission = $Enums.Permission
-
-export const Permission: typeof $Enums.Permission
 
 /**
  * ##  Prisma Client ʲˢ
@@ -274,6 +261,26 @@ export class PrismaClient<
     * ```
     */
   get workflowField(): Prisma.WorkflowFieldDelegate<ExtArgs>;
+
+  /**
+   * `prisma.permission`: Exposes CRUD operations for the **Permission** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Permissions
+    * const permissions = await prisma.permission.findMany()
+    * ```
+    */
+  get permission(): Prisma.PermissionDelegate<ExtArgs>;
+
+  /**
+   * `prisma.workflowRolePermission`: Exposes CRUD operations for the **WorkflowRolePermission** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkflowRolePermissions
+    * const workflowRolePermissions = await prisma.workflowRolePermission.findMany()
+    * ```
+    */
+  get workflowRolePermission(): Prisma.WorkflowRolePermissionDelegate<ExtArgs>;
 
   /**
    * `prisma.workflowRole`: Exposes CRUD operations for the **WorkflowRole** model.
@@ -742,6 +749,8 @@ export namespace Prisma {
     ActionCategory: 'ActionCategory',
     Action: 'Action',
     WorkflowField: 'WorkflowField',
+    Permission: 'Permission',
+    WorkflowRolePermission: 'WorkflowRolePermission',
     WorkflowRole: 'WorkflowRole',
     WorkflowRoleAssignment: 'WorkflowRoleAssignment'
   };
@@ -759,7 +768,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "workflow" | "workflowNode" | "workflowEdge" | "actionCategory" | "action" | "workflowField" | "workflowRole" | "workflowRoleAssignment"
+      modelProps: "user" | "workflow" | "workflowNode" | "workflowEdge" | "actionCategory" | "action" | "workflowField" | "permission" | "workflowRolePermission" | "workflowRole" | "workflowRoleAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1250,6 +1259,146 @@ export namespace Prisma {
           count: {
             args: Prisma.WorkflowFieldCountArgs<ExtArgs>
             result: $Utils.Optional<WorkflowFieldCountAggregateOutputType> | number
+          }
+        }
+      }
+      Permission: {
+        payload: Prisma.$PermissionPayload<ExtArgs>
+        fields: Prisma.PermissionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PermissionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PermissionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          findFirst: {
+            args: Prisma.PermissionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PermissionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          findMany: {
+            args: Prisma.PermissionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>[]
+          }
+          create: {
+            args: Prisma.PermissionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          createMany: {
+            args: Prisma.PermissionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PermissionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>[]
+          }
+          delete: {
+            args: Prisma.PermissionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          update: {
+            args: Prisma.PermissionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          deleteMany: {
+            args: Prisma.PermissionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PermissionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PermissionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PermissionPayload>
+          }
+          aggregate: {
+            args: Prisma.PermissionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePermission>
+          }
+          groupBy: {
+            args: Prisma.PermissionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PermissionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PermissionCountArgs<ExtArgs>
+            result: $Utils.Optional<PermissionCountAggregateOutputType> | number
+          }
+        }
+      }
+      WorkflowRolePermission: {
+        payload: Prisma.$WorkflowRolePermissionPayload<ExtArgs>
+        fields: Prisma.WorkflowRolePermissionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkflowRolePermissionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkflowRolePermissionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          findFirst: {
+            args: Prisma.WorkflowRolePermissionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkflowRolePermissionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          findMany: {
+            args: Prisma.WorkflowRolePermissionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>[]
+          }
+          create: {
+            args: Prisma.WorkflowRolePermissionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          createMany: {
+            args: Prisma.WorkflowRolePermissionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkflowRolePermissionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>[]
+          }
+          delete: {
+            args: Prisma.WorkflowRolePermissionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          update: {
+            args: Prisma.WorkflowRolePermissionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkflowRolePermissionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkflowRolePermissionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WorkflowRolePermissionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePermissionPayload>
+          }
+          aggregate: {
+            args: Prisma.WorkflowRolePermissionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkflowRolePermission>
+          }
+          groupBy: {
+            args: Prisma.WorkflowRolePermissionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRolePermissionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkflowRolePermissionCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRolePermissionCountAggregateOutputType> | number
           }
         }
       }
@@ -1754,15 +1903,48 @@ export namespace Prisma {
 
 
   /**
+   * Count Type PermissionCountOutputType
+   */
+
+  export type PermissionCountOutputType = {
+    rolePermissions: number
+  }
+
+  export type PermissionCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rolePermissions?: boolean | PermissionCountOutputTypeCountRolePermissionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PermissionCountOutputType without action
+   */
+  export type PermissionCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PermissionCountOutputType
+     */
+    select?: PermissionCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PermissionCountOutputType without action
+   */
+  export type PermissionCountOutputTypeCountRolePermissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRolePermissionWhereInput
+  }
+
+
+  /**
    * Count Type WorkflowRoleCountOutputType
    */
 
   export type WorkflowRoleCountOutputType = {
     assignments: number
+    rolePermissions: number
   }
 
   export type WorkflowRoleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignments?: boolean | WorkflowRoleCountOutputTypeCountAssignmentsArgs
+    rolePermissions?: boolean | WorkflowRoleCountOutputTypeCountRolePermissionsArgs
   }
 
   // Custom InputTypes
@@ -1781,6 +1963,13 @@ export namespace Prisma {
    */
   export type WorkflowRoleCountOutputTypeCountAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WorkflowRoleAssignmentWhereInput
+  }
+
+  /**
+   * WorkflowRoleCountOutputType without action
+   */
+  export type WorkflowRoleCountOutputTypeCountRolePermissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRolePermissionWhereInput
   }
 
 
@@ -8694,6 +8883,1893 @@ export namespace Prisma {
 
 
   /**
+   * Model Permission
+   */
+
+  export type AggregatePermission = {
+    _count: PermissionCountAggregateOutputType | null
+    _min: PermissionMinAggregateOutputType | null
+    _max: PermissionMaxAggregateOutputType | null
+  }
+
+  export type PermissionMinAggregateOutputType = {
+    id: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    category: string | null
+    createdAt: Date | null
+  }
+
+  export type PermissionMaxAggregateOutputType = {
+    id: string | null
+    code: string | null
+    name: string | null
+    description: string | null
+    category: string | null
+    createdAt: Date | null
+  }
+
+  export type PermissionCountAggregateOutputType = {
+    id: number
+    code: number
+    name: number
+    description: number
+    category: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PermissionMinAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    category?: true
+    createdAt?: true
+  }
+
+  export type PermissionMaxAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    category?: true
+    createdAt?: true
+  }
+
+  export type PermissionCountAggregateInputType = {
+    id?: true
+    code?: true
+    name?: true
+    description?: true
+    category?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PermissionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Permission to aggregate.
+     */
+    where?: PermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Permissions to fetch.
+     */
+    orderBy?: PermissionOrderByWithRelationInput | PermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Permissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Permissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Permissions
+    **/
+    _count?: true | PermissionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PermissionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PermissionMaxAggregateInputType
+  }
+
+  export type GetPermissionAggregateType<T extends PermissionAggregateArgs> = {
+        [P in keyof T & keyof AggregatePermission]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePermission[P]>
+      : GetScalarType<T[P], AggregatePermission[P]>
+  }
+
+
+
+
+  export type PermissionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PermissionWhereInput
+    orderBy?: PermissionOrderByWithAggregationInput | PermissionOrderByWithAggregationInput[]
+    by: PermissionScalarFieldEnum[] | PermissionScalarFieldEnum
+    having?: PermissionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PermissionCountAggregateInputType | true
+    _min?: PermissionMinAggregateInputType
+    _max?: PermissionMaxAggregateInputType
+  }
+
+  export type PermissionGroupByOutputType = {
+    id: string
+    code: string
+    name: string
+    description: string | null
+    category: string
+    createdAt: Date
+    _count: PermissionCountAggregateOutputType | null
+    _min: PermissionMinAggregateOutputType | null
+    _max: PermissionMaxAggregateOutputType | null
+  }
+
+  type GetPermissionGroupByPayload<T extends PermissionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PermissionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PermissionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PermissionGroupByOutputType[P]>
+            : GetScalarType<T[P], PermissionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PermissionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    category?: boolean
+    createdAt?: boolean
+    rolePermissions?: boolean | Permission$rolePermissionsArgs<ExtArgs>
+    _count?: boolean | PermissionCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["permission"]>
+
+  export type PermissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    category?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["permission"]>
+
+  export type PermissionSelectScalar = {
+    id?: boolean
+    code?: boolean
+    name?: boolean
+    description?: boolean
+    category?: boolean
+    createdAt?: boolean
+  }
+
+  export type PermissionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rolePermissions?: boolean | Permission$rolePermissionsArgs<ExtArgs>
+    _count?: boolean | PermissionCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PermissionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $PermissionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Permission"
+    objects: {
+      rolePermissions: Prisma.$WorkflowRolePermissionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      code: string
+      name: string
+      description: string | null
+      category: string
+      createdAt: Date
+    }, ExtArgs["result"]["permission"]>
+    composites: {}
+  }
+
+  type PermissionGetPayload<S extends boolean | null | undefined | PermissionDefaultArgs> = $Result.GetResult<Prisma.$PermissionPayload, S>
+
+  type PermissionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PermissionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PermissionCountAggregateInputType | true
+    }
+
+  export interface PermissionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Permission'], meta: { name: 'Permission' } }
+    /**
+     * Find zero or one Permission that matches the filter.
+     * @param {PermissionFindUniqueArgs} args - Arguments to find a Permission
+     * @example
+     * // Get one Permission
+     * const permission = await prisma.permission.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PermissionFindUniqueArgs>(args: SelectSubset<T, PermissionFindUniqueArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Permission that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PermissionFindUniqueOrThrowArgs} args - Arguments to find a Permission
+     * @example
+     * // Get one Permission
+     * const permission = await prisma.permission.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PermissionFindUniqueOrThrowArgs>(args: SelectSubset<T, PermissionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Permission that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionFindFirstArgs} args - Arguments to find a Permission
+     * @example
+     * // Get one Permission
+     * const permission = await prisma.permission.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PermissionFindFirstArgs>(args?: SelectSubset<T, PermissionFindFirstArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Permission that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionFindFirstOrThrowArgs} args - Arguments to find a Permission
+     * @example
+     * // Get one Permission
+     * const permission = await prisma.permission.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PermissionFindFirstOrThrowArgs>(args?: SelectSubset<T, PermissionFindFirstOrThrowArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Permissions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Permissions
+     * const permissions = await prisma.permission.findMany()
+     * 
+     * // Get first 10 Permissions
+     * const permissions = await prisma.permission.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const permissionWithIdOnly = await prisma.permission.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PermissionFindManyArgs>(args?: SelectSubset<T, PermissionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Permission.
+     * @param {PermissionCreateArgs} args - Arguments to create a Permission.
+     * @example
+     * // Create one Permission
+     * const Permission = await prisma.permission.create({
+     *   data: {
+     *     // ... data to create a Permission
+     *   }
+     * })
+     * 
+     */
+    create<T extends PermissionCreateArgs>(args: SelectSubset<T, PermissionCreateArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Permissions.
+     * @param {PermissionCreateManyArgs} args - Arguments to create many Permissions.
+     * @example
+     * // Create many Permissions
+     * const permission = await prisma.permission.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PermissionCreateManyArgs>(args?: SelectSubset<T, PermissionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Permissions and returns the data saved in the database.
+     * @param {PermissionCreateManyAndReturnArgs} args - Arguments to create many Permissions.
+     * @example
+     * // Create many Permissions
+     * const permission = await prisma.permission.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Permissions and only return the `id`
+     * const permissionWithIdOnly = await prisma.permission.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PermissionCreateManyAndReturnArgs>(args?: SelectSubset<T, PermissionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Permission.
+     * @param {PermissionDeleteArgs} args - Arguments to delete one Permission.
+     * @example
+     * // Delete one Permission
+     * const Permission = await prisma.permission.delete({
+     *   where: {
+     *     // ... filter to delete one Permission
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PermissionDeleteArgs>(args: SelectSubset<T, PermissionDeleteArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Permission.
+     * @param {PermissionUpdateArgs} args - Arguments to update one Permission.
+     * @example
+     * // Update one Permission
+     * const permission = await prisma.permission.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PermissionUpdateArgs>(args: SelectSubset<T, PermissionUpdateArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Permissions.
+     * @param {PermissionDeleteManyArgs} args - Arguments to filter Permissions to delete.
+     * @example
+     * // Delete a few Permissions
+     * const { count } = await prisma.permission.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PermissionDeleteManyArgs>(args?: SelectSubset<T, PermissionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Permissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Permissions
+     * const permission = await prisma.permission.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PermissionUpdateManyArgs>(args: SelectSubset<T, PermissionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Permission.
+     * @param {PermissionUpsertArgs} args - Arguments to update or create a Permission.
+     * @example
+     * // Update or create a Permission
+     * const permission = await prisma.permission.upsert({
+     *   create: {
+     *     // ... data to create a Permission
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Permission we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PermissionUpsertArgs>(args: SelectSubset<T, PermissionUpsertArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Permissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionCountArgs} args - Arguments to filter Permissions to count.
+     * @example
+     * // Count the number of Permissions
+     * const count = await prisma.permission.count({
+     *   where: {
+     *     // ... the filter for the Permissions we want to count
+     *   }
+     * })
+    **/
+    count<T extends PermissionCountArgs>(
+      args?: Subset<T, PermissionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PermissionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Permission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PermissionAggregateArgs>(args: Subset<T, PermissionAggregateArgs>): Prisma.PrismaPromise<GetPermissionAggregateType<T>>
+
+    /**
+     * Group by Permission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PermissionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PermissionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PermissionGroupByArgs['orderBy'] }
+        : { orderBy?: PermissionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PermissionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPermissionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Permission model
+   */
+  readonly fields: PermissionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Permission.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PermissionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    rolePermissions<T extends Permission$rolePermissionsArgs<ExtArgs> = {}>(args?: Subset<T, Permission$rolePermissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Permission model
+   */ 
+  interface PermissionFieldRefs {
+    readonly id: FieldRef<"Permission", 'String'>
+    readonly code: FieldRef<"Permission", 'String'>
+    readonly name: FieldRef<"Permission", 'String'>
+    readonly description: FieldRef<"Permission", 'String'>
+    readonly category: FieldRef<"Permission", 'String'>
+    readonly createdAt: FieldRef<"Permission", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Permission findUnique
+   */
+  export type PermissionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which Permission to fetch.
+     */
+    where: PermissionWhereUniqueInput
+  }
+
+  /**
+   * Permission findUniqueOrThrow
+   */
+  export type PermissionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which Permission to fetch.
+     */
+    where: PermissionWhereUniqueInput
+  }
+
+  /**
+   * Permission findFirst
+   */
+  export type PermissionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which Permission to fetch.
+     */
+    where?: PermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Permissions to fetch.
+     */
+    orderBy?: PermissionOrderByWithRelationInput | PermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Permissions.
+     */
+    cursor?: PermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Permissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Permissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Permissions.
+     */
+    distinct?: PermissionScalarFieldEnum | PermissionScalarFieldEnum[]
+  }
+
+  /**
+   * Permission findFirstOrThrow
+   */
+  export type PermissionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which Permission to fetch.
+     */
+    where?: PermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Permissions to fetch.
+     */
+    orderBy?: PermissionOrderByWithRelationInput | PermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Permissions.
+     */
+    cursor?: PermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Permissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Permissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Permissions.
+     */
+    distinct?: PermissionScalarFieldEnum | PermissionScalarFieldEnum[]
+  }
+
+  /**
+   * Permission findMany
+   */
+  export type PermissionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which Permissions to fetch.
+     */
+    where?: PermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Permissions to fetch.
+     */
+    orderBy?: PermissionOrderByWithRelationInput | PermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Permissions.
+     */
+    cursor?: PermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Permissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Permissions.
+     */
+    skip?: number
+    distinct?: PermissionScalarFieldEnum | PermissionScalarFieldEnum[]
+  }
+
+  /**
+   * Permission create
+   */
+  export type PermissionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Permission.
+     */
+    data: XOR<PermissionCreateInput, PermissionUncheckedCreateInput>
+  }
+
+  /**
+   * Permission createMany
+   */
+  export type PermissionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Permissions.
+     */
+    data: PermissionCreateManyInput | PermissionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Permission createManyAndReturn
+   */
+  export type PermissionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Permissions.
+     */
+    data: PermissionCreateManyInput | PermissionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Permission update
+   */
+  export type PermissionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Permission.
+     */
+    data: XOR<PermissionUpdateInput, PermissionUncheckedUpdateInput>
+    /**
+     * Choose, which Permission to update.
+     */
+    where: PermissionWhereUniqueInput
+  }
+
+  /**
+   * Permission updateMany
+   */
+  export type PermissionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Permissions.
+     */
+    data: XOR<PermissionUpdateManyMutationInput, PermissionUncheckedUpdateManyInput>
+    /**
+     * Filter which Permissions to update
+     */
+    where?: PermissionWhereInput
+  }
+
+  /**
+   * Permission upsert
+   */
+  export type PermissionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Permission to update in case it exists.
+     */
+    where: PermissionWhereUniqueInput
+    /**
+     * In case the Permission found by the `where` argument doesn't exist, create a new Permission with this data.
+     */
+    create: XOR<PermissionCreateInput, PermissionUncheckedCreateInput>
+    /**
+     * In case the Permission was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PermissionUpdateInput, PermissionUncheckedUpdateInput>
+  }
+
+  /**
+   * Permission delete
+   */
+  export type PermissionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+    /**
+     * Filter which Permission to delete.
+     */
+    where: PermissionWhereUniqueInput
+  }
+
+  /**
+   * Permission deleteMany
+   */
+  export type PermissionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Permissions to delete
+     */
+    where?: PermissionWhereInput
+  }
+
+  /**
+   * Permission.rolePermissions
+   */
+  export type Permission$rolePermissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    where?: WorkflowRolePermissionWhereInput
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkflowRolePermissionScalarFieldEnum | WorkflowRolePermissionScalarFieldEnum[]
+  }
+
+  /**
+   * Permission without action
+   */
+  export type PermissionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Permission
+     */
+    select?: PermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PermissionInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WorkflowRolePermission
+   */
+
+  export type AggregateWorkflowRolePermission = {
+    _count: WorkflowRolePermissionCountAggregateOutputType | null
+    _min: WorkflowRolePermissionMinAggregateOutputType | null
+    _max: WorkflowRolePermissionMaxAggregateOutputType | null
+  }
+
+  export type WorkflowRolePermissionMinAggregateOutputType = {
+    id: string | null
+    workflowRoleId: string | null
+    permissionId: string | null
+    createdAt: Date | null
+  }
+
+  export type WorkflowRolePermissionMaxAggregateOutputType = {
+    id: string | null
+    workflowRoleId: string | null
+    permissionId: string | null
+    createdAt: Date | null
+  }
+
+  export type WorkflowRolePermissionCountAggregateOutputType = {
+    id: number
+    workflowRoleId: number
+    permissionId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type WorkflowRolePermissionMinAggregateInputType = {
+    id?: true
+    workflowRoleId?: true
+    permissionId?: true
+    createdAt?: true
+  }
+
+  export type WorkflowRolePermissionMaxAggregateInputType = {
+    id?: true
+    workflowRoleId?: true
+    permissionId?: true
+    createdAt?: true
+  }
+
+  export type WorkflowRolePermissionCountAggregateInputType = {
+    id?: true
+    workflowRoleId?: true
+    permissionId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type WorkflowRolePermissionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRolePermission to aggregate.
+     */
+    where?: WorkflowRolePermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRolePermissions to fetch.
+     */
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRolePermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRolePermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkflowRolePermissions
+    **/
+    _count?: true | WorkflowRolePermissionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkflowRolePermissionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkflowRolePermissionMaxAggregateInputType
+  }
+
+  export type GetWorkflowRolePermissionAggregateType<T extends WorkflowRolePermissionAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkflowRolePermission]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkflowRolePermission[P]>
+      : GetScalarType<T[P], AggregateWorkflowRolePermission[P]>
+  }
+
+
+
+
+  export type WorkflowRolePermissionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRolePermissionWhereInput
+    orderBy?: WorkflowRolePermissionOrderByWithAggregationInput | WorkflowRolePermissionOrderByWithAggregationInput[]
+    by: WorkflowRolePermissionScalarFieldEnum[] | WorkflowRolePermissionScalarFieldEnum
+    having?: WorkflowRolePermissionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkflowRolePermissionCountAggregateInputType | true
+    _min?: WorkflowRolePermissionMinAggregateInputType
+    _max?: WorkflowRolePermissionMaxAggregateInputType
+  }
+
+  export type WorkflowRolePermissionGroupByOutputType = {
+    id: string
+    workflowRoleId: string
+    permissionId: string
+    createdAt: Date
+    _count: WorkflowRolePermissionCountAggregateOutputType | null
+    _min: WorkflowRolePermissionMinAggregateOutputType | null
+    _max: WorkflowRolePermissionMaxAggregateOutputType | null
+  }
+
+  type GetWorkflowRolePermissionGroupByPayload<T extends WorkflowRolePermissionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkflowRolePermissionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkflowRolePermissionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkflowRolePermissionGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkflowRolePermissionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkflowRolePermissionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workflowRoleId?: boolean
+    permissionId?: boolean
+    createdAt?: boolean
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+    permission?: boolean | PermissionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRolePermission"]>
+
+  export type WorkflowRolePermissionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workflowRoleId?: boolean
+    permissionId?: boolean
+    createdAt?: boolean
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+    permission?: boolean | PermissionDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRolePermission"]>
+
+  export type WorkflowRolePermissionSelectScalar = {
+    id?: boolean
+    workflowRoleId?: boolean
+    permissionId?: boolean
+    createdAt?: boolean
+  }
+
+  export type WorkflowRolePermissionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+    permission?: boolean | PermissionDefaultArgs<ExtArgs>
+  }
+  export type WorkflowRolePermissionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+    permission?: boolean | PermissionDefaultArgs<ExtArgs>
+  }
+
+  export type $WorkflowRolePermissionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkflowRolePermission"
+    objects: {
+      workflowRole: Prisma.$WorkflowRolePayload<ExtArgs>
+      permission: Prisma.$PermissionPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workflowRoleId: string
+      permissionId: string
+      createdAt: Date
+    }, ExtArgs["result"]["workflowRolePermission"]>
+    composites: {}
+  }
+
+  type WorkflowRolePermissionGetPayload<S extends boolean | null | undefined | WorkflowRolePermissionDefaultArgs> = $Result.GetResult<Prisma.$WorkflowRolePermissionPayload, S>
+
+  type WorkflowRolePermissionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<WorkflowRolePermissionFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: WorkflowRolePermissionCountAggregateInputType | true
+    }
+
+  export interface WorkflowRolePermissionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkflowRolePermission'], meta: { name: 'WorkflowRolePermission' } }
+    /**
+     * Find zero or one WorkflowRolePermission that matches the filter.
+     * @param {WorkflowRolePermissionFindUniqueArgs} args - Arguments to find a WorkflowRolePermission
+     * @example
+     * // Get one WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkflowRolePermissionFindUniqueArgs>(args: SelectSubset<T, WorkflowRolePermissionFindUniqueArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one WorkflowRolePermission that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {WorkflowRolePermissionFindUniqueOrThrowArgs} args - Arguments to find a WorkflowRolePermission
+     * @example
+     * // Get one WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkflowRolePermissionFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkflowRolePermissionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first WorkflowRolePermission that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionFindFirstArgs} args - Arguments to find a WorkflowRolePermission
+     * @example
+     * // Get one WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkflowRolePermissionFindFirstArgs>(args?: SelectSubset<T, WorkflowRolePermissionFindFirstArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first WorkflowRolePermission that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionFindFirstOrThrowArgs} args - Arguments to find a WorkflowRolePermission
+     * @example
+     * // Get one WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkflowRolePermissionFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkflowRolePermissionFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more WorkflowRolePermissions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkflowRolePermissions
+     * const workflowRolePermissions = await prisma.workflowRolePermission.findMany()
+     * 
+     * // Get first 10 WorkflowRolePermissions
+     * const workflowRolePermissions = await prisma.workflowRolePermission.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workflowRolePermissionWithIdOnly = await prisma.workflowRolePermission.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkflowRolePermissionFindManyArgs>(args?: SelectSubset<T, WorkflowRolePermissionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a WorkflowRolePermission.
+     * @param {WorkflowRolePermissionCreateArgs} args - Arguments to create a WorkflowRolePermission.
+     * @example
+     * // Create one WorkflowRolePermission
+     * const WorkflowRolePermission = await prisma.workflowRolePermission.create({
+     *   data: {
+     *     // ... data to create a WorkflowRolePermission
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkflowRolePermissionCreateArgs>(args: SelectSubset<T, WorkflowRolePermissionCreateArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many WorkflowRolePermissions.
+     * @param {WorkflowRolePermissionCreateManyArgs} args - Arguments to create many WorkflowRolePermissions.
+     * @example
+     * // Create many WorkflowRolePermissions
+     * const workflowRolePermission = await prisma.workflowRolePermission.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkflowRolePermissionCreateManyArgs>(args?: SelectSubset<T, WorkflowRolePermissionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkflowRolePermissions and returns the data saved in the database.
+     * @param {WorkflowRolePermissionCreateManyAndReturnArgs} args - Arguments to create many WorkflowRolePermissions.
+     * @example
+     * // Create many WorkflowRolePermissions
+     * const workflowRolePermission = await prisma.workflowRolePermission.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkflowRolePermissions and only return the `id`
+     * const workflowRolePermissionWithIdOnly = await prisma.workflowRolePermission.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkflowRolePermissionCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkflowRolePermissionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a WorkflowRolePermission.
+     * @param {WorkflowRolePermissionDeleteArgs} args - Arguments to delete one WorkflowRolePermission.
+     * @example
+     * // Delete one WorkflowRolePermission
+     * const WorkflowRolePermission = await prisma.workflowRolePermission.delete({
+     *   where: {
+     *     // ... filter to delete one WorkflowRolePermission
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkflowRolePermissionDeleteArgs>(args: SelectSubset<T, WorkflowRolePermissionDeleteArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one WorkflowRolePermission.
+     * @param {WorkflowRolePermissionUpdateArgs} args - Arguments to update one WorkflowRolePermission.
+     * @example
+     * // Update one WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkflowRolePermissionUpdateArgs>(args: SelectSubset<T, WorkflowRolePermissionUpdateArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more WorkflowRolePermissions.
+     * @param {WorkflowRolePermissionDeleteManyArgs} args - Arguments to filter WorkflowRolePermissions to delete.
+     * @example
+     * // Delete a few WorkflowRolePermissions
+     * const { count } = await prisma.workflowRolePermission.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkflowRolePermissionDeleteManyArgs>(args?: SelectSubset<T, WorkflowRolePermissionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkflowRolePermissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkflowRolePermissions
+     * const workflowRolePermission = await prisma.workflowRolePermission.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkflowRolePermissionUpdateManyArgs>(args: SelectSubset<T, WorkflowRolePermissionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one WorkflowRolePermission.
+     * @param {WorkflowRolePermissionUpsertArgs} args - Arguments to update or create a WorkflowRolePermission.
+     * @example
+     * // Update or create a WorkflowRolePermission
+     * const workflowRolePermission = await prisma.workflowRolePermission.upsert({
+     *   create: {
+     *     // ... data to create a WorkflowRolePermission
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkflowRolePermission we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkflowRolePermissionUpsertArgs>(args: SelectSubset<T, WorkflowRolePermissionUpsertArgs<ExtArgs>>): Prisma__WorkflowRolePermissionClient<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of WorkflowRolePermissions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionCountArgs} args - Arguments to filter WorkflowRolePermissions to count.
+     * @example
+     * // Count the number of WorkflowRolePermissions
+     * const count = await prisma.workflowRolePermission.count({
+     *   where: {
+     *     // ... the filter for the WorkflowRolePermissions we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkflowRolePermissionCountArgs>(
+      args?: Subset<T, WorkflowRolePermissionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkflowRolePermissionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkflowRolePermission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkflowRolePermissionAggregateArgs>(args: Subset<T, WorkflowRolePermissionAggregateArgs>): Prisma.PrismaPromise<GetWorkflowRolePermissionAggregateType<T>>
+
+    /**
+     * Group by WorkflowRolePermission.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRolePermissionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkflowRolePermissionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkflowRolePermissionGroupByArgs['orderBy'] }
+        : { orderBy?: WorkflowRolePermissionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkflowRolePermissionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkflowRolePermissionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkflowRolePermission model
+   */
+  readonly fields: WorkflowRolePermissionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkflowRolePermission.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkflowRolePermissionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workflowRole<T extends WorkflowRoleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowRoleDefaultArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    permission<T extends PermissionDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PermissionDefaultArgs<ExtArgs>>): Prisma__PermissionClient<$Result.GetResult<Prisma.$PermissionPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkflowRolePermission model
+   */ 
+  interface WorkflowRolePermissionFieldRefs {
+    readonly id: FieldRef<"WorkflowRolePermission", 'String'>
+    readonly workflowRoleId: FieldRef<"WorkflowRolePermission", 'String'>
+    readonly permissionId: FieldRef<"WorkflowRolePermission", 'String'>
+    readonly createdAt: FieldRef<"WorkflowRolePermission", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkflowRolePermission findUnique
+   */
+  export type WorkflowRolePermissionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRolePermission to fetch.
+     */
+    where: WorkflowRolePermissionWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRolePermission findUniqueOrThrow
+   */
+  export type WorkflowRolePermissionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRolePermission to fetch.
+     */
+    where: WorkflowRolePermissionWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRolePermission findFirst
+   */
+  export type WorkflowRolePermissionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRolePermission to fetch.
+     */
+    where?: WorkflowRolePermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRolePermissions to fetch.
+     */
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRolePermissions.
+     */
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRolePermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRolePermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRolePermissions.
+     */
+    distinct?: WorkflowRolePermissionScalarFieldEnum | WorkflowRolePermissionScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRolePermission findFirstOrThrow
+   */
+  export type WorkflowRolePermissionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRolePermission to fetch.
+     */
+    where?: WorkflowRolePermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRolePermissions to fetch.
+     */
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRolePermissions.
+     */
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRolePermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRolePermissions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRolePermissions.
+     */
+    distinct?: WorkflowRolePermissionScalarFieldEnum | WorkflowRolePermissionScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRolePermission findMany
+   */
+  export type WorkflowRolePermissionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRolePermissions to fetch.
+     */
+    where?: WorkflowRolePermissionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRolePermissions to fetch.
+     */
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkflowRolePermissions.
+     */
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRolePermissions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRolePermissions.
+     */
+    skip?: number
+    distinct?: WorkflowRolePermissionScalarFieldEnum | WorkflowRolePermissionScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRolePermission create
+   */
+  export type WorkflowRolePermissionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkflowRolePermission.
+     */
+    data: XOR<WorkflowRolePermissionCreateInput, WorkflowRolePermissionUncheckedCreateInput>
+  }
+
+  /**
+   * WorkflowRolePermission createMany
+   */
+  export type WorkflowRolePermissionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkflowRolePermissions.
+     */
+    data: WorkflowRolePermissionCreateManyInput | WorkflowRolePermissionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkflowRolePermission createManyAndReturn
+   */
+  export type WorkflowRolePermissionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many WorkflowRolePermissions.
+     */
+    data: WorkflowRolePermissionCreateManyInput | WorkflowRolePermissionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkflowRolePermission update
+   */
+  export type WorkflowRolePermissionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkflowRolePermission.
+     */
+    data: XOR<WorkflowRolePermissionUpdateInput, WorkflowRolePermissionUncheckedUpdateInput>
+    /**
+     * Choose, which WorkflowRolePermission to update.
+     */
+    where: WorkflowRolePermissionWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRolePermission updateMany
+   */
+  export type WorkflowRolePermissionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkflowRolePermissions.
+     */
+    data: XOR<WorkflowRolePermissionUpdateManyMutationInput, WorkflowRolePermissionUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkflowRolePermissions to update
+     */
+    where?: WorkflowRolePermissionWhereInput
+  }
+
+  /**
+   * WorkflowRolePermission upsert
+   */
+  export type WorkflowRolePermissionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkflowRolePermission to update in case it exists.
+     */
+    where: WorkflowRolePermissionWhereUniqueInput
+    /**
+     * In case the WorkflowRolePermission found by the `where` argument doesn't exist, create a new WorkflowRolePermission with this data.
+     */
+    create: XOR<WorkflowRolePermissionCreateInput, WorkflowRolePermissionUncheckedCreateInput>
+    /**
+     * In case the WorkflowRolePermission was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkflowRolePermissionUpdateInput, WorkflowRolePermissionUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkflowRolePermission delete
+   */
+  export type WorkflowRolePermissionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    /**
+     * Filter which WorkflowRolePermission to delete.
+     */
+    where: WorkflowRolePermissionWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRolePermission deleteMany
+   */
+  export type WorkflowRolePermissionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRolePermissions to delete
+     */
+    where?: WorkflowRolePermissionWhereInput
+  }
+
+  /**
+   * WorkflowRolePermission without action
+   */
+  export type WorkflowRolePermissionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model WorkflowRole
    */
 
@@ -8726,7 +10802,6 @@ export namespace Prisma {
     workflowId: number
     name: number
     description: number
-    permissions: number
     isSystem: number
     createdAt: number
     _all: number
@@ -8756,7 +10831,6 @@ export namespace Prisma {
     workflowId?: true
     name?: true
     description?: true
-    permissions?: true
     isSystem?: true
     createdAt?: true
     _all?: true
@@ -8839,7 +10913,6 @@ export namespace Prisma {
     workflowId: string
     name: string
     description: string | null
-    permissions: $Enums.Permission[]
     isSystem: boolean
     createdAt: Date
     _count: WorkflowRoleCountAggregateOutputType | null
@@ -8866,11 +10939,11 @@ export namespace Prisma {
     workflowId?: boolean
     name?: boolean
     description?: boolean
-    permissions?: boolean
     isSystem?: boolean
     createdAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     assignments?: boolean | WorkflowRole$assignmentsArgs<ExtArgs>
+    rolePermissions?: boolean | WorkflowRole$rolePermissionsArgs<ExtArgs>
     _count?: boolean | WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workflowRole"]>
 
@@ -8879,7 +10952,6 @@ export namespace Prisma {
     workflowId?: boolean
     name?: boolean
     description?: boolean
-    permissions?: boolean
     isSystem?: boolean
     createdAt?: boolean
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
@@ -8890,7 +10962,6 @@ export namespace Prisma {
     workflowId?: boolean
     name?: boolean
     description?: boolean
-    permissions?: boolean
     isSystem?: boolean
     createdAt?: boolean
   }
@@ -8898,6 +10969,7 @@ export namespace Prisma {
   export type WorkflowRoleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
     assignments?: boolean | WorkflowRole$assignmentsArgs<ExtArgs>
+    rolePermissions?: boolean | WorkflowRole$rolePermissionsArgs<ExtArgs>
     _count?: boolean | WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkflowRoleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8909,13 +10981,13 @@ export namespace Prisma {
     objects: {
       workflow: Prisma.$WorkflowPayload<ExtArgs>
       assignments: Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>[]
+      rolePermissions: Prisma.$WorkflowRolePermissionPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       workflowId: string
       name: string
       description: string | null
-      permissions: $Enums.Permission[]
       isSystem: boolean
       createdAt: Date
     }, ExtArgs["result"]["workflowRole"]>
@@ -9284,6 +11356,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     workflow<T extends WorkflowDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowDefaultArgs<ExtArgs>>): Prisma__WorkflowClient<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     assignments<T extends WorkflowRole$assignmentsArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowRole$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
+    rolePermissions<T extends WorkflowRole$rolePermissionsArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowRole$rolePermissionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePermissionPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9317,7 +11390,6 @@ export namespace Prisma {
     readonly workflowId: FieldRef<"WorkflowRole", 'String'>
     readonly name: FieldRef<"WorkflowRole", 'String'>
     readonly description: FieldRef<"WorkflowRole", 'String'>
-    readonly permissions: FieldRef<"WorkflowRole", 'Permission[]'>
     readonly isSystem: FieldRef<"WorkflowRole", 'Boolean'>
     readonly createdAt: FieldRef<"WorkflowRole", 'DateTime'>
   }
@@ -9655,6 +11727,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: WorkflowRoleAssignmentScalarFieldEnum | WorkflowRoleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRole.rolePermissions
+   */
+  export type WorkflowRole$rolePermissionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRolePermission
+     */
+    select?: WorkflowRolePermissionSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRolePermissionInclude<ExtArgs> | null
+    where?: WorkflowRolePermissionWhereInput
+    orderBy?: WorkflowRolePermissionOrderByWithRelationInput | WorkflowRolePermissionOrderByWithRelationInput[]
+    cursor?: WorkflowRolePermissionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkflowRolePermissionScalarFieldEnum | WorkflowRolePermissionScalarFieldEnum[]
   }
 
   /**
@@ -10716,12 +12808,33 @@ export namespace Prisma {
   export type WorkflowFieldScalarFieldEnum = (typeof WorkflowFieldScalarFieldEnum)[keyof typeof WorkflowFieldScalarFieldEnum]
 
 
+  export const PermissionScalarFieldEnum: {
+    id: 'id',
+    code: 'code',
+    name: 'name',
+    description: 'description',
+    category: 'category',
+    createdAt: 'createdAt'
+  };
+
+  export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+  export const WorkflowRolePermissionScalarFieldEnum: {
+    id: 'id',
+    workflowRoleId: 'workflowRoleId',
+    permissionId: 'permissionId',
+    createdAt: 'createdAt'
+  };
+
+  export type WorkflowRolePermissionScalarFieldEnum = (typeof WorkflowRolePermissionScalarFieldEnum)[keyof typeof WorkflowRolePermissionScalarFieldEnum]
+
+
   export const WorkflowRoleScalarFieldEnum: {
     id: 'id',
     workflowId: 'workflowId',
     name: 'name',
     description: 'description',
-    permissions: 'permissions',
     isSystem: 'isSystem',
     createdAt: 'createdAt'
   };
@@ -10847,20 +12960,6 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Permission[]'
-   */
-  export type ListEnumPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Permission[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Permission'
-   */
-  export type EnumPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Permission'>
     
 
 
@@ -11345,6 +13444,120 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowField"> | Date | string
   }
 
+  export type PermissionWhereInput = {
+    AND?: PermissionWhereInput | PermissionWhereInput[]
+    OR?: PermissionWhereInput[]
+    NOT?: PermissionWhereInput | PermissionWhereInput[]
+    id?: StringFilter<"Permission"> | string
+    code?: StringFilter<"Permission"> | string
+    name?: StringFilter<"Permission"> | string
+    description?: StringNullableFilter<"Permission"> | string | null
+    category?: StringFilter<"Permission"> | string
+    createdAt?: DateTimeFilter<"Permission"> | Date | string
+    rolePermissions?: WorkflowRolePermissionListRelationFilter
+  }
+
+  export type PermissionOrderByWithRelationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    category?: SortOrder
+    createdAt?: SortOrder
+    rolePermissions?: WorkflowRolePermissionOrderByRelationAggregateInput
+  }
+
+  export type PermissionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    code?: string
+    AND?: PermissionWhereInput | PermissionWhereInput[]
+    OR?: PermissionWhereInput[]
+    NOT?: PermissionWhereInput | PermissionWhereInput[]
+    name?: StringFilter<"Permission"> | string
+    description?: StringNullableFilter<"Permission"> | string | null
+    category?: StringFilter<"Permission"> | string
+    createdAt?: DateTimeFilter<"Permission"> | Date | string
+    rolePermissions?: WorkflowRolePermissionListRelationFilter
+  }, "id" | "code">
+
+  export type PermissionOrderByWithAggregationInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    category?: SortOrder
+    createdAt?: SortOrder
+    _count?: PermissionCountOrderByAggregateInput
+    _max?: PermissionMaxOrderByAggregateInput
+    _min?: PermissionMinOrderByAggregateInput
+  }
+
+  export type PermissionScalarWhereWithAggregatesInput = {
+    AND?: PermissionScalarWhereWithAggregatesInput | PermissionScalarWhereWithAggregatesInput[]
+    OR?: PermissionScalarWhereWithAggregatesInput[]
+    NOT?: PermissionScalarWhereWithAggregatesInput | PermissionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Permission"> | string
+    code?: StringWithAggregatesFilter<"Permission"> | string
+    name?: StringWithAggregatesFilter<"Permission"> | string
+    description?: StringNullableWithAggregatesFilter<"Permission"> | string | null
+    category?: StringWithAggregatesFilter<"Permission"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Permission"> | Date | string
+  }
+
+  export type WorkflowRolePermissionWhereInput = {
+    AND?: WorkflowRolePermissionWhereInput | WorkflowRolePermissionWhereInput[]
+    OR?: WorkflowRolePermissionWhereInput[]
+    NOT?: WorkflowRolePermissionWhereInput | WorkflowRolePermissionWhereInput[]
+    id?: StringFilter<"WorkflowRolePermission"> | string
+    workflowRoleId?: StringFilter<"WorkflowRolePermission"> | string
+    permissionId?: StringFilter<"WorkflowRolePermission"> | string
+    createdAt?: DateTimeFilter<"WorkflowRolePermission"> | Date | string
+    workflowRole?: XOR<WorkflowRoleRelationFilter, WorkflowRoleWhereInput>
+    permission?: XOR<PermissionRelationFilter, PermissionWhereInput>
+  }
+
+  export type WorkflowRolePermissionOrderByWithRelationInput = {
+    id?: SortOrder
+    workflowRoleId?: SortOrder
+    permissionId?: SortOrder
+    createdAt?: SortOrder
+    workflowRole?: WorkflowRoleOrderByWithRelationInput
+    permission?: PermissionOrderByWithRelationInput
+  }
+
+  export type WorkflowRolePermissionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workflowRoleId_permissionId?: WorkflowRolePermissionWorkflowRoleIdPermissionIdCompoundUniqueInput
+    AND?: WorkflowRolePermissionWhereInput | WorkflowRolePermissionWhereInput[]
+    OR?: WorkflowRolePermissionWhereInput[]
+    NOT?: WorkflowRolePermissionWhereInput | WorkflowRolePermissionWhereInput[]
+    workflowRoleId?: StringFilter<"WorkflowRolePermission"> | string
+    permissionId?: StringFilter<"WorkflowRolePermission"> | string
+    createdAt?: DateTimeFilter<"WorkflowRolePermission"> | Date | string
+    workflowRole?: XOR<WorkflowRoleRelationFilter, WorkflowRoleWhereInput>
+    permission?: XOR<PermissionRelationFilter, PermissionWhereInput>
+  }, "id" | "workflowRoleId_permissionId">
+
+  export type WorkflowRolePermissionOrderByWithAggregationInput = {
+    id?: SortOrder
+    workflowRoleId?: SortOrder
+    permissionId?: SortOrder
+    createdAt?: SortOrder
+    _count?: WorkflowRolePermissionCountOrderByAggregateInput
+    _max?: WorkflowRolePermissionMaxOrderByAggregateInput
+    _min?: WorkflowRolePermissionMinOrderByAggregateInput
+  }
+
+  export type WorkflowRolePermissionScalarWhereWithAggregatesInput = {
+    AND?: WorkflowRolePermissionScalarWhereWithAggregatesInput | WorkflowRolePermissionScalarWhereWithAggregatesInput[]
+    OR?: WorkflowRolePermissionScalarWhereWithAggregatesInput[]
+    NOT?: WorkflowRolePermissionScalarWhereWithAggregatesInput | WorkflowRolePermissionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkflowRolePermission"> | string
+    workflowRoleId?: StringWithAggregatesFilter<"WorkflowRolePermission"> | string
+    permissionId?: StringWithAggregatesFilter<"WorkflowRolePermission"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"WorkflowRolePermission"> | Date | string
+  }
+
   export type WorkflowRoleWhereInput = {
     AND?: WorkflowRoleWhereInput | WorkflowRoleWhereInput[]
     OR?: WorkflowRoleWhereInput[]
@@ -11353,11 +13566,11 @@ export namespace Prisma {
     workflowId?: StringFilter<"WorkflowRole"> | string
     name?: StringFilter<"WorkflowRole"> | string
     description?: StringNullableFilter<"WorkflowRole"> | string | null
-    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
     isSystem?: BoolFilter<"WorkflowRole"> | boolean
     createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
     workflow?: XOR<WorkflowRelationFilter, WorkflowWhereInput>
     assignments?: WorkflowRoleAssignmentListRelationFilter
+    rolePermissions?: WorkflowRolePermissionListRelationFilter
   }
 
   export type WorkflowRoleOrderByWithRelationInput = {
@@ -11365,11 +13578,11 @@ export namespace Prisma {
     workflowId?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    permissions?: SortOrder
     isSystem?: SortOrder
     createdAt?: SortOrder
     workflow?: WorkflowOrderByWithRelationInput
     assignments?: WorkflowRoleAssignmentOrderByRelationAggregateInput
+    rolePermissions?: WorkflowRolePermissionOrderByRelationAggregateInput
   }
 
   export type WorkflowRoleWhereUniqueInput = Prisma.AtLeast<{
@@ -11381,11 +13594,11 @@ export namespace Prisma {
     workflowId?: StringFilter<"WorkflowRole"> | string
     name?: StringFilter<"WorkflowRole"> | string
     description?: StringNullableFilter<"WorkflowRole"> | string | null
-    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
     isSystem?: BoolFilter<"WorkflowRole"> | boolean
     createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
     workflow?: XOR<WorkflowRelationFilter, WorkflowWhereInput>
     assignments?: WorkflowRoleAssignmentListRelationFilter
+    rolePermissions?: WorkflowRolePermissionListRelationFilter
   }, "id" | "workflowId_name">
 
   export type WorkflowRoleOrderByWithAggregationInput = {
@@ -11393,7 +13606,6 @@ export namespace Prisma {
     workflowId?: SortOrder
     name?: SortOrder
     description?: SortOrderInput | SortOrder
-    permissions?: SortOrder
     isSystem?: SortOrder
     createdAt?: SortOrder
     _count?: WorkflowRoleCountOrderByAggregateInput
@@ -11409,7 +13621,6 @@ export namespace Prisma {
     workflowId?: StringWithAggregatesFilter<"WorkflowRole"> | string
     name?: StringWithAggregatesFilter<"WorkflowRole"> | string
     description?: StringNullableWithAggregatesFilter<"WorkflowRole"> | string | null
-    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
     isSystem?: BoolWithAggregatesFilter<"WorkflowRole"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowRole"> | Date | string
   }
@@ -11954,15 +14165,129 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PermissionCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    category?: string
+    createdAt?: Date | string
+    rolePermissions?: WorkflowRolePermissionCreateNestedManyWithoutPermissionInput
+  }
+
+  export type PermissionUncheckedCreateInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    category?: string
+    createdAt?: Date | string
+    rolePermissions?: WorkflowRolePermissionUncheckedCreateNestedManyWithoutPermissionInput
+  }
+
+  export type PermissionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rolePermissions?: WorkflowRolePermissionUpdateManyWithoutPermissionNestedInput
+  }
+
+  export type PermissionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rolePermissions?: WorkflowRolePermissionUncheckedUpdateManyWithoutPermissionNestedInput
+  }
+
+  export type PermissionCreateManyInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    category?: string
+    createdAt?: Date | string
+  }
+
+  export type PermissionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PermissionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRolePermissionCreateInput = {
+    id?: string
+    createdAt?: Date | string
+    workflowRole: WorkflowRoleCreateNestedOneWithoutRolePermissionsInput
+    permission: PermissionCreateNestedOneWithoutRolePermissionsInput
+  }
+
+  export type WorkflowRolePermissionUncheckedCreateInput = {
+    id?: string
+    workflowRoleId: string
+    permissionId: string
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRolePermissionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflowRole?: WorkflowRoleUpdateOneRequiredWithoutRolePermissionsNestedInput
+    permission?: PermissionUpdateOneRequiredWithoutRolePermissionsNestedInput
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    permissionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRolePermissionCreateManyInput = {
+    id?: string
+    workflowRoleId: string
+    permissionId: string
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRolePermissionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    permissionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkflowRoleCreateInput = {
     id?: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutRolesInput
     assignments?: WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput
+    rolePermissions?: WorkflowRolePermissionCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleUncheckedCreateInput = {
@@ -11970,21 +14295,21 @@ export namespace Prisma {
     workflowId: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
     assignments?: WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput
+    rolePermissions?: WorkflowRolePermissionUncheckedCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutRolesNestedInput
     assignments?: WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput
+    rolePermissions?: WorkflowRolePermissionUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowRoleUncheckedUpdateInput = {
@@ -11992,10 +14317,10 @@ export namespace Prisma {
     workflowId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput
+    rolePermissions?: WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowRoleCreateManyInput = {
@@ -12003,7 +14328,6 @@ export namespace Prisma {
     workflowId: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
   }
@@ -12012,7 +14336,6 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12022,7 +14345,6 @@ export namespace Prisma {
     workflowId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -12631,12 +14953,77 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
-  export type EnumPermissionNullableListFilter<$PrismaModel = never> = {
-    equals?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel> | null
-    has?: $Enums.Permission | EnumPermissionFieldRefInput<$PrismaModel> | null
-    hasEvery?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel>
-    hasSome?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
+  export type WorkflowRolePermissionListRelationFilter = {
+    every?: WorkflowRolePermissionWhereInput
+    some?: WorkflowRolePermissionWhereInput
+    none?: WorkflowRolePermissionWhereInput
+  }
+
+  export type WorkflowRolePermissionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PermissionCountOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PermissionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PermissionMinOrderByAggregateInput = {
+    id?: SortOrder
+    code?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRoleRelationFilter = {
+    is?: WorkflowRoleWhereInput
+    isNot?: WorkflowRoleWhereInput
+  }
+
+  export type PermissionRelationFilter = {
+    is?: PermissionWhereInput
+    isNot?: PermissionWhereInput
+  }
+
+  export type WorkflowRolePermissionWorkflowRoleIdPermissionIdCompoundUniqueInput = {
+    workflowRoleId: string
+    permissionId: string
+  }
+
+  export type WorkflowRolePermissionCountOrderByAggregateInput = {
+    id?: SortOrder
+    workflowRoleId?: SortOrder
+    permissionId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRolePermissionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workflowRoleId?: SortOrder
+    permissionId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRolePermissionMinOrderByAggregateInput = {
+    id?: SortOrder
+    workflowRoleId?: SortOrder
+    permissionId?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type WorkflowRoleAssignmentListRelationFilter = {
@@ -12659,7 +15046,6 @@ export namespace Prisma {
     workflowId?: SortOrder
     name?: SortOrder
     description?: SortOrder
-    permissions?: SortOrder
     isSystem?: SortOrder
     createdAt?: SortOrder
   }
@@ -12680,11 +15066,6 @@ export namespace Prisma {
     description?: SortOrder
     isSystem?: SortOrder
     createdAt?: SortOrder
-  }
-
-  export type WorkflowRoleRelationFilter = {
-    is?: WorkflowRoleWhereInput
-    isNot?: WorkflowRoleWhereInput
   }
 
   export type WorkflowRoleAssignmentUserIdWorkflowRoleIdCompoundUniqueInput = {
@@ -13293,8 +15674,74 @@ export namespace Prisma {
     update?: XOR<XOR<WorkflowUpdateToOneWithWhereWithoutFieldsInput, WorkflowUpdateWithoutFieldsInput>, WorkflowUncheckedUpdateWithoutFieldsInput>
   }
 
-  export type WorkflowRoleCreatepermissionsInput = {
-    set: $Enums.Permission[]
+  export type WorkflowRolePermissionCreateNestedManyWithoutPermissionInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput> | WorkflowRolePermissionCreateWithoutPermissionInput[] | WorkflowRolePermissionUncheckedCreateWithoutPermissionInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutPermissionInput | WorkflowRolePermissionCreateOrConnectWithoutPermissionInput[]
+    createMany?: WorkflowRolePermissionCreateManyPermissionInputEnvelope
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+  }
+
+  export type WorkflowRolePermissionUncheckedCreateNestedManyWithoutPermissionInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput> | WorkflowRolePermissionCreateWithoutPermissionInput[] | WorkflowRolePermissionUncheckedCreateWithoutPermissionInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutPermissionInput | WorkflowRolePermissionCreateOrConnectWithoutPermissionInput[]
+    createMany?: WorkflowRolePermissionCreateManyPermissionInputEnvelope
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+  }
+
+  export type WorkflowRolePermissionUpdateManyWithoutPermissionNestedInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput> | WorkflowRolePermissionCreateWithoutPermissionInput[] | WorkflowRolePermissionUncheckedCreateWithoutPermissionInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutPermissionInput | WorkflowRolePermissionCreateOrConnectWithoutPermissionInput[]
+    upsert?: WorkflowRolePermissionUpsertWithWhereUniqueWithoutPermissionInput | WorkflowRolePermissionUpsertWithWhereUniqueWithoutPermissionInput[]
+    createMany?: WorkflowRolePermissionCreateManyPermissionInputEnvelope
+    set?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    disconnect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    delete?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    update?: WorkflowRolePermissionUpdateWithWhereUniqueWithoutPermissionInput | WorkflowRolePermissionUpdateWithWhereUniqueWithoutPermissionInput[]
+    updateMany?: WorkflowRolePermissionUpdateManyWithWhereWithoutPermissionInput | WorkflowRolePermissionUpdateManyWithWhereWithoutPermissionInput[]
+    deleteMany?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateManyWithoutPermissionNestedInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput> | WorkflowRolePermissionCreateWithoutPermissionInput[] | WorkflowRolePermissionUncheckedCreateWithoutPermissionInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutPermissionInput | WorkflowRolePermissionCreateOrConnectWithoutPermissionInput[]
+    upsert?: WorkflowRolePermissionUpsertWithWhereUniqueWithoutPermissionInput | WorkflowRolePermissionUpsertWithWhereUniqueWithoutPermissionInput[]
+    createMany?: WorkflowRolePermissionCreateManyPermissionInputEnvelope
+    set?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    disconnect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    delete?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    update?: WorkflowRolePermissionUpdateWithWhereUniqueWithoutPermissionInput | WorkflowRolePermissionUpdateWithWhereUniqueWithoutPermissionInput[]
+    updateMany?: WorkflowRolePermissionUpdateManyWithWhereWithoutPermissionInput | WorkflowRolePermissionUpdateManyWithWhereWithoutPermissionInput[]
+    deleteMany?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
+  }
+
+  export type WorkflowRoleCreateNestedOneWithoutRolePermissionsInput = {
+    create?: XOR<WorkflowRoleCreateWithoutRolePermissionsInput, WorkflowRoleUncheckedCreateWithoutRolePermissionsInput>
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutRolePermissionsInput
+    connect?: WorkflowRoleWhereUniqueInput
+  }
+
+  export type PermissionCreateNestedOneWithoutRolePermissionsInput = {
+    create?: XOR<PermissionCreateWithoutRolePermissionsInput, PermissionUncheckedCreateWithoutRolePermissionsInput>
+    connectOrCreate?: PermissionCreateOrConnectWithoutRolePermissionsInput
+    connect?: PermissionWhereUniqueInput
+  }
+
+  export type WorkflowRoleUpdateOneRequiredWithoutRolePermissionsNestedInput = {
+    create?: XOR<WorkflowRoleCreateWithoutRolePermissionsInput, WorkflowRoleUncheckedCreateWithoutRolePermissionsInput>
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutRolePermissionsInput
+    upsert?: WorkflowRoleUpsertWithoutRolePermissionsInput
+    connect?: WorkflowRoleWhereUniqueInput
+    update?: XOR<XOR<WorkflowRoleUpdateToOneWithWhereWithoutRolePermissionsInput, WorkflowRoleUpdateWithoutRolePermissionsInput>, WorkflowRoleUncheckedUpdateWithoutRolePermissionsInput>
+  }
+
+  export type PermissionUpdateOneRequiredWithoutRolePermissionsNestedInput = {
+    create?: XOR<PermissionCreateWithoutRolePermissionsInput, PermissionUncheckedCreateWithoutRolePermissionsInput>
+    connectOrCreate?: PermissionCreateOrConnectWithoutRolePermissionsInput
+    upsert?: PermissionUpsertWithoutRolePermissionsInput
+    connect?: PermissionWhereUniqueInput
+    update?: XOR<XOR<PermissionUpdateToOneWithWhereWithoutRolePermissionsInput, PermissionUpdateWithoutRolePermissionsInput>, PermissionUncheckedUpdateWithoutRolePermissionsInput>
   }
 
   export type WorkflowCreateNestedOneWithoutRolesInput = {
@@ -13310,6 +15757,13 @@ export namespace Prisma {
     connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
   }
 
+  export type WorkflowRolePermissionCreateNestedManyWithoutWorkflowRoleInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRolePermissionCreateWithoutWorkflowRoleInput[] | WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput | WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRolePermissionCreateManyWorkflowRoleInputEnvelope
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+  }
+
   export type WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput = {
     create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
     connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
@@ -13317,9 +15771,11 @@ export namespace Prisma {
     connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
   }
 
-  export type WorkflowRoleUpdatepermissionsInput = {
-    set?: $Enums.Permission[]
-    push?: $Enums.Permission | $Enums.Permission[]
+  export type WorkflowRolePermissionUncheckedCreateNestedManyWithoutWorkflowRoleInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRolePermissionCreateWithoutWorkflowRoleInput[] | WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput | WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRolePermissionCreateManyWorkflowRoleInputEnvelope
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
   }
 
   export type WorkflowUpdateOneRequiredWithoutRolesNestedInput = {
@@ -13344,6 +15800,20 @@ export namespace Prisma {
     deleteMany?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
   }
 
+  export type WorkflowRolePermissionUpdateManyWithoutWorkflowRoleNestedInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRolePermissionCreateWithoutWorkflowRoleInput[] | WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput | WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput[]
+    upsert?: WorkflowRolePermissionUpsertWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRolePermissionUpsertWithWhereUniqueWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRolePermissionCreateManyWorkflowRoleInputEnvelope
+    set?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    disconnect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    delete?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    update?: WorkflowRolePermissionUpdateWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRolePermissionUpdateWithWhereUniqueWithoutWorkflowRoleInput[]
+    updateMany?: WorkflowRolePermissionUpdateManyWithWhereWithoutWorkflowRoleInput | WorkflowRolePermissionUpdateManyWithWhereWithoutWorkflowRoleInput[]
+    deleteMany?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
+  }
+
   export type WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput = {
     create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
     connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
@@ -13356,6 +15826,20 @@ export namespace Prisma {
     update?: WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput[]
     updateMany?: WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput[]
     deleteMany?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleNestedInput = {
+    create?: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRolePermissionCreateWithoutWorkflowRoleInput[] | WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput | WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput[]
+    upsert?: WorkflowRolePermissionUpsertWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRolePermissionUpsertWithWhereUniqueWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRolePermissionCreateManyWorkflowRoleInputEnvelope
+    set?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    disconnect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    delete?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    connect?: WorkflowRolePermissionWhereUniqueInput | WorkflowRolePermissionWhereUniqueInput[]
+    update?: WorkflowRolePermissionUpdateWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRolePermissionUpdateWithWhereUniqueWithoutWorkflowRoleInput[]
+    updateMany?: WorkflowRolePermissionUpdateManyWithWhereWithoutWorkflowRoleInput | WorkflowRolePermissionUpdateManyWithWhereWithoutWorkflowRoleInput[]
+    deleteMany?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
   }
 
   export type WorkflowRoleCreateNestedOneWithoutAssignmentsInput = {
@@ -13767,20 +16251,20 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
     assignments?: WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput
+    rolePermissions?: WorkflowRolePermissionCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleUncheckedCreateWithoutWorkflowInput = {
     id?: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
     assignments?: WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput
+    rolePermissions?: WorkflowRolePermissionUncheckedCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleCreateOrConnectWithoutWorkflowInput = {
@@ -13921,7 +16405,6 @@ export namespace Prisma {
     workflowId?: StringFilter<"WorkflowRole"> | string
     name?: StringFilter<"WorkflowRole"> | string
     description?: StringNullableFilter<"WorkflowRole"> | string | null
-    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
     isSystem?: BoolFilter<"WorkflowRole"> | boolean
     createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
   }
@@ -14708,6 +17191,162 @@ export namespace Prisma {
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
+  export type WorkflowRolePermissionCreateWithoutPermissionInput = {
+    id?: string
+    createdAt?: Date | string
+    workflowRole: WorkflowRoleCreateNestedOneWithoutRolePermissionsInput
+  }
+
+  export type WorkflowRolePermissionUncheckedCreateWithoutPermissionInput = {
+    id?: string
+    workflowRoleId: string
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRolePermissionCreateOrConnectWithoutPermissionInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    create: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput>
+  }
+
+  export type WorkflowRolePermissionCreateManyPermissionInputEnvelope = {
+    data: WorkflowRolePermissionCreateManyPermissionInput | WorkflowRolePermissionCreateManyPermissionInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowRolePermissionUpsertWithWhereUniqueWithoutPermissionInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    update: XOR<WorkflowRolePermissionUpdateWithoutPermissionInput, WorkflowRolePermissionUncheckedUpdateWithoutPermissionInput>
+    create: XOR<WorkflowRolePermissionCreateWithoutPermissionInput, WorkflowRolePermissionUncheckedCreateWithoutPermissionInput>
+  }
+
+  export type WorkflowRolePermissionUpdateWithWhereUniqueWithoutPermissionInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    data: XOR<WorkflowRolePermissionUpdateWithoutPermissionInput, WorkflowRolePermissionUncheckedUpdateWithoutPermissionInput>
+  }
+
+  export type WorkflowRolePermissionUpdateManyWithWhereWithoutPermissionInput = {
+    where: WorkflowRolePermissionScalarWhereInput
+    data: XOR<WorkflowRolePermissionUpdateManyMutationInput, WorkflowRolePermissionUncheckedUpdateManyWithoutPermissionInput>
+  }
+
+  export type WorkflowRolePermissionScalarWhereInput = {
+    AND?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
+    OR?: WorkflowRolePermissionScalarWhereInput[]
+    NOT?: WorkflowRolePermissionScalarWhereInput | WorkflowRolePermissionScalarWhereInput[]
+    id?: StringFilter<"WorkflowRolePermission"> | string
+    workflowRoleId?: StringFilter<"WorkflowRolePermission"> | string
+    permissionId?: StringFilter<"WorkflowRolePermission"> | string
+    createdAt?: DateTimeFilter<"WorkflowRolePermission"> | Date | string
+  }
+
+  export type WorkflowRoleCreateWithoutRolePermissionsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    isSystem?: boolean
+    createdAt?: Date | string
+    workflow: WorkflowCreateNestedOneWithoutRolesInput
+    assignments?: WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleUncheckedCreateWithoutRolePermissionsInput = {
+    id?: string
+    workflowId: string
+    name: string
+    description?: string | null
+    isSystem?: boolean
+    createdAt?: Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleCreateOrConnectWithoutRolePermissionsInput = {
+    where: WorkflowRoleWhereUniqueInput
+    create: XOR<WorkflowRoleCreateWithoutRolePermissionsInput, WorkflowRoleUncheckedCreateWithoutRolePermissionsInput>
+  }
+
+  export type PermissionCreateWithoutRolePermissionsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    category?: string
+    createdAt?: Date | string
+  }
+
+  export type PermissionUncheckedCreateWithoutRolePermissionsInput = {
+    id?: string
+    code: string
+    name: string
+    description?: string | null
+    category?: string
+    createdAt?: Date | string
+  }
+
+  export type PermissionCreateOrConnectWithoutRolePermissionsInput = {
+    where: PermissionWhereUniqueInput
+    create: XOR<PermissionCreateWithoutRolePermissionsInput, PermissionUncheckedCreateWithoutRolePermissionsInput>
+  }
+
+  export type WorkflowRoleUpsertWithoutRolePermissionsInput = {
+    update: XOR<WorkflowRoleUpdateWithoutRolePermissionsInput, WorkflowRoleUncheckedUpdateWithoutRolePermissionsInput>
+    create: XOR<WorkflowRoleCreateWithoutRolePermissionsInput, WorkflowRoleUncheckedCreateWithoutRolePermissionsInput>
+    where?: WorkflowRoleWhereInput
+  }
+
+  export type WorkflowRoleUpdateToOneWithWhereWithoutRolePermissionsInput = {
+    where?: WorkflowRoleWhereInput
+    data: XOR<WorkflowRoleUpdateWithoutRolePermissionsInput, WorkflowRoleUncheckedUpdateWithoutRolePermissionsInput>
+  }
+
+  export type WorkflowRoleUpdateWithoutRolePermissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflow?: WorkflowUpdateOneRequiredWithoutRolesNestedInput
+    assignments?: WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type WorkflowRoleUncheckedUpdateWithoutRolePermissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type PermissionUpsertWithoutRolePermissionsInput = {
+    update: XOR<PermissionUpdateWithoutRolePermissionsInput, PermissionUncheckedUpdateWithoutRolePermissionsInput>
+    create: XOR<PermissionCreateWithoutRolePermissionsInput, PermissionUncheckedCreateWithoutRolePermissionsInput>
+    where?: PermissionWhereInput
+  }
+
+  export type PermissionUpdateToOneWithWhereWithoutRolePermissionsInput = {
+    where?: PermissionWhereInput
+    data: XOR<PermissionUpdateWithoutRolePermissionsInput, PermissionUncheckedUpdateWithoutRolePermissionsInput>
+  }
+
+  export type PermissionUpdateWithoutRolePermissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PermissionUncheckedUpdateWithoutRolePermissionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    code?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkflowCreateWithoutRolesInput = {
     id?: string
     name: string
@@ -14768,6 +17407,28 @@ export namespace Prisma {
 
   export type WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope = {
     data: WorkflowRoleAssignmentCreateManyWorkflowRoleInput | WorkflowRoleAssignmentCreateManyWorkflowRoleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowRolePermissionCreateWithoutWorkflowRoleInput = {
+    id?: string
+    createdAt?: Date | string
+    permission: PermissionCreateNestedOneWithoutRolePermissionsInput
+  }
+
+  export type WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput = {
+    id?: string
+    permissionId: string
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRolePermissionCreateOrConnectWithoutWorkflowRoleInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    create: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRolePermissionCreateManyWorkflowRoleInputEnvelope = {
+    data: WorkflowRolePermissionCreateManyWorkflowRoleInput | WorkflowRolePermissionCreateManyWorkflowRoleInput[]
     skipDuplicates?: boolean
   }
 
@@ -14842,14 +17503,30 @@ export namespace Prisma {
     assignedBy?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
   }
 
+  export type WorkflowRolePermissionUpsertWithWhereUniqueWithoutWorkflowRoleInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    update: XOR<WorkflowRolePermissionUpdateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedUpdateWithoutWorkflowRoleInput>
+    create: XOR<WorkflowRolePermissionCreateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedCreateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRolePermissionUpdateWithWhereUniqueWithoutWorkflowRoleInput = {
+    where: WorkflowRolePermissionWhereUniqueInput
+    data: XOR<WorkflowRolePermissionUpdateWithoutWorkflowRoleInput, WorkflowRolePermissionUncheckedUpdateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRolePermissionUpdateManyWithWhereWithoutWorkflowRoleInput = {
+    where: WorkflowRolePermissionScalarWhereInput
+    data: XOR<WorkflowRolePermissionUpdateManyMutationInput, WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleInput>
+  }
+
   export type WorkflowRoleCreateWithoutAssignmentsInput = {
     id?: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
     workflow: WorkflowCreateNestedOneWithoutRolesInput
+    rolePermissions?: WorkflowRolePermissionCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleUncheckedCreateWithoutAssignmentsInput = {
@@ -14857,9 +17534,9 @@ export namespace Prisma {
     workflowId: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
+    rolePermissions?: WorkflowRolePermissionUncheckedCreateNestedManyWithoutWorkflowRoleInput
   }
 
   export type WorkflowRoleCreateOrConnectWithoutAssignmentsInput = {
@@ -14882,10 +17559,10 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workflow?: WorkflowUpdateOneRequiredWithoutRolesNestedInput
+    rolePermissions?: WorkflowRolePermissionUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowRoleUncheckedUpdateWithoutAssignmentsInput = {
@@ -14893,9 +17570,9 @@ export namespace Prisma {
     workflowId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rolePermissions?: WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowCreateManyUserInput = {
@@ -14983,7 +17660,6 @@ export namespace Prisma {
     id?: string
     name: string
     description?: string | null
-    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
     isSystem?: boolean
     createdAt?: Date | string
   }
@@ -15073,27 +17749,26 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput
+    rolePermissions?: WorkflowRolePermissionUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowRoleUncheckedUpdateWithoutWorkflowInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignments?: WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput
+    rolePermissions?: WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleNestedInput
   }
 
   export type WorkflowRoleUncheckedUpdateManyWithoutWorkflowInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
     isSystem?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -15282,12 +17957,42 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type WorkflowRolePermissionCreateManyPermissionInput = {
+    id?: string
+    workflowRoleId: string
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRolePermissionUpdateWithoutPermissionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflowRole?: WorkflowRoleUpdateOneRequiredWithoutRolePermissionsNestedInput
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateWithoutPermissionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateManyWithoutPermissionInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type WorkflowRoleAssignmentCreateManyWorkflowRoleInput = {
     id?: string
     userId: string
     userEmail?: string | null
     assignedAt?: Date | string
     assignedBy?: string | null
+  }
+
+  export type WorkflowRolePermissionCreateManyWorkflowRoleInput = {
+    id?: string
+    permissionId: string
+    createdAt?: Date | string
   }
 
   export type WorkflowRoleAssignmentUpdateWithoutWorkflowRoleInput = {
@@ -15312,6 +18017,24 @@ export namespace Prisma {
     userEmail?: NullableStringFieldUpdateOperationsInput | string | null
     assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WorkflowRolePermissionUpdateWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    permission?: PermissionUpdateOneRequiredWithoutRolePermissionsNestedInput
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    permissionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRolePermissionUncheckedUpdateManyWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    permissionId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
@@ -15339,6 +18062,10 @@ export namespace Prisma {
      * @deprecated Use ActionCountOutputTypeDefaultArgs instead
      */
     export type ActionCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ActionCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PermissionCountOutputTypeDefaultArgs instead
+     */
+    export type PermissionCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PermissionCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use WorkflowRoleCountOutputTypeDefaultArgs instead
      */
@@ -15371,6 +18098,14 @@ export namespace Prisma {
      * @deprecated Use WorkflowFieldDefaultArgs instead
      */
     export type WorkflowFieldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowFieldDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PermissionDefaultArgs instead
+     */
+    export type PermissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PermissionDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use WorkflowRolePermissionDefaultArgs instead
+     */
+    export type WorkflowRolePermissionArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowRolePermissionDefaultArgs<ExtArgs>
     /**
      * @deprecated Use WorkflowRoleDefaultArgs instead
      */

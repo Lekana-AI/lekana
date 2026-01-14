@@ -186,12 +186,27 @@ exports.Prisma.WorkflowFieldScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PermissionScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  name: 'name',
+  description: 'description',
+  category: 'category',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WorkflowRolePermissionScalarFieldEnum = {
+  id: 'id',
+  workflowRoleId: 'workflowRoleId',
+  permissionId: 'permissionId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.WorkflowRoleScalarFieldEnum = {
   id: 'id',
   workflowId: 'workflowId',
   name: 'name',
   description: 'description',
-  permissions: 'permissions',
   isSystem: 'isSystem',
   createdAt: 'createdAt'
 };
@@ -234,16 +249,7 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-exports.Permission = exports.$Enums.Permission = {
-  WORKFLOW_VIEW: 'WORKFLOW_VIEW',
-  WORKFLOW_EDIT: 'WORKFLOW_EDIT',
-  WORKFLOW_PUBLISH: 'WORKFLOW_PUBLISH',
-  WORKFLOW_DELETE: 'WORKFLOW_DELETE',
-  REVIEW_VIEW: 'REVIEW_VIEW',
-  REVIEW_APPROVE: 'REVIEW_APPROVE',
-  REVIEW_REJECT: 'REVIEW_REJECT',
-  ROLE_MANAGE: 'ROLE_MANAGE'
-};
+
 
 exports.Prisma.ModelName = {
   User: 'User',
@@ -253,6 +259,8 @@ exports.Prisma.ModelName = {
   ActionCategory: 'ActionCategory',
   Action: 'Action',
   WorkflowField: 'WorkflowField',
+  Permission: 'Permission',
+  WorkflowRolePermission: 'WorkflowRolePermission',
   WorkflowRole: 'WorkflowRole',
   WorkflowRoleAssignment: 'WorkflowRoleAssignment'
 };

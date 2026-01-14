@@ -107,28 +107,43 @@ model WorkflowField {
 }
 
 // Available permissions in the system for role-based access control
-enum Permission {
-  WORKFLOW_VIEW // View workflow structure
-  WORKFLOW_EDIT // Edit workflow nodes/edges
-  WORKFLOW_PUBLISH // Publish/unpublish workflow
-  WORKFLOW_DELETE // Delete workflow
-  REVIEW_VIEW // View review queue
-  REVIEW_APPROVE // Approve reviewed items
-  REVIEW_REJECT // Reject reviewed items
-  ROLE_MANAGE // Manage roles and assignments
+model Permission {
+  id              String                   @id @default(uuid())
+  code            String                   @unique // e.g., "WORKFLOW_VIEW"
+  name            String // e.g., "View Workflow"
+  description     String? // Detailed description
+  category        String                   @default("general") // e.g., "workflow", "review", "admin"
+  createdAt       DateTime                 @default(now())
+  rolePermissions WorkflowRolePermission[]
+
+  @@index([category])
+}
+
+// Junction table linking WorkflowRole to Permission
+model WorkflowRolePermission {
+  id             String       @id @default(uuid())
+  workflowRoleId String
+  permissionId   String
+  workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)
+  permission     Permission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([workflowRoleId, permissionId])
+  @@index([workflowRoleId])
+  @@index([permissionId])
 }
 
 // Role definition with explicit permissions for each workflow
 model WorkflowRole {
-  id          String                   @id @default(uuid())
-  workflowId  String
-  name        String // "developer", "validator", custom names
-  description String?
-  permissions Permission[] // Array of granted permissions
-  isSystem    Boolean                  @default(false) // true for developer/validator
-  createdAt   DateTime                 @default(now())
-  workflow    Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  assignments WorkflowRoleAssignment[]
+  id              String                   @id @default(uuid())
+  workflowId      String
+  name            String // "developer", "validator", custom names
+  description     String?
+  isSystem        Boolean                  @default(false) // true for developer/validator
+  createdAt       DateTime                 @default(now())
+  workflow        Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  assignments     WorkflowRoleAssignment[]
+  rolePermissions WorkflowRolePermission[]
 
   @@unique([workflowId, name])
   @@index([workflowId])

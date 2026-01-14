@@ -3,12 +3,12 @@
  * Handles CRUD operations for workflow roles and role assignments
  */
 import { Request, Response } from 'express';
-import { PrismaClient, Permission } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
-// Default permissions for system roles
-const DEVELOPER_PERMISSIONS: Permission[] = [
+// Default permission codes for system roles
+const DEVELOPER_PERMISSION_CODES = [
     'WORKFLOW_VIEW',
     'WORKFLOW_EDIT',
     'WORKFLOW_PUBLISH',
@@ -19,7 +19,7 @@ const DEVELOPER_PERMISSIONS: Permission[] = [
     'ROLE_MANAGE'
 ];
 
-const VALIDATOR_PERMISSIONS: Permission[] = [
+const VALIDATOR_PERMISSION_CODES = [
     'REVIEW_VIEW',
     'REVIEW_APPROVE',
     'REVIEW_REJECT'
@@ -29,25 +29,57 @@ const VALIDATOR_PERMISSIONS: Permission[] = [
  * Create default system roles for a new workflow
  */
 export async function createDefaultRoles(workflowId: string): Promise<void> {
-    await prisma.workflowRole.createMany({
-        data: [
-            {
-                workflowId,
-                name: 'developer',
-                description: 'Full access to workflow editing and publishing',
-                permissions: DEVELOPER_PERMISSIONS,
-                isSystem: true
-            },
-            {
-                workflowId,
-                name: 'validator',
-                description: 'Can review and approve/reject documents',
-                permissions: VALIDATOR_PERMISSIONS,
-                isSystem: true
-            }
-        ],
-        skipDuplicates: true
+    // Get permission IDs from database
+    const allPermissions = await prisma.permission.findMany();
+    const permissionMap = new Map(allPermissions.map(p => [p.code, p.id]));
+
+    // Create developer role
+    const developerRole = await prisma.workflowRole.upsert({
+        where: { workflowId_name: { workflowId, name: 'developer' } },
+        update: {},
+        create: {
+            workflowId,
+            name: 'developer',
+            description: 'Full access to workflow editing and publishing',
+            isSystem: true
+        }
     });
+
+    // Create validator role
+    const validatorRole = await prisma.workflowRole.upsert({
+        where: { workflowId_name: { workflowId, name: 'validator' } },
+        update: {},
+        create: {
+            workflowId,
+            name: 'validator',
+            description: 'Can review and approve/reject documents',
+            isSystem: true
+        }
+    });
+
+    // Assign permissions to developer role
+    for (const code of DEVELOPER_PERMISSION_CODES) {
+        const permissionId = permissionMap.get(code);
+        if (permissionId) {
+            await prisma.workflowRolePermission.upsert({
+                where: { workflowRoleId_permissionId: { workflowRoleId: developerRole.id, permissionId } },
+                update: {},
+                create: { workflowRoleId: developerRole.id, permissionId }
+            });
+        }
+    }
+
+    // Assign permissions to validator role
+    for (const code of VALIDATOR_PERMISSION_CODES) {
+        const permissionId = permissionMap.get(code);
+        if (permissionId) {
+            await prisma.workflowRolePermission.upsert({
+                where: { workflowRoleId_permissionId: { workflowRoleId: validatorRole.id, permissionId } },
+                update: {},
+                create: { workflowRoleId: validatorRole.id, permissionId }
+            });
+        }
+    }
 }
 
 /**
@@ -63,6 +95,11 @@ export async function getWorkflowRoles(req: Request, res: Response): Promise<voi
             include: {
                 _count: {
                     select: { assignments: true }
+                },
+                rolePermissions: {
+                    include: {
+                        permission: true
+                    }
                 }
             },
             orderBy: [
@@ -71,7 +108,13 @@ export async function getWorkflowRoles(req: Request, res: Response): Promise<voi
             ]
         });
 
-        res.json(roles);
+        // Transform to include permission codes array for backward compatibility
+        const transformedRoles = roles.map(role => ({
+            ...role,
+            permissions: role.rolePermissions.map(rp => rp.permission.code)
+        }));
+
+        res.json(transformedRoles);
     } catch (error) {
         console.error('Error fetching workflow roles:', error);
         res.status(500).json({ error: 'Failed to fetch roles' });
@@ -92,30 +135,55 @@ export async function createRole(req: Request, res: Response): Promise<void> {
             return;
         }
 
-        // Validate permissions
-        const validPermissions = Object.values(Permission);
-        const invalidPerms = (permissions || []).filter(
-            (p: string) => !validPermissions.includes(p as Permission)
-        );
+        // Validate permissions exist in database
+        const dbPermissions = await prisma.permission.findMany({
+            where: { code: { in: permissions || [] } }
+        });
+        const validCodes = dbPermissions.map(p => p.code);
+        const invalidPerms = (permissions || []).filter((p: string) => !validCodes.includes(p));
+
         if (invalidPerms.length > 0) {
             res.status(400).json({
                 error: `Invalid permissions: ${invalidPerms.join(', ')}`,
-                validPermissions
+                validPermissions: validCodes
             });
             return;
         }
 
+        // Create role
         const role = await prisma.workflowRole.create({
             data: {
                 workflowId,
                 name,
                 description,
-                permissions: permissions || [],
                 isSystem: false
             }
         });
 
-        res.status(201).json(role);
+        // Create permission links
+        if (dbPermissions.length > 0) {
+            await prisma.workflowRolePermission.createMany({
+                data: dbPermissions.map(p => ({
+                    workflowRoleId: role.id,
+                    permissionId: p.id
+                }))
+            });
+        }
+
+        // Fetch role with permissions
+        const roleWithPerms = await prisma.workflowRole.findUnique({
+            where: { id: role.id },
+            include: {
+                rolePermissions: {
+                    include: { permission: true }
+                }
+            }
+        });
+
+        res.status(201).json({
+            ...roleWithPerms,
+            permissions: roleWithPerms?.rolePermissions.map(rp => rp.permission.code) || []
+        });
     } catch (error: any) {
         if (error.code === 'P2002') {
             res.status(409).json({ error: 'Role with this name already exists' });
@@ -150,31 +218,65 @@ export async function updateRole(req: Request, res: Response): Promise<void> {
             return;
         }
 
-        // Validate permissions
+        // Validate permissions if provided
+        let dbPermissions: any[] = [];
         if (permissions) {
-            const validPermissions = Object.values(Permission);
-            const invalidPerms = permissions.filter(
-                (p: string) => !validPermissions.includes(p as Permission)
-            );
+            dbPermissions = await prisma.permission.findMany({
+                where: { code: { in: permissions } }
+            });
+            const validCodes = dbPermissions.map(p => p.code);
+            const invalidPerms = permissions.filter((p: string) => !validCodes.includes(p));
+
             if (invalidPerms.length > 0) {
                 res.status(400).json({
                     error: `Invalid permissions: ${invalidPerms.join(', ')}`,
-                    validPermissions
+                    validPermissions: validCodes
                 });
                 return;
             }
         }
 
+        // Update role basic info
         const role = await prisma.workflowRole.update({
             where: { id: roleId },
             data: {
                 ...(name && !existingRole.isSystem && { name }),
-                ...(description !== undefined && { description }),
-                ...(permissions && { permissions })
+                ...(description !== undefined && { description })
             }
         });
 
-        res.json(role);
+        // Update permissions if provided
+        if (permissions) {
+            // Delete existing permission links
+            await prisma.workflowRolePermission.deleteMany({
+                where: { workflowRoleId: roleId }
+            });
+
+            // Create new permission links
+            if (dbPermissions.length > 0) {
+                await prisma.workflowRolePermission.createMany({
+                    data: dbPermissions.map(p => ({
+                        workflowRoleId: roleId,
+                        permissionId: p.id
+                    }))
+                });
+            }
+        }
+
+        // Fetch updated role with permissions
+        const roleWithPerms = await prisma.workflowRole.findUnique({
+            where: { id: roleId },
+            include: {
+                rolePermissions: {
+                    include: { permission: true }
+                }
+            }
+        });
+
+        res.json({
+            ...roleWithPerms,
+            permissions: roleWithPerms?.rolePermissions.map(rp => rp.permission.code) || []
+        });
     } catch (error) {
         console.error('Error updating role:', error);
         res.status(500).json({ error: 'Failed to update role' });
@@ -226,13 +328,26 @@ export async function getRoleAssignments(req: Request, res: Response): Promise<v
             where: { workflowRoleId: roleId },
             include: {
                 workflowRole: {
-                    select: { name: true, permissions: true }
+                    include: {
+                        rolePermissions: {
+                            include: { permission: true }
+                        }
+                    }
                 }
             },
             orderBy: { assignedAt: 'desc' }
         });
 
-        res.json(assignments);
+        // Transform to include permission codes
+        const transformedAssignments = assignments.map(a => ({
+            ...a,
+            workflowRole: {
+                ...a.workflowRole,
+                permissions: a.workflowRole.rolePermissions.map(rp => rp.permission.code)
+            }
+        }));
+
+        res.json(transformedAssignments);
     } catch (error) {
         console.error('Error fetching role assignments:', error);
         res.status(500).json({ error: 'Failed to fetch assignments' });
@@ -313,7 +428,9 @@ export async function assignRole(req: Request, res: Response): Promise<void> {
             },
             include: {
                 workflowRole: {
-                    select: { name: true, permissions: true, workflowId: true }
+                    include: {
+                        rolePermissions: { include: { permission: true } }
+                    }
                 }
             }
         });
@@ -330,6 +447,10 @@ export async function assignRole(req: Request, res: Response): Promise<void> {
 
         res.status(201).json({
             ...assignment,
+            workflowRole: {
+                ...assignment.workflowRole,
+                permissions: assignment.workflowRole.rolePermissions.map(rp => rp.permission.code)
+            },
             isPending: !userId || userId.startsWith('pending_'),
             message: userId
                 ? 'User assigned successfully'
@@ -366,9 +487,6 @@ export async function revokeRole(req: Request, res: Response): Promise<void> {
             where: { id: assignmentId }
         });
 
-        // TODO: Sync to Clerk public metadata
-        // await syncUserRolesToClerk(assignment.userId);
-
         res.status(204).send();
     } catch (error) {
         console.error('Error revoking role:', error);
@@ -396,6 +514,9 @@ export async function getUserWorkflowRoles(req: Request, res: Response): Promise
                     include: {
                         workflow: {
                             select: { id: true, name: true }
+                        },
+                        rolePermissions: {
+                            include: { permission: true }
                         }
                     }
                 }
@@ -418,9 +539,13 @@ export async function getUserWorkflowRoles(req: Request, res: Response): Promise
             }
 
             roleMap[workflowId].roles.push(workflowRole.name);
-            roleMap[workflowId].permissions.push(
-                ...workflowRole.permissions.filter((p: string) => !roleMap[workflowId].permissions.includes(p))
-            );
+
+            // Add permissions from role
+            for (const rp of workflowRole.rolePermissions) {
+                if (!roleMap[workflowId].permissions.includes(rp.permission.code)) {
+                    roleMap[workflowId].permissions.push(rp.permission.code);
+                }
+            }
         }
 
         res.json(roleMap);
@@ -431,20 +556,31 @@ export async function getUserWorkflowRoles(req: Request, res: Response): Promise
 }
 
 /**
- * Get available permissions list
+ * Get available permissions list from database
  */
 export async function getAvailablePermissions(req: Request, res: Response): Promise<void> {
-    res.json({
-        permissions: Object.values(Permission),
-        descriptions: {
-            WORKFLOW_VIEW: 'View workflow structure and configuration',
-            WORKFLOW_EDIT: 'Edit workflow nodes, edges, and settings',
-            WORKFLOW_PUBLISH: 'Publish or unpublish the workflow',
-            WORKFLOW_DELETE: 'Delete the workflow',
-            REVIEW_VIEW: 'View the document review queue',
-            REVIEW_APPROVE: 'Approve reviewed documents',
-            REVIEW_REJECT: 'Reject documents or request changes',
-            ROLE_MANAGE: 'Manage roles and user assignments'
+    try {
+        const permissions = await prisma.permission.findMany({
+            orderBy: [
+                { category: 'asc' },
+                { code: 'asc' }
+            ]
+        });
+
+        // Build descriptions map for backward compatibility
+        const descriptions: Record<string, string> = {};
+        for (const p of permissions) {
+            descriptions[p.code] = p.description || p.name;
         }
-    });
+
+        res.json({
+            permissions: permissions.map(p => p.code),
+            descriptions,
+            // Also return full permission objects for rich UI
+            permissionsList: permissions
+        });
+    } catch (error) {
+        console.error('Error fetching permissions:', error);
+        res.status(500).json({ error: 'Failed to fetch permissions' });
+    }
 }

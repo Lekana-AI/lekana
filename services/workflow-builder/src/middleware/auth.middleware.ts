@@ -5,7 +5,7 @@
 import { expressjwt, GetVerificationKey } from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { PrismaClient, Permission } from '../../generated/prisma';
+import { PrismaClient } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -14,10 +14,10 @@ const prisma = new PrismaClient();
 // The domain is extracted from your publishable key
 const CLERK_DOMAIN = process.env.CLERK_DOMAIN || 'your-app.clerk.accounts.dev';
 
-// Type for workflow role data
+// Type for workflow role data (now uses string codes instead of enum)
 interface WorkflowRoleData {
     roles: string[];
-    permissions: Permission[];
+    permissions: string[];
 }
 
 // Extend Express Request type to include auth properties
@@ -129,7 +129,17 @@ export const extractUserInfo: RequestHandler = async (
                 where: { userId: req.userId },
                 include: {
                     workflowRole: {
-                        select: { workflowId: true, name: true, permissions: true }
+                        select: {
+                            workflowId: true,
+                            name: true,
+                            rolePermissions: {
+                                include: {
+                                    permission: {
+                                        select: { code: true }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -137,14 +147,16 @@ export const extractUserInfo: RequestHandler = async (
             // Build workflow roles map
             const workflowRoles: Record<string, WorkflowRoleData> = {};
             for (const assignment of assignments) {
-                const { workflowId, name, permissions } = assignment.workflowRole;
+                const { workflowId, name, rolePermissions } = assignment.workflowRole;
                 if (!workflowRoles[workflowId]) {
                     workflowRoles[workflowId] = { roles: [], permissions: [] };
                 }
                 workflowRoles[workflowId].roles.push(name);
-                for (const perm of permissions) {
-                    if (!workflowRoles[workflowId].permissions.includes(perm)) {
-                        workflowRoles[workflowId].permissions.push(perm);
+                // Extract permission codes from rolePermissions junction
+                for (const rp of rolePermissions) {
+                    const permCode = rp.permission.code;
+                    if (!workflowRoles[workflowId].permissions.includes(permCode)) {
+                        workflowRoles[workflowId].permissions.push(permCode);
                     }
                 }
             }
@@ -176,7 +188,7 @@ async function isWorkflowOwner(userId: string, workflowId: string): Promise<bool
  * @param requiredPermissions - Array of permissions needed (ALL must be present)
  * @returns Express middleware
  */
-export const requirePermission = (requiredPermissions: Permission[]): RequestHandler => {
+export const requirePermission = (requiredPermissions: string[]): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         const workflowId = req.params.id;
         const userId = req.userId;
