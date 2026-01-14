@@ -28,6 +28,7 @@
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
 	import Monitoring from '$lib/components/Monitoring.svelte';
+	import RoleManagement from '$lib/components/RoleManagement.svelte';
 	import { Activity, LineChart } from 'lucide-svelte';
 
 	let { data } = $props();
@@ -135,6 +136,7 @@
 	let showPublishModal = $state(false);
 	let showMonitoringModal = $state(false);
 	let showSettingsModal = $state(false);
+	let showRoleModal = $state(false);
 
 	let workflowName = $state(workflow.name);
 	let wName = $derived(workflow.name);
@@ -237,6 +239,17 @@
 				workflow.name = newName;
 				await reloadWorkflow();
 			}}
+			onOpenRoles={() => {
+				showSettingsModal = false;
+				showRoleModal = true;
+			}}
+		/>
+	{/if}
+
+	{#if showRoleModal}
+		<RoleManagement
+			{workflow}
+			onClose={() => (showRoleModal = false)}
 		/>
 	{/if}
 	<SidePanel

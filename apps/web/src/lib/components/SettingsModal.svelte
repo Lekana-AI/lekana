@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { X, Settings2, Pen, Trash2, ExternalLink, ArrowRight } from 'lucide-svelte';
+	import { X, Settings2, Pen, Trash2, ExternalLink, ArrowRight, Users } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 
-	let { workflow, onClose, onRename } = $props();
+	let { workflow, onClose, onRename, onOpenRoles } = $props();
 
 	let workflowName = $state(workflow.name);
 	let confirmName = $state('');
@@ -166,6 +166,28 @@
 							>
 								<Pen class="h-3.5 w-3.5" />
 								RENAME
+							</button>
+						</div>
+					</div>
+
+					<!-- Role Management Section -->
+					<div class="space-y-3">
+						<p class="text-[10px] font-bold tracking-widest text-green-500 uppercase">Access Control</p>
+						<div
+							class="flex items-center justify-between rounded-xl border border-green-500/20 bg-green-500/5 p-4"
+						>
+							<div>
+								<h4 class="text-sm font-medium text-white">Role Management</h4>
+								<p class="text-[11px] text-zinc-400">
+									Manage roles and permissions for collaborators and validators.
+								</p>
+							</div>
+							<button
+								onclick={onOpenRoles}
+								class="flex items-center gap-2 rounded-lg border border-green-500/50 px-4 py-2 text-xs font-semibold text-green-400 transition-all hover:bg-green-500/20 hover:text-white active:scale-95"
+							>
+								<Users class="h-3.5 w-3.5" />
+								MANAGE ROLES
 							</button>
 						</div>
 					</div>
