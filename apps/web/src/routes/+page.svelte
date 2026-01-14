@@ -15,6 +15,8 @@
 		ArrowUp
 	} from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { toast } from '$lib/toast.svelte';
+	import LoadingOverlay from '$lib/components/LoadingOverlay.svelte';
 
 	const steps = [
 		{
@@ -59,6 +61,7 @@
 			}
 
 			if (!res.ok) {
+				toast.error('Failed to create workflow');
 				throw new Error(`Failed to create workflow: ${res.status}`);
 			}
 
@@ -66,6 +69,7 @@
 			goto(`/w/${workflow.id}?prompt=${encodeURIComponent(prompt)}`);
 		} catch (error) {
 			console.error('Failed to start generation:', error);
+			toast.error('Something went wrong. Please try again.');
 			generating = false;
 		}
 	}
@@ -131,6 +135,7 @@
 </svelte:head>
 
 <main class="relative flex flex-col items-center overflow-x-clip bg-neutral-950">
+	<LoadingOverlay show={generating} title="Generating Workflow" {prompt} />
 	<Header />
 
 	<style>
@@ -174,7 +179,7 @@
 				<textarea
 					bind:value={prompt}
 					onkeydown={(e) => {
-						if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+						if (e.key === 'Enter' && !e.shiftKey) {
 							e.preventDefault();
 							handleGenerate();
 						}

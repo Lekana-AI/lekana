@@ -20,10 +20,10 @@
 	let sentPrompt = $state('');
 	let generating = $state(false);
 	const examplePrompts = [
-		"Build a workflow that extracts and exports data from insurance claims.",
-		"Create a workflow that automatically processes and exports invoices.",
-		"Build a workflow that classifies documents and routes them to the correct databases.",
-		"Create a workflow that extracts, cleans, and exports data from documents."
+		'Build a workflow that extracts and exports data from insurance claims.',
+		'Create a workflow that automatically processes and exports invoices.',
+		'Build a workflow that classifies documents and routes them to the correct databases.',
+		'Create a workflow that extracts, cleans, and exports data from documents.'
 	];
 
 	let parsedThoughts = $derived.by(() => {
@@ -216,10 +216,10 @@
 							type="text"
 							placeholder="Search"
 							bind:value={searchQuery}
-							class="flex-1 bg-transparent text-sm  py-2 text-white/70 outline-none placeholder:text-white/40"
+							class="flex-1 bg-transparent py-2 text-sm text-white/70 outline-none placeholder:text-white/40"
 						/>
 						{#if searchQuery}
-							<button class="h-full py-2  text-white/60 hover:text-white">
+							<button class="h-full py-2 text-white/60 hover:text-white">
 								<X class="h-3 w-3" onclick={() => (searchQuery = '')} />
 							</button>
 						{:else}
@@ -237,9 +237,7 @@
 								<div class="flex w-full flex-col gap-2">
 									<div class="h-3 w-20 animate-pulse rounded bg-white/5 pt-1.5"></div>
 									{#each Array(3) as _}
-										<div
-											class="flex w-full items-center gap-4 rounded-lg bg-white/5 px-3 py-3"
-										>
+										<div class="flex w-full items-center gap-4 rounded-lg bg-white/5 px-3 py-3">
 											<div class="h-7 w-7 animate-pulse rounded-md bg-white/5"></div>
 											<div class="h-4 w-24 animate-pulse rounded bg-white/5"></div>
 											<div class="ml-auto h-4 w-4 animate-pulse rounded bg-white/5"></div>
@@ -263,9 +261,11 @@
 										<button
 											onclick={() => onAction?.(item.id)}
 											type="button"
-											class="inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 pr-5 py-2 backdrop-blur transition group "
+											class="group inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 pr-5 backdrop-blur transition"
 										>
-											<span class="flex items-center justify-center rounded-md bg-green-950/40 group-hover:bg-green-950/80 transition-colors p-2">
+											<span
+												class="flex items-center justify-center rounded-md bg-green-950/40 p-2 transition-colors group-hover:bg-green-950/80"
+											>
 												<!-- <item.icon class="h-3 w-3 text-white" /> -->
 												<Icon class="h-5 w-5 text-green-400" />
 												<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
@@ -273,7 +273,9 @@
 											<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
 												{item.label}
 											</span>
-											<Plus class="ml-auto h-4 w-4 text-white/50 group-hover:text-white transition-colors" />
+											<Plus
+												class="ml-auto h-4 w-4 text-white/50 transition-colors group-hover:text-white"
+											/>
 										</button>
 									{/each}
 								</section>
@@ -284,7 +286,7 @@
 			{:else}
 				<!-- ASSISTANT VIEW -->
 				<div
-					class="flex w-xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900 p-"
+					class="p- flex w-xs flex-1 flex-col items-center justify-end gap-4 overflow-hidden rounded-xl bg-neutral-900"
 				>
 					{#if thoughts || generating || sentPrompt}
 						<div
@@ -311,7 +313,7 @@
 										>
 									</div>
 									<div
-										class="markdown-content dark-scroll max-w-[95%] w-full leading-relaxed text-white/70"
+										class="markdown-content dark-scroll w-full max-w-[95%] leading-relaxed text-white/70"
 									>
 										{@html parsedThoughts}
 										{#if generating && !thoughts}
@@ -323,7 +325,7 @@
 						</div>
 					{:else}
 						<div class="flex h-full w-full flex-col items-center justify-between p-3">
-							<div class="mb-4 flex flex-col items-center gap-3 text-center h-full justify-center">
+							<div class="mb-4 flex h-full flex-col items-center justify-center gap-3 text-center">
 								<img src="/logo.svg" alt="Lekana Logo" class="h-12 w-12" />
 								<h2 class="text-lg font-bold text-white">Lekana Assistant</h2>
 								<p class="text-[12px] leading-relaxed text-white/60">
@@ -340,10 +342,9 @@
 									{#each examplePrompts as example}
 										<button
 											onclick={() => generateExample(example)}
-											class="group relative flex w-full flex-col items-start gap-1 rounded-2xl rounded-tl-sm bg-white/5 px-4 py-3 text-left transition-all  hover:bg-white/10 active:scale-[0.98]"
+											class="group relative flex w-full flex-col items-start gap-1 rounded-2xl rounded-tl-sm bg-white/5 px-4 py-3 text-left transition-all hover:bg-white/10 active:scale-[0.98]"
 										>
-											<span class="text-xs text-white/80 transition-colors group-hover:text-white"
-												>
+											<span class="text-xs text-white/80 transition-colors group-hover:text-white">
 												{example}
 												<!-- <Sparkles class="h-2.5 w-2.5 text-green-500" /> -->
 											</span>
@@ -366,7 +367,7 @@
 							<textarea
 								bind:value={prompt}
 								onkeydown={(e) => {
-									if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+									if (e.key === 'Enter' && !e.shiftKey) {
 										e.preventDefault();
 										generateWorkflow();
 									}

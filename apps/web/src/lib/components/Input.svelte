@@ -1,5 +1,6 @@
 <script>
-	import { Minus, Plus, Info } from 'lucide-svelte';
+	import { Minus, Plus, Info, Eye, EyeOff } from 'lucide-svelte';
+	let showPassword = $state(false);
 	let {
 		fieldData = $bindable(),
 		onInput,
@@ -164,15 +165,28 @@
 			{fieldData.label}
 			{@render infoTooltip()}
 		</label>
-		<input
-			id={fieldData.name}
-			bind:value={fieldData.value}
-			type="password"
-			class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 text-white"
-			placeholder={fieldData.placeholder}
-			required={fieldData.required}
-			oninput={(e) => onInput?.(e, fieldData)}
-		/>
+		<div class="relative">
+			<input
+				id={fieldData.name}
+				bind:value={fieldData.value}
+				type={showPassword ? 'text' : 'password'}
+				class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 pr-10 text-white"
+				placeholder={fieldData.placeholder}
+				required={fieldData.required}
+				oninput={(e) => onInput?.(e, fieldData)}
+			/>
+			<button
+				type="button"
+				class="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+				onclick={() => (showPassword = !showPassword)}
+			>
+				{#if showPassword}
+					<EyeOff size="18" />
+				{:else}
+					<Eye size="18" />
+				{/if}
+			</button>
+		</div>
 	</div>
 {:else if fieldData.type === 'array'}
 	<!-- Field Data Value for Array: ['item1', 'item2'] -->

@@ -16,6 +16,7 @@
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
 	import { toast } from '$lib/toast.svelte';
+	import LoadingOverlay from './LoadingOverlay.svelte';
 
 	let {
 		userName,
@@ -37,6 +38,9 @@
 	let openMenuId = $state<string | null>(null);
 	let workflows = $state<any[]>([]);
 	let workflowsLoading = $state(false);
+	let isActionLoading = $state(false);
+	let loadingTitle = $state('Creating Workflow');
+	let loadingMessage = $state('Sit back. We are getting your workspace ready...');
 
 	onMount(() => {
 		loadWorkflows();
@@ -65,45 +69,61 @@
 	}
 
 	async function createWorkflow() {
-		const res = await fetch('/api/workflows', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ name: 'Untitled' })
-		});
+		try {
+			isActionLoading = true;
+			loadingTitle = 'Creating Workflow';
+			loadingMessage = 'Sit back. We are getting your workspace ready...';
+			const res = await fetch('/api/workflows', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: 'Untitled' })
+			});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to create workflow');
+				throw new Error(`Failed to create workflow: ${res.status}`);
+			}
+			let workflow = await res.json();
 
-			throw new Error(`Failed to create workflow: ${res.status}`);
+			window.location.replace(`/w/${workflow.id}`);
+		} catch (error) {
+			console.error('Failed to create workflow:', error);
+			isActionLoading = false;
 		}
-
-		let workflow = await res.json();
-
-		window.location.replace(`/w/${workflow.id}`);
 	}
 
-	async function duplicateWorkflow(id: string) {
-		const res = await fetch(`/api/workflows/${id}/duplicate`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
+	async function duplicateWorkflow(id: string, name: string) {
+		try {
+			isActionLoading = true;
+			loadingTitle = 'Duplicating Workflow';
+			loadingMessage = `Creating a copy of "${name}"...`;
+
+			const res = await fetch(`/api/workflows/${id}/duplicate`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to duplicate workflow');
+				throw new Error(`Failed to duplicate workflow: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			toast.error('Failed to duplicate workflow');
-			throw new Error(`Failed to duplicate workflow: ${res.status}`);
+			let workflow = await res.json();
+			// toast.success('Workflow duplicated');
+
+			window.location.replace(`/w/${workflow.id}`);
+		} catch (error) {
+			console.error('Failed to duplicate workflow:', error);
+			isActionLoading = false;
 		}
-
-		let workflow = await res.json();
-		toast.success('Workflow duplicated');
-
-		window.location.replace(`/w/${workflow.id}`);
 	}
 </script>
 
@@ -265,7 +285,7 @@
 
 										<button
 											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-											onclick={() => duplicateWorkflow(workflow.id)}
+											onclick={() => duplicateWorkflow(workflow.id, workflow.name)}
 										>
 											<CopyPlus class="h-4 w-4" />
 
@@ -306,3 +326,5 @@
 </aside>
 
 <svelte:window onclick={() => (openMenuId = null)} />
+
+<LoadingOverlay show={isActionLoading} title={loadingTitle} message={loadingMessage} />
