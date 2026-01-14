@@ -15,18 +15,7 @@
 	let availablePermissions = $state<string[]>([]);
 	let permissionDescriptions = $state<Record<string, string>>({});
 	let permissionsLoading = $state(true);
-
-	// Fallback permissions if API fails
-	const fallbackPermissions: Record<string, string> = {
-		WORKFLOW_VIEW: 'View workflow',
-		WORKFLOW_EDIT: 'Edit workflow',
-		WORKFLOW_PUBLISH: 'Publish/unpublish',
-		WORKFLOW_DELETE: 'Delete workflow',
-		REVIEW_VIEW: 'View review queue',
-		REVIEW_APPROVE: 'Approve documents',
-		REVIEW_REJECT: 'Reject documents',
-		ROLE_MANAGE: 'Manage roles'
-	};
+	let permissionsError = $state(false);
 
 	// New role form
 	let showNewRoleForm = $state(false);
@@ -50,6 +39,7 @@
 
 	async function loadPermissions() {
 		permissionsLoading = true;
+		permissionsError = false;
 		try {
 			const res = await fetch('/api/permissions/available');
 			if (res.ok) {
@@ -57,15 +47,16 @@
 				availablePermissions = data.permissions || [];
 				permissionDescriptions = data.descriptions || {};
 			} else {
-				// Use fallback if API fails
-				availablePermissions = Object.keys(fallbackPermissions);
-				permissionDescriptions = fallbackPermissions;
+				console.error('Failed to load permissions:', res.status);
+				permissionsError = true;
+				availablePermissions = [];
+				permissionDescriptions = {};
 			}
 		} catch (error) {
 			console.error('Error loading permissions:', error);
-			// Use fallback on error
-			availablePermissions = Object.keys(fallbackPermissions);
-			permissionDescriptions = fallbackPermissions;
+			permissionsError = true;
+			availablePermissions = [];
+			permissionDescriptions = {};
 		}
 		permissionsLoading = false;
 	}
@@ -336,7 +327,11 @@
 										<Loader2 class="h-3 w-3 animate-spin" />
 										Loading permissions...
 									</div>
-								{:else}
+								{:else if permissionsError}
+								<div class="py-2 text-xs text-red-400">Failed to load permissions. <button onclick={loadPermissions} class="underline">Retry</button></div>
+							{:else if availablePermissions.length === 0}
+								<div class="py-2 text-xs text-zinc-500">No permissions available</div>
+							{:else}
 									<div class="grid grid-cols-2 gap-1">
 										{#each availablePermissions as perm}
 											<label
