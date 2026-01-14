@@ -40,7 +40,12 @@ app.get('/user/workflow-roles', checkJwt, handleAuthError, extractUserInfo, getU
 import { getAvailablePermissions } from './controllers/role.controller';
 app.get('/permissions/available', checkJwt, handleAuthError, extractUserInfo, getAvailablePermissions);
 
+// Utility endpoints
+import { testConnection } from './controllers/utils.controller';
+app.post('/utils/test-connection', checkJwt, handleAuthError, extractUserInfo, testConnection);
+
 export default app;
+
 
 
 
