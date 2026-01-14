@@ -24,6 +24,7 @@ model WorkflowExecution {
   updatedAt           DateTime           @updatedAt
   nodeExecutions      NodeExecution[]
   logs                ExecutionLog[]
+  reviewTasks         ReviewTask[]
 
   @@index([workflowId])
   @@index([userId])
@@ -119,5 +120,35 @@ enum LogLevel {
   INFO
   WARN
   ERROR
+}
+
+// Status for human review tasks
+enum ReviewStatus {
+  PENDING
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  NEEDS_CHANGES
+}
+
+// Human review task - tracks documents pending human validation
+model ReviewTask {
+  id                  String            @id @default(uuid())
+  workflowExecutionId String
+  nodeExecutionId     String
+  workflowId          String            // Reference to workflow for role checking
+  status              ReviewStatus      @default(PENDING)
+  assignedTo          String?           // Clerk user ID of validator
+  originalData        Json              // OCR/extracted data
+  reviewedData        Json?             // Corrected/approved data
+  reviewNotes         String?
+  createdAt           DateTime          @default(now())
+  reviewedAt          DateTime?
+  workflowExecution   WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+
+  @@index([workflowExecutionId])
+  @@index([workflowId])
+  @@index([assignedTo])
+  @@index([status])
 }
 

@@ -4,6 +4,7 @@ import { checkJwt, handleAuthError, extractUserInfo } from '../middleware/auth.m
 import { checkApiKey } from '../middleware/apikey.middleware';
 import * as executionController from '../controllers/execution.controller';
 import * as workflowController from '../controllers/workflow.controller';
+import reviewRoutes from './review.routes';
 
 const router = Router();
 
@@ -46,6 +47,11 @@ router.get('/executions/:id',
 router.get('/executions/:id/logs',
     //jwtAuth,
     executionController.getExecutionLogs);
+
+// ========================================
+// Human Review / Validator Endpoints (JWT auth)
+// ========================================
+router.use('/review', jwtAuth, reviewRoutes);
 
 // Note: Action endpoints have been removed.
 // Actions are now external microservices called by the engine.

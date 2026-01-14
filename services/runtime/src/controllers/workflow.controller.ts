@@ -8,6 +8,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
 import { getActionByName } from '../services/action-lookup.service';
+import { validateWorkflowNodes, formatValidationErrors } from '../services/validation.service';
 
 const prisma = new PrismaClient();
 
@@ -110,6 +111,20 @@ export const publishWorkflow = async (req: Request, res: Response) => {
 
         const workflow = await response.json() as WorkflowData;
         console.log(`[Publish] Publishing workflow: ${workflow.name} (${workflow.id}) for user ${userId}`);
+
+        // Validate workflow nodes before publishing
+        if (workflow.nodes && workflow.nodes.length > 0) {
+            const validationResult = validateWorkflowNodes(workflow.nodes);
+            if (!validationResult.valid) {
+                console.log(`[Publish] Validation failed for workflow ${workflow.id}:`, validationResult.errors);
+                return res.status(400).json({
+                    error: 'Workflow validation failed',
+                    message: formatValidationErrors(validationResult.errors),
+                    validationErrors: validationResult.errors
+                });
+            }
+            console.log(`[Publish] Workflow validation passed`);
+        }
 
         // Check if workflow already published
         const existingPublished = await prisma.publishedWorkflow.findUnique({
