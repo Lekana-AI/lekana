@@ -1,12 +1,40 @@
 <script>
-	import { Minus, Plus, Info, Eye, EyeOff } from 'lucide-svelte';
+	import { Minus, Plus, Info, Eye, EyeOff, Loader2, CheckCircle, XCircle } from 'lucide-svelte';
 	let showPassword = $state(false);
+	let connectionTesting = $state(false);
+	let connectionResult = $state(null);
 	let {
 		fieldData = $bindable(),
 		onInput,
 		extractedFields,
 		upstreamOutputVariables = []
 	} = $props();
+
+	// Test database connection
+	async function testConnection() {
+		if (!fieldData.value) return;
+		
+		connectionTesting = true;
+		connectionResult = null;
+		
+		try {
+			// Call workflow-builder's test-connection endpoint
+			const res = await fetch('/api/utils/test-connection', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ databaseUrl: fieldData.value })
+			});
+			
+			connectionResult = await res.json();
+		} catch (error) {
+			connectionResult = {
+				success: false,
+				message: error.message || 'Connection test failed'
+			};
+		} finally {
+			connectionTesting = false;
+		}
+	}
 
 	$effect(() => {
 		if (fieldData.type === 'keyValue' && fieldData.useExtractedFields && extractedFields) {
@@ -173,7 +201,10 @@
 				class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 pr-10 text-white"
 				placeholder={fieldData.placeholder}
 				required={fieldData.required}
-				oninput={(e) => onInput?.(e, fieldData)}
+				oninput={(e) => {
+					connectionResult = null;
+					onInput?.(e, fieldData);
+				}}
 			/>
 			<button
 				type="button"
@@ -187,6 +218,36 @@
 				{/if}
 			</button>
 		</div>
+		{#if fieldData.testConnection}
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					disabled={!fieldData.value || connectionTesting}
+					onclick={testConnection}
+					class="flex items-center gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-50"
+				>
+					{#if connectionTesting}
+						<Loader2 size="14" class="animate-spin" />
+						Testing...
+					{:else}
+						Check Connection
+					{/if}
+				</button>
+				{#if connectionResult}
+					{#if connectionResult.success}
+						<span class="flex items-center gap-1 text-xs text-green-400">
+							<CheckCircle size="14" />
+							Connected: {connectionResult.details?.database}
+						</span>
+					{:else}
+						<span class="flex items-center gap-1 text-xs text-red-400">
+							<XCircle size="14" />
+							{connectionResult.message}
+						</span>
+					{/if}
+				{/if}
+			</div>
+		{/if}
 	</div>
 {:else if fieldData.type === 'array'}
 	<!-- Field Data Value for Array: ['item1', 'item2'] -->
