@@ -29,7 +29,6 @@
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
-	import Monitoring from '$lib/components/Monitoring.svelte';
 	import RoleManagement from '$lib/components/RoleManagement.svelte';
 	import { Activity, LineChart } from 'lucide-svelte';
 
