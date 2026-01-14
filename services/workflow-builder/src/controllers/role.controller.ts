@@ -7,76 +7,53 @@ import { PrismaClient } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
-// Default permission codes for system roles
-const DEVELOPER_PERMISSION_CODES = [
-    'WORKFLOW_VIEW',
-    'WORKFLOW_EDIT',
-    'WORKFLOW_PUBLISH',
-    'WORKFLOW_DELETE',
-    'REVIEW_VIEW',
-    'REVIEW_APPROVE',
-    'REVIEW_REJECT',
-    'ROLE_MANAGE'
-];
-
-const VALIDATOR_PERMISSION_CODES = [
-    'REVIEW_VIEW',
-    'REVIEW_APPROVE',
-    'REVIEW_REJECT'
-];
-
 /**
  * Create default system roles for a new workflow
+ * Reads role templates from DefaultRole table in database
  */
 export async function createDefaultRoles(workflowId: string): Promise<void> {
-    // Get permission IDs from database
-    const allPermissions = await prisma.permission.findMany();
-    const permissionMap = new Map(allPermissions.map(p => [p.code, p.id]));
-
-    // Create developer role
-    const developerRole = await prisma.workflowRole.upsert({
-        where: { workflowId_name: { workflowId, name: 'developer' } },
-        update: {},
-        create: {
-            workflowId,
-            name: 'developer',
-            description: 'Full access to workflow editing and publishing',
-            isSystem: true
+    // Fetch active default roles with their permissions from database
+    const defaultRoles = await prisma.defaultRole.findMany({
+        where: { isActive: true },
+        include: {
+            defaultRolePermissions: {
+                include: {
+                    permission: {
+                        select: { id: true, code: true }
+                    }
+                }
+            }
         }
     });
 
-    // Create validator role
-    const validatorRole = await prisma.workflowRole.upsert({
-        where: { workflowId_name: { workflowId, name: 'validator' } },
-        update: {},
-        create: {
-            workflowId,
-            name: 'validator',
-            description: 'Can review and approve/reject documents',
-            isSystem: true
-        }
-    });
+    // Create each default role for this workflow
+    for (const defaultRole of defaultRoles) {
+        // Create or get the workflow role
+        const workflowRole = await prisma.workflowRole.upsert({
+            where: { workflowId_name: { workflowId, name: defaultRole.name } },
+            update: {},
+            create: {
+                workflowId,
+                name: defaultRole.name,
+                description: defaultRole.description,
+                isSystem: true
+            }
+        });
 
-    // Assign permissions to developer role
-    for (const code of DEVELOPER_PERMISSION_CODES) {
-        const permissionId = permissionMap.get(code);
-        if (permissionId) {
+        // Assign permissions from the default role template
+        for (const drp of defaultRole.defaultRolePermissions) {
             await prisma.workflowRolePermission.upsert({
-                where: { workflowRoleId_permissionId: { workflowRoleId: developerRole.id, permissionId } },
+                where: {
+                    workflowRoleId_permissionId: {
+                        workflowRoleId: workflowRole.id,
+                        permissionId: drp.permission.id
+                    }
+                },
                 update: {},
-                create: { workflowRoleId: developerRole.id, permissionId }
-            });
-        }
-    }
-
-    // Assign permissions to validator role
-    for (const code of VALIDATOR_PERMISSION_CODES) {
-        const permissionId = permissionMap.get(code);
-        if (permissionId) {
-            await prisma.workflowRolePermission.upsert({
-                where: { workflowRoleId_permissionId: { workflowRoleId: validatorRole.id, permissionId } },
-                update: {},
-                create: { workflowRoleId: validatorRole.id, permissionId }
+                create: {
+                    workflowRoleId: workflowRole.id,
+                    permissionId: drp.permission.id
+                }
             });
         }
     }

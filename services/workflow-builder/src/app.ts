@@ -36,6 +36,10 @@ app.use('/workflows/:id/roles', checkJwt, handleAuthError, extractUserInfo, role
 // User-specific role endpoints
 app.get('/user/workflow-roles', checkJwt, handleAuthError, extractUserInfo, getUserWorkflowRoles);
 
+// Global permissions endpoint (for role management UI)
+import { getAvailablePermissions } from './controllers/role.controller';
+app.get('/permissions/available', checkJwt, handleAuthError, extractUserInfo, getAvailablePermissions);
+
 export default app;
 
 

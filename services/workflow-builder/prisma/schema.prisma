@@ -115,6 +115,7 @@ model Permission {
   category    String                   @default("general") // e.g., "workflow", "review", "admin"
   createdAt   DateTime                 @default(now())
   rolePermissions WorkflowRolePermission[]
+  defaultRolePermissions DefaultRolePermission[]
 
   @@index([category])
 }
@@ -162,4 +163,28 @@ model WorkflowRoleAssignment {
   @@unique([userId, workflowRoleId])
   @@index([userId])
   @@index([workflowRoleId])
+}
+
+// Default role templates - automatically created for each new workflow
+model DefaultRole {
+  id                     String                    @id @default(uuid())
+  name                   String                    @unique // e.g., "developer", "validator"
+  description            String?
+  isActive               Boolean                   @default(true) // Can disable without deleting
+  createdAt              DateTime                  @default(now())
+  defaultRolePermissions DefaultRolePermission[]
+}
+
+// Junction table linking DefaultRole to Permission
+model DefaultRolePermission {
+  id            String      @id @default(uuid())
+  defaultRoleId String
+  permissionId  String
+  defaultRole   DefaultRole @relation(fields: [defaultRoleId], references: [id], onDelete: Cascade)
+  permission    Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([defaultRoleId, permissionId])
+  @@index([defaultRoleId])
+  @@index([permissionId])
 }

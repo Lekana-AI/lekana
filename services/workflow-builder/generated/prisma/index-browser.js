@@ -220,6 +220,21 @@ exports.Prisma.WorkflowRoleAssignmentScalarFieldEnum = {
   assignedBy: 'assignedBy'
 };
 
+exports.Prisma.DefaultRoleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isActive: 'isActive',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.DefaultRolePermissionScalarFieldEnum = {
+  id: 'id',
+  defaultRoleId: 'defaultRoleId',
+  permissionId: 'permissionId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -262,7 +277,9 @@ exports.Prisma.ModelName = {
   Permission: 'Permission',
   WorkflowRolePermission: 'WorkflowRolePermission',
   WorkflowRole: 'WorkflowRole',
-  WorkflowRoleAssignment: 'WorkflowRoleAssignment'
+  WorkflowRoleAssignment: 'WorkflowRoleAssignment',
+  DefaultRole: 'DefaultRole',
+  DefaultRolePermission: 'DefaultRolePermission'
 };
 
 /**
