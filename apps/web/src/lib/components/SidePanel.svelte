@@ -11,12 +11,14 @@
 		EllipsisVertical,
 		Trash,
 		CopyPlus,
-		Settings2
+		Settings2,
+		LifeBuoy
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
 	import { toast } from '$lib/toast.svelte';
 	import LoadingOverlay from './LoadingOverlay.svelte';
+	import SupportModal from './SupportModal.svelte';
 
 	let {
 		userName,
@@ -39,6 +41,7 @@
 	let workflows = $state<any[]>([]);
 	let workflowsLoading = $state(false);
 	let isActionLoading = $state(false);
+	let showSupportModal = $state(false);
 	let loadingTitle = $state('Creating Workflow');
 	let loadingMessage = $state('Sit back. We are getting your workspace ready...');
 
@@ -229,7 +232,10 @@
 				</button>
 				{#if !workflowsCollapsed && !panelCollapsed}
 					<!-- Workflows list -->
-					<nav class="flex max-h-[60vh] w-full flex-col gap-1" aria-label="Workflow list">
+					<nav
+						class="flex max-h-[calc(100vh-250px)] w-full flex-col gap-1 overflow-y-auto pr-1 select-none"
+						aria-label="Workflow list"
+					>
 						{#each workflows as workflow (workflow.id)}
 							<div class="relative">
 								<a
@@ -310,21 +316,39 @@
 		{/if}
 	</div>
 
-	<!-- Bottom welcome strip -->
-	<footer
-		class="mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
-			? 'justify-center  py-2'
-			: 'p-2'} "
-	>
-		<SignedIn>
-			<UserButton />
-		</SignedIn>
-		<p class="flex truncate text-xs {panelCollapsed ? 'hidden' : ''}">
-			Welcome<span class="font-medium">, {userName}</span>
-		</p>
-	</footer>
+	<div class="flex flex-col gap-1">
+		<!-- Support Button -->
+		<button
+			type="button"
+			onclick={() => (showSupportModal = true)}
+			class="flex w-full py-3 items-center gap-3 rounded-md text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
+				? 'justify-center'
+				: 'p-2'}"
+		>
+			<LifeBuoy class="h-5 w-5" />
+			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Support & Feedback</span>
+		</button>
+
+		<!-- Bottom welcome strip -->
+		<footer
+			class="mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
+				? 'justify-center  py-2'
+				: 'p-2'} "
+		>
+			<SignedIn>
+				<UserButton />
+			</SignedIn>
+			<p class="flex truncate text-xs {panelCollapsed ? 'hidden' : ''}">
+				Welcome<span class="font-medium">, {userName}</span>
+			</p>
+		</footer>
+	</div>
 </aside>
 
 <svelte:window onclick={() => (openMenuId = null)} />
+
+{#if showSupportModal}
+	<SupportModal onClose={() => (showSupportModal = false)} />
+{/if}
 
 <LoadingOverlay show={isActionLoading} title={loadingTitle} message={loadingMessage} />
