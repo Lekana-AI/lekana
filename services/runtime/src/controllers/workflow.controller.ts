@@ -8,7 +8,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
 import { getActionByName } from '../services/action-lookup.service';
-import { validateWorkflowNodes, formatValidationErrors } from '../services/validation.service';
+import { validateWorkflowNodes, formatValidationErrors, validateDatabaseConnections, formatConnectionErrors } from '../services/validation.service';
 
 const prisma = new PrismaClient();
 
@@ -124,6 +124,21 @@ export const publishWorkflow = async (req: Request, res: Response) => {
                 });
             }
             console.log(`[Publish] Workflow validation passed`);
+
+            // Validate database connections
+            const connectionResults = await validateDatabaseConnections(workflow.nodes);
+            const failedConnections = connectionResults.filter(r => !r.success);
+            if (failedConnections.length > 0) {
+                console.log(`[Publish] Database connection validation failed for workflow ${workflow.id}:`, failedConnections);
+                return res.status(400).json({
+                    error: 'Database connection failed',
+                    message: formatConnectionErrors(connectionResults),
+                    connectionErrors: failedConnections
+                });
+            }
+            if (connectionResults.length > 0) {
+                console.log(`[Publish] Database connection validation passed (${connectionResults.length} connections tested)`);
+            }
         }
 
         // Check if workflow already published

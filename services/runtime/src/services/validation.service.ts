@@ -185,3 +185,107 @@ export function formatValidationErrors(errors: ValidationError[]): string {
 
     return `Validation failed:\n${messages.join('\n')}`;
 }
+
+// ======================================
+// Database Connection Validation
+// ======================================
+
+import { Client } from 'pg';
+
+export interface ConnectionTestResult {
+    nodeId: string;
+    nodeName: string;
+    success: boolean;
+    message: string;
+    database?: string;
+}
+
+/**
+ * Test a single database connection
+ */
+async function testDatabaseConnection(databaseUrl: string): Promise<{ success: boolean; message: string; database?: string }> {
+    let client: Client | null = null;
+
+    try {
+        client = new Client({
+            connectionString: databaseUrl,
+            ssl: databaseUrl.includes('sslmode=require')
+                ? { rejectUnauthorized: false }
+                : undefined,
+            connectionTimeoutMillis: 10000 // 10 second timeout
+        });
+
+        await client.connect();
+
+        const result = await client.query('SELECT current_database()');
+        const database = result.rows[0].current_database;
+
+        return {
+            success: true,
+            message: 'Connection successful',
+            database
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.message
+        };
+    } finally {
+        if (client) {
+            try {
+                await client.end();
+            } catch (e) {
+                // Ignore disconnect errors
+            }
+        }
+    }
+}
+
+/**
+ * Validate all database connections in workflow nodes
+ * Finds nodes with databaseUrl config and tests each connection
+ */
+export async function validateDatabaseConnections(nodes: WorkflowNode[]): Promise<ConnectionTestResult[]> {
+    const results: ConnectionTestResult[] = [];
+
+    for (const node of nodes) {
+        const databaseUrl = node.config?.databaseUrl;
+
+        if (databaseUrl && typeof databaseUrl === 'string' && databaseUrl.trim() !== '') {
+            const nodeName = node.config?.stepName || node.action?.name || 'Unknown';
+            console.log(`[Validation] Testing database connection for node: ${nodeName}`);
+
+            const testResult = await testDatabaseConnection(databaseUrl);
+
+            results.push({
+                nodeId: node.id,
+                nodeName,
+                success: testResult.success,
+                message: testResult.message,
+                database: testResult.database
+            });
+
+            if (testResult.success) {
+                console.log(`[Validation] Database connection OK for ${nodeName}: ${testResult.database}`);
+            } else {
+                console.log(`[Validation] Database connection FAILED for ${nodeName}: ${testResult.message}`);
+            }
+        }
+    }
+
+    return results;
+}
+
+/**
+ * Format database connection errors into a user-friendly message
+ */
+export function formatConnectionErrors(results: ConnectionTestResult[]): string {
+    const failed = results.filter(r => !r.success);
+
+    if (failed.length === 0) {
+        return '';
+    }
+
+    return `Database connection failed:\n${failed.map(r => `${r.nodeName}: ${r.message}`).join('\n')}`;
+}
+
