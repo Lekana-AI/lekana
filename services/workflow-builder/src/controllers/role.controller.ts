@@ -3,7 +3,7 @@
  * Handles CRUD operations for workflow roles and role assignments
  */
 import { Request, Response } from 'express';
-import { PrismaClient, Permission } from '@prisma/client';
+import { PrismaClient, Permission } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -419,7 +419,7 @@ export async function getUserWorkflowRoles(req: Request, res: Response): Promise
 
             roleMap[workflowId].roles.push(workflowRole.name);
             roleMap[workflowId].permissions.push(
-                ...workflowRole.permissions.filter(p => !roleMap[workflowId].permissions.includes(p))
+                ...workflowRole.permissions.filter((p: string) => !roleMap[workflowId].permissions.includes(p))
             );
         }
 

@@ -5,7 +5,7 @@
 import { expressjwt, GetVerificationKey } from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { PrismaClient, Permission } from '@prisma/client';
+import { PrismaClient, Permission } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 

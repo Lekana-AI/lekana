@@ -2,7 +2,7 @@
  * Clerk Sync Service
  * Syncs workflow role assignments to Clerk user public metadata
  */
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../../generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -100,7 +100,7 @@ export async function syncWorkflowUsersToClerk(workflowId: string): Promise<void
             select: { userId: true }
         });
 
-        const uniqueUserIds = [...new Set(assignments.map(a => a.userId))];
+        const uniqueUserIds = [...new Set(assignments.map((a: { userId: string }) => a.userId))];
 
         for (const userId of uniqueUserIds) {
             await syncUserRolesToClerk(userId);
