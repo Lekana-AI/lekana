@@ -7,7 +7,7 @@ export const load: PageServerLoad = async ({ locals, params, fetch }) => {
     // auth
     const { userId } = locals.auth();
     if (!userId) {
-        throw redirect(307, '/login');
+        throw redirect(307, '/sign-in');
     }
 
     const slug = params.workflow_slug;

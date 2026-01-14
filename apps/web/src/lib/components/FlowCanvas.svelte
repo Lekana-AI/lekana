@@ -7,7 +7,8 @@
 		type Connection,
 		addEdge,
 		type Edge,
-		MarkerType
+		MarkerType,
+		ConnectionLineType
 	} from '@xyflow/svelte';
 
 	import '@xyflow/svelte/dist/style.css';
@@ -16,6 +17,7 @@
 	import ActiveActionNode from './SvelteFlow/Node/ActiveActionNode.svelte';
 	import { toast } from '$lib/toast.svelte';
 	import { Copy, Settings, Settings2, Trash } from 'lucide-svelte';
+	import ContextMenu from './SvelteFlow/ContextMenu.svelte';
 
 	let { onNodeClick, nodes = $bindable(), edges = $bindable(), workflowId, reloading } = $props();
 
@@ -98,9 +100,9 @@
 			fetch(`/api/workflows/${workflowId}/edges/${(oldEdge as Edge).id}`, {
 				method: 'DELETE',
 				headers: { 'Content-Type': 'application/json' }
-			}).catch((e: any) => console.error('Failed to delete old edge during reconnect', e));
+			}).catch((e: Error) => console.error('Failed to delete old edge during reconnect', e));
 		}
-		edges = edges.filter((e) => e.id !== (oldEdge as Edge).id);
+		edges = edges.filter((e: Edge) => e.id !== (oldEdge as Edge).id);
 		updateEdge(newConnection);
 	}
 
@@ -108,11 +110,13 @@
 
 	let menu: {
 		id: string;
+		data: any;
 		top?: number;
 		left?: number;
 		right?: number;
 		bottom?: number;
 	} | null = $state(null);
+	let flowContainer: HTMLDivElement;
 	let clientWidth: number = $state(0);
 	let clientHeight: number = $state(0);
 
@@ -120,19 +124,59 @@
 		// Prevent native context menu from showing
 		event.preventDefault();
 
+		const rect = flowContainer.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
 		// Calculate position of the context menu. We want to make sure it
 		// doesn't get positioned off-screen.
 		menu = {
 			id: node.id,
-			top: event.clientY < clientHeight - 200 ? event.clientY : undefined,
-			left: event.clientX < clientWidth - 200 ? event.clientX : undefined,
-			right: event.clientX >= clientWidth - 200 ? clientWidth - event.clientX : undefined,
-			bottom: event.clientY >= clientHeight - 200 ? clientHeight - event.clientY : undefined
+			data: node.data,
+			top: y < clientHeight - 200 ? y : undefined,
+			left: x < clientWidth - 200 ? x : undefined,
+			right: x >= clientWidth - 200 ? clientWidth - x : undefined,
+			bottom: y >= clientHeight - 200 ? clientHeight - y : undefined
 		};
 	};
+
+	async function handleDelete({
+		nodes: deletedNodes,
+		edges: deletedEdges
+	}: {
+		nodes: any[];
+		edges: Edge[];
+	}) {
+		for (const edge of deletedEdges) {
+			if (edge.id && !edge.id.startsWith('edge-')) {
+				try {
+					const res = await fetch(`/api/workflows/${workflowId}/edges/${edge.id}`, {
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+
+					if (!res.ok) {
+						const errorText = await res.text();
+						console.error('Failed to delete edge:', errorText);
+						toast.error('Failed to delete edge');
+					}
+				} catch (err) {
+					console.error('Network error deleting edge:', err);
+					toast.error('Network error deleting edge');
+				}
+			}
+		}
+	}
 </script>
 
-<div class="flow-wrapper relative h-full w-full overflow-clip rounded-xl bg-zinc-900">
+<div
+	bind:this={flowContainer}
+	bind:clientWidth
+	bind:clientHeight
+	class="flow-wrapper relative h-full w-full overflow-clip rounded-xl bg-zinc-900"
+>
 	{#if reloading}
 		<div class="absolute top-4 right-4 z-50">
 			<div
@@ -141,7 +185,7 @@
 		</div>
 	{/if}
 	<SvelteFlow
-		connectionLineType="smoothstep"
+		connectionLineType={ConnectionLineType.SmoothStep}
 		defaultEdgeOptions={{
 			type: 'custom-edge',
 			markerEnd: { type: MarkerType.ArrowClosed, color: '#52525c' }
@@ -149,10 +193,11 @@
 		onnodecontextmenu={handleContextMenu}
 		onpaneclick={() => (menu = null)}
 		onpointerdown={() => (menu = null)}
+		ondelete={handleDelete}
 		onconnect={(connection) => updateEdge(connection)}
 		isValidConnection={(connection) => {
-			const sourceNode = nodes.find((n) => n.id === connection.source);
-			const targetNode = nodes.find((n) => n.id === connection.target);
+			const sourceNode = nodes.find((n: any) => n.id === connection.source);
+			const targetNode = nodes.find((n: any) => n.id === connection.target);
 
 			if (!sourceNode || !targetNode) return false;
 
@@ -188,16 +233,17 @@
 
 		<Controls />
 		<Background bgColor="#18181b" patternColor="#52525c" />
-		<!-- {#if menu}
+		{#if menu}
 			<ContextMenu
-				onclick={handlePaneClick}
+				onclick={() => (menu = null)}
 				id={menu.id}
+				data={menu.data}
 				top={menu.top}
 				left={menu.left}
 				right={menu.right}
 				bottom={menu.bottom}
 			/>
-		{/if} -->
+		{/if}
 	</SvelteFlow>
 </div>
 

@@ -24,7 +24,7 @@
 		const loadData = async () => {
 			try {
 				const Clerk = (window as any).Clerk;
-				
+
 				if (!Clerk) {
 					console.log('⏳ Clerk not ready yet, retrying...');
 					setTimeout(loadData, 100);
@@ -35,7 +35,7 @@
 
 				// Wait for Clerk to be fully loaded with user session
 				await Clerk.load();
-				
+
 				console.log('✅ Clerk fully loaded!');
 
 				const updateState = async () => {
@@ -66,7 +66,6 @@
 						updateState();
 					});
 				}
-
 			} catch (err) {
 				console.error('❌ Error loading Clerk data:', err);
 			}
@@ -85,7 +84,7 @@
 	async function testApiCall() {
 		isLoading = true;
 		apiResponse = '';
-		
+
 		try {
 			const response = await fetchWithAuth(apiUrl, {
 				method: 'GET',
@@ -105,13 +104,16 @@
 
 	function copyToken() {
 		if (navigator?.clipboard?.writeText) {
-			navigator.clipboard.writeText(token).then(() => {
-				copied = true;
-				setTimeout(() => copied = false, 2000);
-			}).catch((err) => {
-				console.error('Clipboard write failed:', err);
-				fallbackCopy();
-			});
+			navigator.clipboard
+				.writeText(token)
+				.then(() => {
+					copied = true;
+					setTimeout(() => (copied = false), 2000);
+				})
+				.catch((err) => {
+					console.error('Clipboard write failed:', err);
+					fallbackCopy();
+				});
 		} else {
 			fallbackCopy();
 		}
@@ -119,13 +121,13 @@
 
 	function fallbackCopy() {
 		try {
-			const textArea = document.createElement("textarea");
+			const textArea = document.createElement('textarea');
 			textArea.value = token;
-			
+
 			// Avoid scrolling to bottom
-			textArea.style.top = "0";
-			textArea.style.left = "0";
-			textArea.style.position = "fixed";
+			textArea.style.top = '0';
+			textArea.style.left = '0';
+			textArea.style.position = 'fixed';
 
 			document.body.appendChild(textArea);
 			textArea.focus();
@@ -136,7 +138,7 @@
 
 			if (successful) {
 				copied = true;
-				setTimeout(() => copied = false, 2000);
+				setTimeout(() => (copied = false), 2000);
 			} else {
 				console.error('Fallback copy failed');
 			}
@@ -148,7 +150,7 @@
 
 <SignedOut>
 	{#snippet children()}
-		{@const _ = browser && goto('/login')}
+		{@const _ = browser && goto('/sign-in')}
 	{/snippet}
 </SignedOut>
 
@@ -204,7 +206,7 @@
 						</button>
 					</div>
 					<div class="rounded bg-zinc-900 p-4">
-						<code class="break-all text-xs text-green-400">
+						<code class="text-xs break-all text-green-400">
 							{token || 'Loading token...'}
 						</code>
 					</div>

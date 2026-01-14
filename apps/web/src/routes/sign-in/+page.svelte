@@ -16,21 +16,21 @@
 			</div>
 
 			<div class="flex w-full max-w-md flex-col items-center gap-6">
-				<SignIn signUpUrl="/signup" {afterSignInUrl} />
+				<SignIn signUpUrl="/sign-up" {afterSignInUrl} />
 			</div>
 		</div>
 		<div
-			class="relative hidden h-full w-full items-center justify-center overflow-clip rounded-l-2xl bg-black md:flex"
+			class="relative hidden h-full w-full flex-col items-center justify-center gap-8 overflow-clip rounded-l-2xl bg-black md:flex"
 		>
-			<div class="z-10 flex items-center gap-4">
+			<a href="/" class="z-10 flex items-center gap-4">
 				<img src="/logo.svg" alt="logo" class="h-12 w-12" />
 				<span class="text-3xl font-semibold text-white">Lekana</span>
-			</div>
+			</a>
 			<div
-				class="absolute top-1/2 left-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
+				class="absolute top-1/2 left-1/2 aspect-square w-full scale-200 animate-[pulse_4s_ease-in-out_infinite] justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 			></div>
 			<div
-				class="absolute right-1/2 bottom-1/2 aspect-square w-full scale-200 justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
+				class="absolute right-1/2 bottom-1/2 aspect-square w-full scale-200 animate-[pulse_4s_ease-in-out_infinite] justify-self-center rounded-full bg-radial from-green-500/20 to-transparent to-60%"
 			></div>
 		</div>
 	</main>

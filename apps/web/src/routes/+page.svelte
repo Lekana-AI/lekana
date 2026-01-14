@@ -54,7 +54,7 @@
 			if (res.status === 401) {
 				// Save prompt and redirect to login
 				localStorage.setItem('pending_prompt', prompt);
-				goto('/login?redirect_url=/dashboard');
+				goto('/sign-in?redirect_url=/dashboard');
 				return;
 			}
 

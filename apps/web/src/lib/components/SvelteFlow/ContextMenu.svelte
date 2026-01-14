@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
 	import { Copy, Settings, Trash } from 'lucide-svelte';
-
-	import { useEdges, useNodes, useSvelteFlow } from '@xyflow/svelte';
+	import { useEdges, useSvelteFlow } from '@xyflow/svelte';
 
 	let {
 		id,
+		data,
 		top,
 		left,
 		right,
@@ -12,6 +12,7 @@
 		onclick
 	}: {
 		id: string;
+		data: any;
 		top: number | undefined;
 		left: number | undefined;
 		right: number | undefined;
@@ -19,39 +20,37 @@
 		onclick: () => void;
 	} = $props();
 
-	const { deleteElements } = useSvelteFlow();
-
-	const nodes = useNodes();
-
-	function duplicateNode() {
-		const node = nodes.current.find((node) => node.id === id);
-		if (node) {
-			nodes.current = [
-				...nodes.current,
-				{
-					...node,
-					// You should use a better id than this in production
-					id: `${id}-copy${Math.random()}`,
-					position: {
-						x: node.position.x,
-						y: node.position.y + 50
-					}
-				}
-			];
-		}
-	}
+	const edges = useEdges();
+	const incomingEdge = $derived(edges.current.find((e) => e.target === id));
+	const sourceNodeId = $derived(incomingEdge?.source);
 
 	function deleteNode() {
-		deleteElements({ nodes: [{ id }] });
+		data.onDelete?.({ id, ...data });
+		onclick();
+	}
+
+	function configureNode() {
+		data.onClick?.({ sourceNodeId, ...data });
+		onclick();
 	}
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
-	class="absolute top-0 left-full z-30 min-w-full rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+	style:top={top ? `${top}px` : 'auto'}
+	style:left={left ? `${left}px` : 'auto'}
+	style:right={right ? `${right}px` : 'auto'}
+	style:bottom={bottom ? `${bottom}px` : 'auto'}
+	class="absolute z-50 min-w-[160px] overflow-clip rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
+	onclick={(e) => e.stopPropagation()}
+	onpointerdown={(e) => e.stopPropagation()}
+	onmousedown={(e) => e.stopPropagation()}
 >
 	<button
 		type="button"
 		class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+		onclick={configureNode}
 	>
 		<Settings class="h-4 w-4" />
 
@@ -60,11 +59,14 @@
 
 	<button
 		class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-		onclick={() => console.log('Duplicate', id)}
+		onclick={() => {
+			data.onDuplicate?.({ id, ...data });
+			onclick();
+		}}
 	>
 		<Copy class="h-4 w-4" />
 
-		Copy
+		Duplicate
 	</button>
 
 	<button

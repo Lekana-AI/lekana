@@ -1,7 +1,7 @@
 <script>
-	import { SignedIn, SignedOut, SignInButton, UserButton } from "svelte-clerk";
-
+	import { SignedIn, SignedOut, SignInButton, UserButton } from 'svelte-clerk';
 </script>
+
 <!-- NAV -->
 <nav
 	class="to white-0 fixed top-0 z-20 flex w-full items-center justify-between bg-linear-to-t from-white/5 px-8 py-4 text-white backdrop-blur-md md:px-24"
@@ -14,13 +14,13 @@
 	<div class="hidden items-center gap-8 text-sm text-gray-300 md:flex">
 		<a href="/#about" class="transition-colors duration-300 hover:text-green-500">About</a>
 		<a href="/#faq" class="transition-colors duration-300 hover:text-green-500">FAQ</a>
-		<a href="/docs" class="transition-colors duration-300 hover:text-green-500">Docs</a>
+		<!-- <a href="/docs" class="transition-colors duration-300 hover:text-green-500">Docs</a> -->
 
 		<SignedIn>
 			<UserButton />
 		</SignedIn>
 		<SignedOut>
-			<SignInButton forceRedirectUrl="/dashboard" />
+			<a href="/dashboard" class="transition-colors duration-300 hover:text-green-500">Get Started</a>
 		</SignedOut>
 		<!-- <div
 				class="glow-btn flex rounded-full p-0.5 shadow-lg transition-shadow duration-500 hover:shadow-green-500/50"

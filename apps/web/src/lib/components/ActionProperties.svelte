@@ -8,6 +8,7 @@
 
 	// use step + fields as state; no separate name/description/icon
 	let step = $state(null);
+	let loading = $state(false);
 	let fields = $state([]);
 
 	onMount(() => {
@@ -97,53 +98,59 @@
 
 	async function formSubmit() {
 		if (!isValid) return;
+		try {
+			loading = true;
+			const config = fields.reduce((acc, field) => {
+				if (!isVisible(field)) return acc; // Don't submit hidden fields
+				acc[field.name] = field.value;
+				return acc;
+			}, {});
 
-		const config = fields.reduce((acc, field) => {
-			if (!isVisible(field)) return acc; // Don't submit hidden fields
-			acc[field.name] = field.value;
-			return acc;
-		}, {});
+			// console.log(result);
 
-		// console.log(result);
+			let res;
 
-		let res;
+			if (node) {
+				// Update existing node
+				res = await fetch(`/api/workflows/${workflow.id}/nodes/${node.id}`, {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						config
+					})
+				});
+			} else {
+				// Create new node
+				res = await fetch(`/api/workflows/${workflow.id}/nodes`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						actionId: actionId,
+						positionX: 50,
+						positionY: 150,
+						config
+					})
+				});
+			}
 
-		if (node) {
-			// Update existing node
-			res = await fetch(`/api/workflows/${workflow.id}/nodes/${node.id}`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					config
-				})
-			});
-		} else {
-			// Create new node
-			res = await fetch(`/api/workflows/${workflow.id}/nodes`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					actionId: actionId,
-					positionX: 50,
-					positionY: 150,
-					config
-				})
-			});
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error(`Failed to ${node ? 'update' : 'create'} node:`, errorText);
+
+				throw new Error(`Failed to ${node ? 'update' : 'create'} node: ${res.status}`);
+			}
+
+			onSubmit();
+			onClose();
+		} catch (error) {
+			console.error(error);
+		} finally {
+			loading = false;
 		}
-
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error(`Failed to ${node ? 'update' : 'create'} node:`, errorText);
-
-			throw new Error(`Failed to ${node ? 'update' : 'create'} node: ${res.status}`);
-		}
-
-		onSubmit();
-		onClose();
 	}
 </script>
 
@@ -193,11 +200,17 @@
 						<button
 							type="button"
 							onclick={formSubmit}
-							disabled={!isValid}
+							disabled={!isValid || loading}
 							class="flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors duration-300 hover:bg-green-800 disabled:bg-zinc-800 disabled:opacity-50"
 						>
 							{node ? 'Update Action' : 'Add Action to Workflow'}
-							<CornerRightUp class="h-3.5 w-3.5" />
+							{#if loading}
+								<div
+									class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent"
+								></div>
+							{:else}
+								<CornerRightUp class="h-3.5 w-3.5" />
+							{/if}
 						</button>
 					</div>
 				{:else}

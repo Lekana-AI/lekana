@@ -16,7 +16,8 @@ import {
     FileOutput,
     Globe,
     Calculator,
-    Zap
+    Zap,
+    GitBranch
 } from 'lucide-svelte';
 
 export const icons = {
@@ -36,5 +37,6 @@ export const icons = {
     FileOutput,
     Globe,
     Calculator,
-    Zap
+    Zap,
+    GitBranch
 };
