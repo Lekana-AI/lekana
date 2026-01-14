@@ -205,6 +205,30 @@
 					}
 				},
 				{
+					"name": "Duplicate Workflow",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/duplicate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"duplicate"
+							]
+						},
+						"description": "Duplicates an existing workflow, including all its nodes, edges, and fields. The new workflow name will have ' copy' as a suffix."
+					}
+				},
+				{
 					"name": "Get All Nodes",
 					"request": {
 						"method": "GET",
@@ -328,6 +352,32 @@
 								"{{node_id}}"
 							]
 						}
+					}
+				},
+				{
+					"name": "Duplicate Node",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/nodes/{{node_id}}/duplicate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"nodes",
+								"{{node_id}}",
+								"duplicate"
+							]
+						},
+						"description": "Duplicates a node within the same workflow with a slight position offset (20px X, 20px Y)."
 					}
 				},
 				{

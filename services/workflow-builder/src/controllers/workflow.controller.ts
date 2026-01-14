@@ -267,6 +267,113 @@ export const deleteWorkflow = async (req: Request, res: Response) => {
 };
 
 /**
+ * Duplicate an existing workflow
+ */
+export const duplicateWorkflow = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.auth?.userId;
+
+        if (!userId) {
+            return res.status(401).json({ error: 'User ID not found in token' });
+        }
+
+        // Fetch original workflow with all its components
+        const originalWorkflow = await prisma.workflow.findFirst({
+            where: {
+                id,
+                userId,
+                isDeleted: false
+            },
+            include: {
+                nodes: {
+                    where: { isDeleted: false }
+                },
+                edges: {
+                    where: { isDeleted: false }
+                },
+                fields: true
+            }
+        });
+
+        if (!originalWorkflow) {
+            return res.status(404).json({ error: 'Workflow not found' });
+        }
+
+        // 1. Create the new workflow record
+        const newWorkflow = await prisma.workflow.create({
+            data: {
+                name: `${originalWorkflow.name} copy`,
+                userId: originalWorkflow.userId,
+            }
+        });
+
+        // Mapping from old node ID to new node ID
+        const nodeIdMap: Record<string, string> = {};
+
+        // 2. Duplicate nodes
+        for (const node of originalWorkflow.nodes) {
+            const newNode = await prisma.workflowNode.create({
+                data: {
+                    workflowId: newWorkflow.id,
+                    actionId: node.actionId,
+                    config: node.config as any,
+                    positionX: node.positionX,
+                    positionY: node.positionY,
+                }
+            });
+            nodeIdMap[node.id] = newNode.id;
+        }
+
+        // 3. Duplicate edges
+        if (originalWorkflow.edges.length > 0) {
+            await prisma.workflowEdge.createMany({
+                data: originalWorkflow.edges.map(edge => ({
+                    workflowId: newWorkflow.id,
+                    sourceNodeId: nodeIdMap[edge.sourceNodeId],
+                    targetNodeId: nodeIdMap[edge.targetNodeId],
+                }))
+            });
+        }
+
+        // 4. Duplicate fields
+        if (originalWorkflow.fields.length > 0) {
+            await prisma.workflowField.createMany({
+                data: originalWorkflow.fields.map(field => ({
+                    workflowId: newWorkflow.id,
+                    sourceNodeId: nodeIdMap[field.sourceNodeId],
+                    fieldName: field.fieldName,
+                    fieldPath: field.fieldPath,
+                    fieldType: field.fieldType
+                }))
+            });
+        }
+
+        // Return the new workflow with its components
+        const result = await prisma.workflow.findUnique({
+            where: { id: newWorkflow.id },
+            include: {
+                nodes: {
+                    include: {
+                        action: {
+                            include: {
+                                category: true
+                            }
+                        }
+                    }
+                },
+                edges: true,
+            }
+        });
+
+        res.status(201).json(result);
+    } catch (error) {
+        console.error('Error duplicating workflow:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+/**
  * Update publish status (called by runtime after publishing)
  * PATCH /workflows/:id/publish-status
  */
