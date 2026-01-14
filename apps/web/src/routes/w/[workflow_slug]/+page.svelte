@@ -48,20 +48,6 @@
 
 	let reloading = $state(false);
 
-	let copiedKey = $state(false);
-	let copiedEndpoint = $state(false);
-
-	function copyToClipboard(text: string, type: 'key' | 'endpoint') {
-		navigator.clipboard.writeText(text);
-		if (type === 'key') {
-			copiedKey = true;
-			setTimeout(() => (copiedKey = false), 2000);
-		} else {
-			copiedEndpoint = true;
-			setTimeout(() => (copiedEndpoint = false), 2000);
-		}
-	}
-
 	async function reloadWorkflow() {
 		reloading = true;
 		const res = await fetch(`/api/workflows/${workflow.id}`, {

@@ -59,7 +59,11 @@
 			markerEnd: { type: MarkerType.ArrowClosed, color: '#52525c' }
 		};
 
-		edges = addEdge(newEdge, edges);
+		// Filter out any automatically added edge by SvelteFlow to prevent duplicates
+		edges = addEdge(
+			newEdge,
+			edges.filter((e) => !e.id.startsWith('xy-edge__'))
+		);
 		try {
 			const res = await fetch(`/api/workflows/${workflowId}/edges`, {
 				method: 'POST',
@@ -84,6 +88,8 @@
 				toast.error(errorMessage);
 			} else {
 				const savedEdge = await res.json();
+				console.log('TempId', tempId);
+				console.log('SavedId', savedEdge.id);
 				// Update the edge with the real ID from database
 				edges = edges.map((e: Edge) => (e.id === tempId ? { ...e, id: savedEdge.id } : e));
 			}
@@ -93,17 +99,6 @@
 			edges = edges.filter((e: Edge) => e.id !== tempId);
 			toast.error('Network error. Failed to connect nodes.');
 		}
-	}
-
-	function handleReconnect(oldEdge: Edge | Connection, newConnection: Connection) {
-		if ((oldEdge as Edge).id && !(oldEdge as Edge).id.startsWith('edge-')) {
-			fetch(`/api/workflows/${workflowId}/edges/${(oldEdge as Edge).id}`, {
-				method: 'DELETE',
-				headers: { 'Content-Type': 'application/json' }
-			}).catch((e: Error) => console.error('Failed to delete old edge during reconnect', e));
-		}
-		edges = edges.filter((e: Edge) => e.id !== (oldEdge as Edge).id);
-		updateEdge(newConnection);
 	}
 
 	let showMiniMap = $state(false);
@@ -140,15 +135,12 @@
 		};
 	};
 
-	async function handleDelete({
-		nodes: deletedNodes,
-		edges: deletedEdges
-	}: {
-		nodes: any[];
-		edges: Edge[];
-	}) {
+	async function handleDelete({ edges: deletedEdges }: { edges: Edge[] }) {
 		for (const edge of deletedEdges) {
-			if (edge.id && !edge.id.startsWith('edge-')) {
+			console.log(edge.id);
+			console.log(edge.id);
+			if (edge.id && !edge.id.startsWith('edge-') && !edge.id.startsWith('xy-edge__')) {
+				console.log(edge);
 				try {
 					const res = await fetch(`/api/workflows/${workflowId}/edges/${edge.id}`, {
 						method: 'DELETE',
@@ -165,6 +157,7 @@
 				} catch (err) {
 					console.error('Network error deleting edge:', err);
 					toast.error('Network error deleting edge');
+					edges = [...edges, edge];
 				}
 			}
 		}
@@ -212,7 +205,6 @@
 
 			return isValid;
 		}}
-		onreconnect={(oldEdge, newConnection) => handleReconnect(oldEdge, newConnection)}
 		onnodedragstop={(value: any) => updateNodePosition(value)}
 		onmovestart={() => (showMiniMap = true)}
 		onmoveend={() =>

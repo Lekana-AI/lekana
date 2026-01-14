@@ -1,6 +1,11 @@
 <script>
-	import { Minus, Plus } from 'lucide-svelte';
-	let { fieldData = $bindable(), onInput, extractedFields, upstreamOutputVariables = [] } = $props();
+	import { Minus, Plus, Info } from 'lucide-svelte';
+	let {
+		fieldData = $bindable(),
+		onInput,
+		extractedFields,
+		upstreamOutputVariables = []
+	} = $props();
 
 	$effect(() => {
 		if (fieldData.type === 'keyValue' && fieldData.useExtractedFields && extractedFields) {
@@ -25,10 +30,30 @@
 	});
 </script>
 
+{#snippet infoTooltip()}
+	{#if fieldData.info}
+		<div class="group relative inline-block">
+			<Info
+				size="14"
+				class="inline-block cursor-pointer text-zinc-500 transition-colors hover:text-zinc-300"
+			/>
+			<div
+				class="pointer-events-none absolute bottom-full left-1/2 mb-2 w-48 -translate-x-1/2 rounded-md bg-zinc-800 p-2 text-xs text-zinc-200 opacity-0 shadow-xl transition-opacity group-hover:opacity-100"
+			>
+				{fieldData.info}
+				<div
+					class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-800"
+				></div>
+			</div>
+		</div>
+	{/if}
+{/snippet}
+
 {#if fieldData.type === 'text'}
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<input
 			id={fieldData.name}
@@ -42,8 +67,9 @@
 	</div>
 {:else if fieldData.type === 'number'}
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<input
 			id={fieldData.name}
@@ -64,10 +90,14 @@
 			oninput={(e) => onInput?.(e, fieldData)}
 		/>
 		{fieldData.label}
+		{@render infoTooltip()}
 	</label>
 {:else if fieldData.type === 'checkbox-group'}
 	<div class="flex flex-col gap-2 text-sm">
-		<p class="text-zinc-200">{fieldData.label}</p>
+		<p class="flex items-center gap-1.5 text-zinc-200">
+			{fieldData.label}
+			{@render infoTooltip()}
+		</p>
 
 		{#each fieldData.options as option}
 			<label class="flex cursor-pointer items-center gap-2 text-zinc-300">
@@ -112,8 +142,9 @@
 {:else if fieldData.type === 'select'}
 	<!-- for "method" in your backend (GET/POST/PUT/DELETE) -->
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<select
 			id={fieldData.name}
@@ -129,8 +160,9 @@
 	</div>
 {:else if fieldData.type === 'password'}
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<input
 			id={fieldData.name}
@@ -146,8 +178,9 @@
 	<!-- Field Data Value for Array: ['item1', 'item2'] -->
 	<div class="flex flex-col gap-2 text-sm">
 		<div class="flex items-stretch justify-between">
-			<label for={fieldData.name} class="text-zinc-200">
+			<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 				{fieldData.label}
+				{@render infoTooltip()}
 			</label>
 			<button
 				type="button"
@@ -190,8 +223,9 @@
 	<!-- Field Data Value for KeyValue: [{ key: 'k', value: 'v' }] -->
 	<div class="flex flex-col gap-2 text-sm">
 		<div class="flex items-stretch justify-between">
-			<label for={fieldData.name} class="text-zinc-200">
+			<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 				{fieldData.label}
+				{@render infoTooltip()}
 			</label>
 			<button
 				type="button"
@@ -246,8 +280,9 @@
 	</div>
 {:else if fieldData.type === 'textarea'}
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<textarea
 			id={fieldData.name}
@@ -262,8 +297,9 @@
 {:else if fieldData.type === 'dynamicSelect'}
 	<!-- Dropdown populated from upstream's outputVariables -->
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		<select
 			id={fieldData.name}
@@ -283,8 +319,9 @@
 {:else if fieldData.type === 'dynamicSelectValues'}
 	<!-- Dropdown + text input for values from upstream -->
 	<div class="flex flex-col gap-2 text-sm">
-		<label for={fieldData.name} class="text-zinc-200">
+		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
+			{@render infoTooltip()}
 		</label>
 		{#if extractedFields && extractedFields.length > 0}
 			<select
@@ -302,7 +339,7 @@
 			<input
 				type="text"
 				bind:value={fieldData.value}
-				placeholder={extractedFields?.length > 0 ? "Or type custom value..." : "Enter value..."}
+				placeholder={extractedFields?.length > 0 ? 'Or type custom value...' : 'Enter value...'}
 				class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 text-white"
 				oninput={(e) => onInput?.(e, fieldData)}
 			/>
