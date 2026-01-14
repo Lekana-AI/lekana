@@ -1,12 +1,6 @@
 import { Request, Response } from 'express';
-<<<<<<< Updated upstream
 import prisma from '../lib/prisma';
-=======
-import { PrismaClient } from '@prisma/client';
 import { createDefaultRoles } from './role.controller';
-
-const prisma = new PrismaClient({});
->>>>>>> Stashed changes
 
 export const createWorkflow = async (req: Request, res: Response) => {
     try {

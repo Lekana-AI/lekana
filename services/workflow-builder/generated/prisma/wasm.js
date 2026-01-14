@@ -96,15 +96,15 @@ exports.Prisma.UserScalarFieldEnum = {
 
 exports.Prisma.WorkflowScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   name: 'name',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  userId: 'userId',
+  isDeleted: 'isDeleted',
   isPublished: 'isPublished',
-  lastPublishedAt: 'lastPublishedAt',
-  publishedAt: 'publishedAt',
   publishedWorkflowId: 'publishedWorkflowId',
-  isDeleted: 'isDeleted'
+  publishedAt: 'publishedAt',
+  lastPublishedAt: 'lastPublishedAt'
 };
 
 exports.Prisma.WorkflowNodeScalarFieldEnum = {
@@ -154,6 +154,25 @@ exports.Prisma.WorkflowFieldScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.WorkflowRoleScalarFieldEnum = {
+  id: 'id',
+  workflowId: 'workflowId',
+  name: 'name',
+  description: 'description',
+  permissions: 'permissions',
+  isSystem: 'isSystem',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.WorkflowRoleAssignmentScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  workflowRoleId: 'workflowRoleId',
+  assignedAt: 'assignedAt',
+  assignedBy: 'assignedBy'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -183,7 +202,16 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-
+exports.Permission = exports.$Enums.Permission = {
+  WORKFLOW_VIEW: 'WORKFLOW_VIEW',
+  WORKFLOW_EDIT: 'WORKFLOW_EDIT',
+  WORKFLOW_PUBLISH: 'WORKFLOW_PUBLISH',
+  WORKFLOW_DELETE: 'WORKFLOW_DELETE',
+  REVIEW_VIEW: 'REVIEW_VIEW',
+  REVIEW_APPROVE: 'REVIEW_APPROVE',
+  REVIEW_REJECT: 'REVIEW_REJECT',
+  ROLE_MANAGE: 'ROLE_MANAGE'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
@@ -192,7 +220,9 @@ exports.Prisma.ModelName = {
   WorkflowEdge: 'WorkflowEdge',
   ActionCategory: 'ActionCategory',
   Action: 'Action',
-  WorkflowField: 'WorkflowField'
+  WorkflowField: 'WorkflowField',
+  WorkflowRole: 'WorkflowRole',
+  WorkflowRoleAssignment: 'WorkflowRoleAssignment'
 };
 /**
  * Create the Client
@@ -205,7 +235,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Lasandu\\Software Projects\\Express\\lekana-ai-workflow-builder\\generated\\prisma",
+      "value": "C:\\Users\\pasid\\OneDrive\\Desktop\\lekana.ai\\services\\workflow-builder\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -221,7 +251,7 @@ const config = {
     "previewFeatures": [
       "driverAdapters"
     ],
-    "sourceFilePath": "C:\\Users\\Lasandu\\Software Projects\\Express\\lekana-ai-workflow-builder\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\pasid\\OneDrive\\Desktop\\lekana.ai\\services\\workflow-builder\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -235,7 +265,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -244,13 +273,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  output          = \"../generated/prisma\"\n  previewFeatures = [\"driverAdapters\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String     @id @default(uuid())\n  workflows Workflow[]\n}\n\nmodel Workflow {\n  id                  String          @id @default(uuid())\n  name                String\n  createdAt           DateTime        @default(now())\n  updatedAt           DateTime        @updatedAt\n  userId              String\n  isPublished         Boolean         @default(false)\n  lastPublishedAt     DateTime?\n  publishedAt         DateTime?\n  publishedWorkflowId String?\n  isDeleted           Boolean         @default(false)\n  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)\n  edges               WorkflowEdge[]\n  fields              WorkflowField[]\n  nodes               WorkflowNode[]\n\n  @@index([userId])\n}\n\nmodel WorkflowNode {\n  id         String          @id @default(uuid())\n  workflowId String\n  config     Json\n  positionX  Float\n  positionY  Float\n  actionId   String\n  outgoing   WorkflowEdge[]  @relation(\"SourceEdges\")\n  incoming   WorkflowEdge[]  @relation(\"TargetEdges\")\n  fields     WorkflowField[]\n  action     Action          @relation(fields: [actionId], references: [id])\n  isDeleted  Boolean         @default(false)\n  workflow   Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@index([workflowId])\n  @@index([actionId])\n}\n\nmodel WorkflowEdge {\n  id           String       @id @default(uuid())\n  workflowId   String\n  sourceNodeId String\n  targetNodeId String\n  sourceNode   WorkflowNode @relation(\"SourceEdges\", fields: [sourceNodeId], references: [id], onDelete: Cascade)\n  targetNode   WorkflowNode @relation(\"TargetEdges\", fields: [targetNodeId], references: [id], onDelete: Cascade)\n  isDeleted    Boolean      @default(false)\n  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@index([workflowId])\n}\n\nmodel ActionCategory {\n  id          String   @id @default(uuid())\n  name        String   @unique\n  description String?\n  actions     Action[]\n}\n\nmodel Action {\n  id            String         @id @default(uuid())\n  name          String         @unique\n  description   String?\n  categoryId    String\n  configSchema  Json\n  configMeta    Json?\n  inputType     String?\n  outputType    String\n  icon          String\n  serviceUrl    String?\n  category      ActionCategory @relation(fields: [categoryId], references: [id])\n  workflowNodes WorkflowNode[]\n\n  @@index([categoryId])\n}\n\nmodel WorkflowField {\n  id           String       @id @default(uuid())\n  workflowId   String\n  sourceNodeId String\n  fieldName    String\n  fieldPath    String\n  fieldType    String?\n  createdAt    DateTime     @default(now())\n  sourceNode   WorkflowNode @relation(fields: [sourceNodeId], references: [id], onDelete: Cascade)\n  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@unique([workflowId, sourceNodeId, fieldName])\n  @@index([workflowId])\n}\n",
-  "inlineSchemaHash": "1537a3f22aa4496e40c101de17bdf11ce72adef394dcef7d4cca078f21a8bf23",
+  "inlineSchema": "generator client {\n  provider        = \"prisma-client-js\"\n  output          = \"../generated/prisma\"\n  previewFeatures = [\"driverAdapters\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        String     @id @default(uuid())\n  workflows Workflow[]\n}\n\nmodel Workflow {\n  id        String          @id @default(uuid())\n  userId    String\n  name      String\n  createdAt DateTime        @default(now())\n  updatedAt DateTime        @updatedAt\n  isDeleted Boolean         @default(false)\n  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)\n  edges     WorkflowEdge[]\n  nodes     WorkflowNode[]\n  fields    WorkflowField[]\n  roles     WorkflowRole[]\n\n  // Publish status tracking (synced from runtime)\n  isPublished         Boolean   @default(false)\n  publishedWorkflowId String? // Runtime's published workflow ID\n  publishedAt         DateTime? // First publish time\n  lastPublishedAt     DateTime? // Most recent publish time\n\n  @@index([userId])\n}\n\nmodel WorkflowNode {\n  id         String          @id @default(uuid())\n  workflowId String\n  config     Json\n  positionX  Float\n  positionY  Float\n  actionId   String\n  outgoing   WorkflowEdge[]  @relation(\"SourceEdges\")\n  incoming   WorkflowEdge[]  @relation(\"TargetEdges\")\n  fields     WorkflowField[]\n  action     Action          @relation(fields: [actionId], references: [id])\n  isDeleted  Boolean         @default(false)\n  workflow   Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@index([workflowId])\n  @@index([actionId])\n}\n\nmodel WorkflowEdge {\n  id           String       @id @default(uuid())\n  workflowId   String\n  sourceNodeId String\n  targetNodeId String\n  sourceNode   WorkflowNode @relation(\"SourceEdges\", fields: [sourceNodeId], references: [id], onDelete: Cascade)\n  targetNode   WorkflowNode @relation(\"TargetEdges\", fields: [targetNodeId], references: [id], onDelete: Cascade)\n  isDeleted    Boolean      @default(false)\n  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@index([workflowId])\n}\n\nmodel ActionCategory {\n  id          String   @id @default(uuid())\n  name        String   @unique\n  description String?\n  actions     Action[]\n}\n\nmodel Action {\n  id            String         @id @default(uuid())\n  name          String         @unique\n  description   String?\n  categoryId    String\n  configSchema  Json\n  configMeta    Json?\n  inputType     String?\n  outputType    String\n  icon          String\n  serviceUrl    String?\n  category      ActionCategory @relation(fields: [categoryId], references: [id])\n  workflowNodes WorkflowNode[]\n\n  @@index([categoryId])\n}\n\nmodel WorkflowField {\n  id           String       @id @default(uuid())\n  workflowId   String\n  sourceNodeId String\n  fieldName    String\n  fieldPath    String\n  fieldType    String?\n  createdAt    DateTime     @default(now())\n  sourceNode   WorkflowNode @relation(fields: [sourceNodeId], references: [id], onDelete: Cascade)\n  workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n\n  @@unique([workflowId, sourceNodeId, fieldName])\n  @@index([workflowId])\n}\n\n// Available permissions in the system for role-based access control\nenum Permission {\n  WORKFLOW_VIEW // View workflow structure\n  WORKFLOW_EDIT // Edit workflow nodes/edges\n  WORKFLOW_PUBLISH // Publish/unpublish workflow\n  WORKFLOW_DELETE // Delete workflow\n  REVIEW_VIEW // View review queue\n  REVIEW_APPROVE // Approve reviewed items\n  REVIEW_REJECT // Reject reviewed items\n  ROLE_MANAGE // Manage roles and assignments\n}\n\n// Role definition with explicit permissions for each workflow\nmodel WorkflowRole {\n  id          String                   @id @default(uuid())\n  workflowId  String\n  name        String // \"developer\", \"validator\", custom names\n  description String?\n  permissions Permission[] // Array of granted permissions\n  isSystem    Boolean                  @default(false) // true for developer/validator\n  createdAt   DateTime                 @default(now())\n  workflow    Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)\n  assignments WorkflowRoleAssignment[]\n\n  @@unique([workflowId, name])\n  @@index([workflowId])\n}\n\n// Role assignment - links users to roles for specific workflows\nmodel WorkflowRoleAssignment {\n  id             String       @id @default(uuid())\n  userId         String // Clerk user ID\n  userEmail      String? // For display/invite\n  workflowRoleId String\n  workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)\n  assignedAt     DateTime     @default(now())\n  assignedBy     String? // Who assigned this role\n\n  @@unique([userId, workflowRoleId])\n  @@index([userId])\n  @@index([workflowRoleId])\n}\n",
+  "inlineSchemaHash": "838e96e44e67cbcfd79e774ced315598f95f8d339c23cd97817f2d71810a58e1",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflows\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"UserToWorkflow\"}],\"dbName\":null},\"Workflow\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isPublished\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"lastPublishedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"publishedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"publishedWorkflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToWorkflow\"},{\"name\":\"edges\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"WorkflowToWorkflowEdge\"},{\"name\":\"fields\",\"kind\":\"object\",\"type\":\"WorkflowField\",\"relationName\":\"WorkflowToWorkflowField\"},{\"name\":\"nodes\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"WorkflowToWorkflowNode\"}],\"dbName\":null},\"WorkflowNode\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"config\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"positionX\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"positionY\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"actionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"outgoing\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"SourceEdges\"},{\"name\":\"incoming\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"TargetEdges\"},{\"name\":\"fields\",\"kind\":\"object\",\"type\":\"WorkflowField\",\"relationName\":\"WorkflowFieldToWorkflowNode\"},{\"name\":\"action\",\"kind\":\"object\",\"type\":\"Action\",\"relationName\":\"ActionToWorkflowNode\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowNode\"}],\"dbName\":null},\"WorkflowEdge\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"targetNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"SourceEdges\"},{\"name\":\"targetNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"TargetEdges\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowEdge\"}],\"dbName\":null},\"ActionCategory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"actions\",\"kind\":\"object\",\"type\":\"Action\",\"relationName\":\"ActionToActionCategory\"}],\"dbName\":null},\"Action\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"categoryId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"configSchema\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"configMeta\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"inputType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"outputType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"icon\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"serviceUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"object\",\"type\":\"ActionCategory\",\"relationName\":\"ActionToActionCategory\"},{\"name\":\"workflowNodes\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"ActionToWorkflowNode\"}],\"dbName\":null},\"WorkflowField\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldPath\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sourceNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"WorkflowFieldToWorkflowNode\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowField\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflows\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"UserToWorkflow\"}],\"dbName\":null},\"Workflow\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserToWorkflow\"},{\"name\":\"edges\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"WorkflowToWorkflowEdge\"},{\"name\":\"nodes\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"WorkflowToWorkflowNode\"},{\"name\":\"fields\",\"kind\":\"object\",\"type\":\"WorkflowField\",\"relationName\":\"WorkflowToWorkflowField\"},{\"name\":\"roles\",\"kind\":\"object\",\"type\":\"WorkflowRole\",\"relationName\":\"WorkflowToWorkflowRole\"},{\"name\":\"isPublished\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"publishedWorkflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"publishedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"lastPublishedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"WorkflowNode\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"config\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"positionX\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"positionY\",\"kind\":\"scalar\",\"type\":\"Float\"},{\"name\":\"actionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"outgoing\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"SourceEdges\"},{\"name\":\"incoming\",\"kind\":\"object\",\"type\":\"WorkflowEdge\",\"relationName\":\"TargetEdges\"},{\"name\":\"fields\",\"kind\":\"object\",\"type\":\"WorkflowField\",\"relationName\":\"WorkflowFieldToWorkflowNode\"},{\"name\":\"action\",\"kind\":\"object\",\"type\":\"Action\",\"relationName\":\"ActionToWorkflowNode\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowNode\"}],\"dbName\":null},\"WorkflowEdge\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"targetNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"SourceEdges\"},{\"name\":\"targetNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"TargetEdges\"},{\"name\":\"isDeleted\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowEdge\"}],\"dbName\":null},\"ActionCategory\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"actions\",\"kind\":\"object\",\"type\":\"Action\",\"relationName\":\"ActionToActionCategory\"}],\"dbName\":null},\"Action\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"categoryId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"configSchema\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"configMeta\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"inputType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"outputType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"icon\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"serviceUrl\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"category\",\"kind\":\"object\",\"type\":\"ActionCategory\",\"relationName\":\"ActionToActionCategory\"},{\"name\":\"workflowNodes\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"ActionToWorkflowNode\"}],\"dbName\":null},\"WorkflowField\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"sourceNodeId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldName\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldPath\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"fieldType\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"sourceNode\",\"kind\":\"object\",\"type\":\"WorkflowNode\",\"relationName\":\"WorkflowFieldToWorkflowNode\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowField\"}],\"dbName\":null},\"WorkflowRole\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"permissions\",\"kind\":\"enum\",\"type\":\"Permission\"},{\"name\":\"isSystem\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"workflow\",\"kind\":\"object\",\"type\":\"Workflow\",\"relationName\":\"WorkflowToWorkflowRole\"},{\"name\":\"assignments\",\"kind\":\"object\",\"type\":\"WorkflowRoleAssignment\",\"relationName\":\"WorkflowRoleToWorkflowRoleAssignment\"}],\"dbName\":null},\"WorkflowRoleAssignment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowRoleId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"workflowRole\",\"kind\":\"object\",\"type\":\"WorkflowRole\",\"relationName\":\"WorkflowRoleToWorkflowRoleAssignment\"},{\"name\":\"assignedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"assignedBy\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: () => require('./query_engine_bg.js'),

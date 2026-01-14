@@ -15,39 +15,23 @@ model User {
 }
 
 model Workflow {
-<<<<<<< Updated upstream
   id                  String          @id @default(uuid())
+  userId              String
   name                String
   createdAt           DateTime        @default(now())
   updatedAt           DateTime        @updatedAt
-  userId              String
-  isPublished         Boolean         @default(false)
-  lastPublishedAt     DateTime?
-  publishedAt         DateTime?
-  publishedWorkflowId String?
   isDeleted           Boolean         @default(false)
   user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   edges               WorkflowEdge[]
-  fields              WorkflowField[]
   nodes               WorkflowNode[]
-=======
-  id        String          @id @default(uuid())
-  userId    String
-  name      String
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  edges     WorkflowEdge[]
-  nodes     WorkflowNode[]
-  fields    WorkflowField[]
-  roles     WorkflowRole[]
+  fields              WorkflowField[]
+  roles               WorkflowRole[]
 
   // Publish status tracking (synced from runtime)
   isPublished         Boolean   @default(false)
   publishedWorkflowId String? // Runtime's published workflow ID
   publishedAt         DateTime? // First publish time
   lastPublishedAt     DateTime? // Most recent publish time
->>>>>>> Stashed changes
 
   @@index([userId])
 }

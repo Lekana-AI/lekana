@@ -48,6 +48,39 @@ export type Action = $Result.DefaultSelection<Prisma.$ActionPayload>
  * 
  */
 export type WorkflowField = $Result.DefaultSelection<Prisma.$WorkflowFieldPayload>
+/**
+ * Model WorkflowRole
+ * 
+ */
+export type WorkflowRole = $Result.DefaultSelection<Prisma.$WorkflowRolePayload>
+/**
+ * Model WorkflowRoleAssignment
+ * 
+ */
+export type WorkflowRoleAssignment = $Result.DefaultSelection<Prisma.$WorkflowRoleAssignmentPayload>
+
+/**
+ * Enums
+ */
+export namespace $Enums {
+  export const Permission: {
+  WORKFLOW_VIEW: 'WORKFLOW_VIEW',
+  WORKFLOW_EDIT: 'WORKFLOW_EDIT',
+  WORKFLOW_PUBLISH: 'WORKFLOW_PUBLISH',
+  WORKFLOW_DELETE: 'WORKFLOW_DELETE',
+  REVIEW_VIEW: 'REVIEW_VIEW',
+  REVIEW_APPROVE: 'REVIEW_APPROVE',
+  REVIEW_REJECT: 'REVIEW_REJECT',
+  ROLE_MANAGE: 'ROLE_MANAGE'
+};
+
+export type Permission = (typeof Permission)[keyof typeof Permission]
+
+}
+
+export type Permission = $Enums.Permission
+
+export const Permission: typeof $Enums.Permission
 
 /**
  * ##  Prisma Client ʲˢ
@@ -241,6 +274,26 @@ export class PrismaClient<
     * ```
     */
   get workflowField(): Prisma.WorkflowFieldDelegate<ExtArgs>;
+
+  /**
+   * `prisma.workflowRole`: Exposes CRUD operations for the **WorkflowRole** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkflowRoles
+    * const workflowRoles = await prisma.workflowRole.findMany()
+    * ```
+    */
+  get workflowRole(): Prisma.WorkflowRoleDelegate<ExtArgs>;
+
+  /**
+   * `prisma.workflowRoleAssignment`: Exposes CRUD operations for the **WorkflowRoleAssignment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WorkflowRoleAssignments
+    * const workflowRoleAssignments = await prisma.workflowRoleAssignment.findMany()
+    * ```
+    */
+  get workflowRoleAssignment(): Prisma.WorkflowRoleAssignmentDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -688,7 +741,9 @@ export namespace Prisma {
     WorkflowEdge: 'WorkflowEdge',
     ActionCategory: 'ActionCategory',
     Action: 'Action',
-    WorkflowField: 'WorkflowField'
+    WorkflowField: 'WorkflowField',
+    WorkflowRole: 'WorkflowRole',
+    WorkflowRoleAssignment: 'WorkflowRoleAssignment'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -704,7 +759,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "workflow" | "workflowNode" | "workflowEdge" | "actionCategory" | "action" | "workflowField"
+      modelProps: "user" | "workflow" | "workflowNode" | "workflowEdge" | "actionCategory" | "action" | "workflowField" | "workflowRole" | "workflowRoleAssignment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1198,6 +1253,146 @@ export namespace Prisma {
           }
         }
       }
+      WorkflowRole: {
+        payload: Prisma.$WorkflowRolePayload<ExtArgs>
+        fields: Prisma.WorkflowRoleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkflowRoleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkflowRoleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          findFirst: {
+            args: Prisma.WorkflowRoleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkflowRoleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          findMany: {
+            args: Prisma.WorkflowRoleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>[]
+          }
+          create: {
+            args: Prisma.WorkflowRoleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          createMany: {
+            args: Prisma.WorkflowRoleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkflowRoleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>[]
+          }
+          delete: {
+            args: Prisma.WorkflowRoleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          update: {
+            args: Prisma.WorkflowRoleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkflowRoleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkflowRoleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WorkflowRoleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRolePayload>
+          }
+          aggregate: {
+            args: Prisma.WorkflowRoleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkflowRole>
+          }
+          groupBy: {
+            args: Prisma.WorkflowRoleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRoleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkflowRoleCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRoleCountAggregateOutputType> | number
+          }
+        }
+      }
+      WorkflowRoleAssignment: {
+        payload: Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>
+        fields: Prisma.WorkflowRoleAssignmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WorkflowRoleAssignmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WorkflowRoleAssignmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          findFirst: {
+            args: Prisma.WorkflowRoleAssignmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WorkflowRoleAssignmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          findMany: {
+            args: Prisma.WorkflowRoleAssignmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>[]
+          }
+          create: {
+            args: Prisma.WorkflowRoleAssignmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          createMany: {
+            args: Prisma.WorkflowRoleAssignmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WorkflowRoleAssignmentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>[]
+          }
+          delete: {
+            args: Prisma.WorkflowRoleAssignmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          update: {
+            args: Prisma.WorkflowRoleAssignmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.WorkflowRoleAssignmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WorkflowRoleAssignmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.WorkflowRoleAssignmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WorkflowRoleAssignmentPayload>
+          }
+          aggregate: {
+            args: Prisma.WorkflowRoleAssignmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWorkflowRoleAssignment>
+          }
+          groupBy: {
+            args: Prisma.WorkflowRoleAssignmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRoleAssignmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WorkflowRoleAssignmentCountArgs<ExtArgs>
+            result: $Utils.Optional<WorkflowRoleAssignmentCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1395,14 +1590,16 @@ export namespace Prisma {
 
   export type WorkflowCountOutputType = {
     edges: number
-    fields: number
     nodes: number
+    fields: number
+    roles: number
   }
 
   export type WorkflowCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     edges?: boolean | WorkflowCountOutputTypeCountEdgesArgs
-    fields?: boolean | WorkflowCountOutputTypeCountFieldsArgs
     nodes?: boolean | WorkflowCountOutputTypeCountNodesArgs
+    fields?: boolean | WorkflowCountOutputTypeCountFieldsArgs
+    roles?: boolean | WorkflowCountOutputTypeCountRolesArgs
   }
 
   // Custom InputTypes
@@ -1426,6 +1623,13 @@ export namespace Prisma {
   /**
    * WorkflowCountOutputType without action
    */
+  export type WorkflowCountOutputTypeCountNodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowNodeWhereInput
+  }
+
+  /**
+   * WorkflowCountOutputType without action
+   */
   export type WorkflowCountOutputTypeCountFieldsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WorkflowFieldWhereInput
   }
@@ -1433,8 +1637,8 @@ export namespace Prisma {
   /**
    * WorkflowCountOutputType without action
    */
-  export type WorkflowCountOutputTypeCountNodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: WorkflowNodeWhereInput
+  export type WorkflowCountOutputTypeCountRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRoleWhereInput
   }
 
 
@@ -1546,6 +1750,37 @@ export namespace Prisma {
    */
   export type ActionCountOutputTypeCountWorkflowNodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WorkflowNodeWhereInput
+  }
+
+
+  /**
+   * Count Type WorkflowRoleCountOutputType
+   */
+
+  export type WorkflowRoleCountOutputType = {
+    assignments: number
+  }
+
+  export type WorkflowRoleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    assignments?: boolean | WorkflowRoleCountOutputTypeCountAssignmentsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * WorkflowRoleCountOutputType without action
+   */
+  export type WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleCountOutputType
+     */
+    select?: WorkflowRoleCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * WorkflowRoleCountOutputType without action
+   */
+  export type WorkflowRoleCountOutputTypeCountAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRoleAssignmentWhereInput
   }
 
 
@@ -2465,82 +2700,82 @@ export namespace Prisma {
 
   export type WorkflowMinAggregateOutputType = {
     id: string | null
+    userId: string | null
     name: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    userId: string | null
-    isPublished: boolean | null
-    lastPublishedAt: Date | null
-    publishedAt: Date | null
-    publishedWorkflowId: string | null
     isDeleted: boolean | null
+    isPublished: boolean | null
+    publishedWorkflowId: string | null
+    publishedAt: Date | null
+    lastPublishedAt: Date | null
   }
 
   export type WorkflowMaxAggregateOutputType = {
     id: string | null
+    userId: string | null
     name: string | null
     createdAt: Date | null
     updatedAt: Date | null
-    userId: string | null
-    isPublished: boolean | null
-    lastPublishedAt: Date | null
-    publishedAt: Date | null
-    publishedWorkflowId: string | null
     isDeleted: boolean | null
+    isPublished: boolean | null
+    publishedWorkflowId: string | null
+    publishedAt: Date | null
+    lastPublishedAt: Date | null
   }
 
   export type WorkflowCountAggregateOutputType = {
     id: number
+    userId: number
     name: number
     createdAt: number
     updatedAt: number
-    userId: number
-    isPublished: number
-    lastPublishedAt: number
-    publishedAt: number
-    publishedWorkflowId: number
     isDeleted: number
+    isPublished: number
+    publishedWorkflowId: number
+    publishedAt: number
+    lastPublishedAt: number
     _all: number
   }
 
 
   export type WorkflowMinAggregateInputType = {
     id?: true
+    userId?: true
     name?: true
     createdAt?: true
     updatedAt?: true
-    userId?: true
-    isPublished?: true
-    lastPublishedAt?: true
-    publishedAt?: true
-    publishedWorkflowId?: true
     isDeleted?: true
+    isPublished?: true
+    publishedWorkflowId?: true
+    publishedAt?: true
+    lastPublishedAt?: true
   }
 
   export type WorkflowMaxAggregateInputType = {
     id?: true
+    userId?: true
     name?: true
     createdAt?: true
     updatedAt?: true
-    userId?: true
-    isPublished?: true
-    lastPublishedAt?: true
-    publishedAt?: true
-    publishedWorkflowId?: true
     isDeleted?: true
+    isPublished?: true
+    publishedWorkflowId?: true
+    publishedAt?: true
+    lastPublishedAt?: true
   }
 
   export type WorkflowCountAggregateInputType = {
     id?: true
+    userId?: true
     name?: true
     createdAt?: true
     updatedAt?: true
-    userId?: true
-    isPublished?: true
-    lastPublishedAt?: true
-    publishedAt?: true
-    publishedWorkflowId?: true
     isDeleted?: true
+    isPublished?: true
+    publishedWorkflowId?: true
+    publishedAt?: true
+    lastPublishedAt?: true
     _all?: true
   }
 
@@ -2618,15 +2853,15 @@ export namespace Prisma {
 
   export type WorkflowGroupByOutputType = {
     id: string
+    userId: string
     name: string
     createdAt: Date
     updatedAt: Date
-    userId: string
-    isPublished: boolean
-    lastPublishedAt: Date | null
-    publishedAt: Date | null
-    publishedWorkflowId: string | null
     isDeleted: boolean
+    isPublished: boolean
+    publishedWorkflowId: string | null
+    publishedAt: Date | null
+    lastPublishedAt: Date | null
     _count: WorkflowCountAggregateOutputType | null
     _min: WorkflowMinAggregateOutputType | null
     _max: WorkflowMaxAggregateOutputType | null
@@ -2648,54 +2883,56 @@ export namespace Prisma {
 
   export type WorkflowSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    userId?: boolean
     name?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    userId?: boolean
-    isPublished?: boolean
-    lastPublishedAt?: boolean
-    publishedAt?: boolean
-    publishedWorkflowId?: boolean
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: boolean
+    publishedAt?: boolean
+    lastPublishedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
     edges?: boolean | Workflow$edgesArgs<ExtArgs>
-    fields?: boolean | Workflow$fieldsArgs<ExtArgs>
     nodes?: boolean | Workflow$nodesArgs<ExtArgs>
+    fields?: boolean | Workflow$fieldsArgs<ExtArgs>
+    roles?: boolean | Workflow$rolesArgs<ExtArgs>
     _count?: boolean | WorkflowCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workflow"]>
 
   export type WorkflowSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    userId?: boolean
     name?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    userId?: boolean
-    isPublished?: boolean
-    lastPublishedAt?: boolean
-    publishedAt?: boolean
-    publishedWorkflowId?: boolean
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: boolean
+    publishedAt?: boolean
+    lastPublishedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workflow"]>
 
   export type WorkflowSelectScalar = {
     id?: boolean
+    userId?: boolean
     name?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    userId?: boolean
-    isPublished?: boolean
-    lastPublishedAt?: boolean
-    publishedAt?: boolean
-    publishedWorkflowId?: boolean
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: boolean
+    publishedAt?: boolean
+    lastPublishedAt?: boolean
   }
 
   export type WorkflowInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     edges?: boolean | Workflow$edgesArgs<ExtArgs>
-    fields?: boolean | Workflow$fieldsArgs<ExtArgs>
     nodes?: boolean | Workflow$nodesArgs<ExtArgs>
+    fields?: boolean | Workflow$fieldsArgs<ExtArgs>
+    roles?: boolean | Workflow$rolesArgs<ExtArgs>
     _count?: boolean | WorkflowCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkflowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2707,20 +2944,21 @@ export namespace Prisma {
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
       edges: Prisma.$WorkflowEdgePayload<ExtArgs>[]
-      fields: Prisma.$WorkflowFieldPayload<ExtArgs>[]
       nodes: Prisma.$WorkflowNodePayload<ExtArgs>[]
+      fields: Prisma.$WorkflowFieldPayload<ExtArgs>[]
+      roles: Prisma.$WorkflowRolePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      userId: string
       name: string
       createdAt: Date
       updatedAt: Date
-      userId: string
-      isPublished: boolean
-      lastPublishedAt: Date | null
-      publishedAt: Date | null
-      publishedWorkflowId: string | null
       isDeleted: boolean
+      isPublished: boolean
+      publishedWorkflowId: string | null
+      publishedAt: Date | null
+      lastPublishedAt: Date | null
     }, ExtArgs["result"]["workflow"]>
     composites: {}
   }
@@ -3087,8 +3325,9 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     edges<T extends Workflow$edgesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$edgesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowEdgePayload<ExtArgs>, T, "findMany"> | Null>
-    fields<T extends Workflow$fieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowFieldPayload<ExtArgs>, T, "findMany"> | Null>
     nodes<T extends Workflow$nodesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$nodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowNodePayload<ExtArgs>, T, "findMany"> | Null>
+    fields<T extends Workflow$fieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowFieldPayload<ExtArgs>, T, "findMany"> | Null>
+    roles<T extends Workflow$rolesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3119,15 +3358,15 @@ export namespace Prisma {
    */ 
   interface WorkflowFieldRefs {
     readonly id: FieldRef<"Workflow", 'String'>
+    readonly userId: FieldRef<"Workflow", 'String'>
     readonly name: FieldRef<"Workflow", 'String'>
     readonly createdAt: FieldRef<"Workflow", 'DateTime'>
     readonly updatedAt: FieldRef<"Workflow", 'DateTime'>
-    readonly userId: FieldRef<"Workflow", 'String'>
-    readonly isPublished: FieldRef<"Workflow", 'Boolean'>
-    readonly lastPublishedAt: FieldRef<"Workflow", 'DateTime'>
-    readonly publishedAt: FieldRef<"Workflow", 'DateTime'>
-    readonly publishedWorkflowId: FieldRef<"Workflow", 'String'>
     readonly isDeleted: FieldRef<"Workflow", 'Boolean'>
+    readonly isPublished: FieldRef<"Workflow", 'Boolean'>
+    readonly publishedWorkflowId: FieldRef<"Workflow", 'String'>
+    readonly publishedAt: FieldRef<"Workflow", 'DateTime'>
+    readonly lastPublishedAt: FieldRef<"Workflow", 'DateTime'>
   }
     
 
@@ -3466,6 +3705,26 @@ export namespace Prisma {
   }
 
   /**
+   * Workflow.nodes
+   */
+  export type Workflow$nodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowNode
+     */
+    select?: WorkflowNodeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowNodeInclude<ExtArgs> | null
+    where?: WorkflowNodeWhereInput
+    orderBy?: WorkflowNodeOrderByWithRelationInput | WorkflowNodeOrderByWithRelationInput[]
+    cursor?: WorkflowNodeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkflowNodeScalarFieldEnum | WorkflowNodeScalarFieldEnum[]
+  }
+
+  /**
    * Workflow.fields
    */
   export type Workflow$fieldsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3486,23 +3745,23 @@ export namespace Prisma {
   }
 
   /**
-   * Workflow.nodes
+   * Workflow.roles
    */
-  export type Workflow$nodesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Workflow$rolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the WorkflowNode
+     * Select specific fields to fetch from the WorkflowRole
      */
-    select?: WorkflowNodeSelect<ExtArgs> | null
+    select?: WorkflowRoleSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: WorkflowNodeInclude<ExtArgs> | null
-    where?: WorkflowNodeWhereInput
-    orderBy?: WorkflowNodeOrderByWithRelationInput | WorkflowNodeOrderByWithRelationInput[]
-    cursor?: WorkflowNodeWhereUniqueInput
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    where?: WorkflowRoleWhereInput
+    orderBy?: WorkflowRoleOrderByWithRelationInput | WorkflowRoleOrderByWithRelationInput[]
+    cursor?: WorkflowRoleWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: WorkflowNodeScalarFieldEnum | WorkflowNodeScalarFieldEnum[]
+    distinct?: WorkflowRoleScalarFieldEnum | WorkflowRoleScalarFieldEnum[]
   }
 
   /**
@@ -8435,6 +8694,1930 @@ export namespace Prisma {
 
 
   /**
+   * Model WorkflowRole
+   */
+
+  export type AggregateWorkflowRole = {
+    _count: WorkflowRoleCountAggregateOutputType | null
+    _min: WorkflowRoleMinAggregateOutputType | null
+    _max: WorkflowRoleMaxAggregateOutputType | null
+  }
+
+  export type WorkflowRoleMinAggregateOutputType = {
+    id: string | null
+    workflowId: string | null
+    name: string | null
+    description: string | null
+    isSystem: boolean | null
+    createdAt: Date | null
+  }
+
+  export type WorkflowRoleMaxAggregateOutputType = {
+    id: string | null
+    workflowId: string | null
+    name: string | null
+    description: string | null
+    isSystem: boolean | null
+    createdAt: Date | null
+  }
+
+  export type WorkflowRoleCountAggregateOutputType = {
+    id: number
+    workflowId: number
+    name: number
+    description: number
+    permissions: number
+    isSystem: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type WorkflowRoleMinAggregateInputType = {
+    id?: true
+    workflowId?: true
+    name?: true
+    description?: true
+    isSystem?: true
+    createdAt?: true
+  }
+
+  export type WorkflowRoleMaxAggregateInputType = {
+    id?: true
+    workflowId?: true
+    name?: true
+    description?: true
+    isSystem?: true
+    createdAt?: true
+  }
+
+  export type WorkflowRoleCountAggregateInputType = {
+    id?: true
+    workflowId?: true
+    name?: true
+    description?: true
+    permissions?: true
+    isSystem?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type WorkflowRoleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRole to aggregate.
+     */
+    where?: WorkflowRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoles to fetch.
+     */
+    orderBy?: WorkflowRoleOrderByWithRelationInput | WorkflowRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkflowRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkflowRoles
+    **/
+    _count?: true | WorkflowRoleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkflowRoleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkflowRoleMaxAggregateInputType
+  }
+
+  export type GetWorkflowRoleAggregateType<T extends WorkflowRoleAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkflowRole]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkflowRole[P]>
+      : GetScalarType<T[P], AggregateWorkflowRole[P]>
+  }
+
+
+
+
+  export type WorkflowRoleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRoleWhereInput
+    orderBy?: WorkflowRoleOrderByWithAggregationInput | WorkflowRoleOrderByWithAggregationInput[]
+    by: WorkflowRoleScalarFieldEnum[] | WorkflowRoleScalarFieldEnum
+    having?: WorkflowRoleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkflowRoleCountAggregateInputType | true
+    _min?: WorkflowRoleMinAggregateInputType
+    _max?: WorkflowRoleMaxAggregateInputType
+  }
+
+  export type WorkflowRoleGroupByOutputType = {
+    id: string
+    workflowId: string
+    name: string
+    description: string | null
+    permissions: $Enums.Permission[]
+    isSystem: boolean
+    createdAt: Date
+    _count: WorkflowRoleCountAggregateOutputType | null
+    _min: WorkflowRoleMinAggregateOutputType | null
+    _max: WorkflowRoleMaxAggregateOutputType | null
+  }
+
+  type GetWorkflowRoleGroupByPayload<T extends WorkflowRoleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkflowRoleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkflowRoleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkflowRoleGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkflowRoleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkflowRoleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workflowId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    isSystem?: boolean
+    createdAt?: boolean
+    workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
+    assignments?: boolean | WorkflowRole$assignmentsArgs<ExtArgs>
+    _count?: boolean | WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRole"]>
+
+  export type WorkflowRoleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    workflowId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    isSystem?: boolean
+    createdAt?: boolean
+    workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRole"]>
+
+  export type WorkflowRoleSelectScalar = {
+    id?: boolean
+    workflowId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    isSystem?: boolean
+    createdAt?: boolean
+  }
+
+  export type WorkflowRoleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
+    assignments?: boolean | WorkflowRole$assignmentsArgs<ExtArgs>
+    _count?: boolean | WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type WorkflowRoleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflow?: boolean | WorkflowDefaultArgs<ExtArgs>
+  }
+
+  export type $WorkflowRolePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkflowRole"
+    objects: {
+      workflow: Prisma.$WorkflowPayload<ExtArgs>
+      assignments: Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      workflowId: string
+      name: string
+      description: string | null
+      permissions: $Enums.Permission[]
+      isSystem: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["workflowRole"]>
+    composites: {}
+  }
+
+  type WorkflowRoleGetPayload<S extends boolean | null | undefined | WorkflowRoleDefaultArgs> = $Result.GetResult<Prisma.$WorkflowRolePayload, S>
+
+  type WorkflowRoleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<WorkflowRoleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: WorkflowRoleCountAggregateInputType | true
+    }
+
+  export interface WorkflowRoleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkflowRole'], meta: { name: 'WorkflowRole' } }
+    /**
+     * Find zero or one WorkflowRole that matches the filter.
+     * @param {WorkflowRoleFindUniqueArgs} args - Arguments to find a WorkflowRole
+     * @example
+     * // Get one WorkflowRole
+     * const workflowRole = await prisma.workflowRole.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkflowRoleFindUniqueArgs>(args: SelectSubset<T, WorkflowRoleFindUniqueArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one WorkflowRole that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {WorkflowRoleFindUniqueOrThrowArgs} args - Arguments to find a WorkflowRole
+     * @example
+     * // Get one WorkflowRole
+     * const workflowRole = await prisma.workflowRole.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkflowRoleFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkflowRoleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first WorkflowRole that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleFindFirstArgs} args - Arguments to find a WorkflowRole
+     * @example
+     * // Get one WorkflowRole
+     * const workflowRole = await prisma.workflowRole.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkflowRoleFindFirstArgs>(args?: SelectSubset<T, WorkflowRoleFindFirstArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first WorkflowRole that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleFindFirstOrThrowArgs} args - Arguments to find a WorkflowRole
+     * @example
+     * // Get one WorkflowRole
+     * const workflowRole = await prisma.workflowRole.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkflowRoleFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkflowRoleFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more WorkflowRoles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkflowRoles
+     * const workflowRoles = await prisma.workflowRole.findMany()
+     * 
+     * // Get first 10 WorkflowRoles
+     * const workflowRoles = await prisma.workflowRole.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workflowRoleWithIdOnly = await prisma.workflowRole.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkflowRoleFindManyArgs>(args?: SelectSubset<T, WorkflowRoleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a WorkflowRole.
+     * @param {WorkflowRoleCreateArgs} args - Arguments to create a WorkflowRole.
+     * @example
+     * // Create one WorkflowRole
+     * const WorkflowRole = await prisma.workflowRole.create({
+     *   data: {
+     *     // ... data to create a WorkflowRole
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkflowRoleCreateArgs>(args: SelectSubset<T, WorkflowRoleCreateArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many WorkflowRoles.
+     * @param {WorkflowRoleCreateManyArgs} args - Arguments to create many WorkflowRoles.
+     * @example
+     * // Create many WorkflowRoles
+     * const workflowRole = await prisma.workflowRole.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkflowRoleCreateManyArgs>(args?: SelectSubset<T, WorkflowRoleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkflowRoles and returns the data saved in the database.
+     * @param {WorkflowRoleCreateManyAndReturnArgs} args - Arguments to create many WorkflowRoles.
+     * @example
+     * // Create many WorkflowRoles
+     * const workflowRole = await prisma.workflowRole.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkflowRoles and only return the `id`
+     * const workflowRoleWithIdOnly = await prisma.workflowRole.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkflowRoleCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkflowRoleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a WorkflowRole.
+     * @param {WorkflowRoleDeleteArgs} args - Arguments to delete one WorkflowRole.
+     * @example
+     * // Delete one WorkflowRole
+     * const WorkflowRole = await prisma.workflowRole.delete({
+     *   where: {
+     *     // ... filter to delete one WorkflowRole
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkflowRoleDeleteArgs>(args: SelectSubset<T, WorkflowRoleDeleteArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one WorkflowRole.
+     * @param {WorkflowRoleUpdateArgs} args - Arguments to update one WorkflowRole.
+     * @example
+     * // Update one WorkflowRole
+     * const workflowRole = await prisma.workflowRole.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkflowRoleUpdateArgs>(args: SelectSubset<T, WorkflowRoleUpdateArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more WorkflowRoles.
+     * @param {WorkflowRoleDeleteManyArgs} args - Arguments to filter WorkflowRoles to delete.
+     * @example
+     * // Delete a few WorkflowRoles
+     * const { count } = await prisma.workflowRole.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkflowRoleDeleteManyArgs>(args?: SelectSubset<T, WorkflowRoleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkflowRoles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkflowRoles
+     * const workflowRole = await prisma.workflowRole.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkflowRoleUpdateManyArgs>(args: SelectSubset<T, WorkflowRoleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one WorkflowRole.
+     * @param {WorkflowRoleUpsertArgs} args - Arguments to update or create a WorkflowRole.
+     * @example
+     * // Update or create a WorkflowRole
+     * const workflowRole = await prisma.workflowRole.upsert({
+     *   create: {
+     *     // ... data to create a WorkflowRole
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkflowRole we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkflowRoleUpsertArgs>(args: SelectSubset<T, WorkflowRoleUpsertArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of WorkflowRoles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleCountArgs} args - Arguments to filter WorkflowRoles to count.
+     * @example
+     * // Count the number of WorkflowRoles
+     * const count = await prisma.workflowRole.count({
+     *   where: {
+     *     // ... the filter for the WorkflowRoles we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkflowRoleCountArgs>(
+      args?: Subset<T, WorkflowRoleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkflowRoleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkflowRole.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkflowRoleAggregateArgs>(args: Subset<T, WorkflowRoleAggregateArgs>): Prisma.PrismaPromise<GetWorkflowRoleAggregateType<T>>
+
+    /**
+     * Group by WorkflowRole.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkflowRoleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkflowRoleGroupByArgs['orderBy'] }
+        : { orderBy?: WorkflowRoleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkflowRoleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkflowRoleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkflowRole model
+   */
+  readonly fields: WorkflowRoleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkflowRole.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkflowRoleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workflow<T extends WorkflowDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowDefaultArgs<ExtArgs>>): Prisma__WorkflowClient<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    assignments<T extends WorkflowRole$assignmentsArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowRole$assignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkflowRole model
+   */ 
+  interface WorkflowRoleFieldRefs {
+    readonly id: FieldRef<"WorkflowRole", 'String'>
+    readonly workflowId: FieldRef<"WorkflowRole", 'String'>
+    readonly name: FieldRef<"WorkflowRole", 'String'>
+    readonly description: FieldRef<"WorkflowRole", 'String'>
+    readonly permissions: FieldRef<"WorkflowRole", 'Permission[]'>
+    readonly isSystem: FieldRef<"WorkflowRole", 'Boolean'>
+    readonly createdAt: FieldRef<"WorkflowRole", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkflowRole findUnique
+   */
+  export type WorkflowRoleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRole to fetch.
+     */
+    where: WorkflowRoleWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRole findUniqueOrThrow
+   */
+  export type WorkflowRoleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRole to fetch.
+     */
+    where: WorkflowRoleWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRole findFirst
+   */
+  export type WorkflowRoleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRole to fetch.
+     */
+    where?: WorkflowRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoles to fetch.
+     */
+    orderBy?: WorkflowRoleOrderByWithRelationInput | WorkflowRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRoles.
+     */
+    cursor?: WorkflowRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRoles.
+     */
+    distinct?: WorkflowRoleScalarFieldEnum | WorkflowRoleScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRole findFirstOrThrow
+   */
+  export type WorkflowRoleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRole to fetch.
+     */
+    where?: WorkflowRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoles to fetch.
+     */
+    orderBy?: WorkflowRoleOrderByWithRelationInput | WorkflowRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRoles.
+     */
+    cursor?: WorkflowRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRoles.
+     */
+    distinct?: WorkflowRoleScalarFieldEnum | WorkflowRoleScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRole findMany
+   */
+  export type WorkflowRoleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoles to fetch.
+     */
+    where?: WorkflowRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoles to fetch.
+     */
+    orderBy?: WorkflowRoleOrderByWithRelationInput | WorkflowRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkflowRoles.
+     */
+    cursor?: WorkflowRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoles.
+     */
+    skip?: number
+    distinct?: WorkflowRoleScalarFieldEnum | WorkflowRoleScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRole create
+   */
+  export type WorkflowRoleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkflowRole.
+     */
+    data: XOR<WorkflowRoleCreateInput, WorkflowRoleUncheckedCreateInput>
+  }
+
+  /**
+   * WorkflowRole createMany
+   */
+  export type WorkflowRoleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkflowRoles.
+     */
+    data: WorkflowRoleCreateManyInput | WorkflowRoleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkflowRole createManyAndReturn
+   */
+  export type WorkflowRoleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many WorkflowRoles.
+     */
+    data: WorkflowRoleCreateManyInput | WorkflowRoleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkflowRole update
+   */
+  export type WorkflowRoleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkflowRole.
+     */
+    data: XOR<WorkflowRoleUpdateInput, WorkflowRoleUncheckedUpdateInput>
+    /**
+     * Choose, which WorkflowRole to update.
+     */
+    where: WorkflowRoleWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRole updateMany
+   */
+  export type WorkflowRoleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkflowRoles.
+     */
+    data: XOR<WorkflowRoleUpdateManyMutationInput, WorkflowRoleUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkflowRoles to update
+     */
+    where?: WorkflowRoleWhereInput
+  }
+
+  /**
+   * WorkflowRole upsert
+   */
+  export type WorkflowRoleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkflowRole to update in case it exists.
+     */
+    where: WorkflowRoleWhereUniqueInput
+    /**
+     * In case the WorkflowRole found by the `where` argument doesn't exist, create a new WorkflowRole with this data.
+     */
+    create: XOR<WorkflowRoleCreateInput, WorkflowRoleUncheckedCreateInput>
+    /**
+     * In case the WorkflowRole was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkflowRoleUpdateInput, WorkflowRoleUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkflowRole delete
+   */
+  export type WorkflowRoleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+    /**
+     * Filter which WorkflowRole to delete.
+     */
+    where: WorkflowRoleWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRole deleteMany
+   */
+  export type WorkflowRoleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRoles to delete
+     */
+    where?: WorkflowRoleWhereInput
+  }
+
+  /**
+   * WorkflowRole.assignments
+   */
+  export type WorkflowRole$assignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    where?: WorkflowRoleAssignmentWhereInput
+    orderBy?: WorkflowRoleAssignmentOrderByWithRelationInput | WorkflowRoleAssignmentOrderByWithRelationInput[]
+    cursor?: WorkflowRoleAssignmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WorkflowRoleAssignmentScalarFieldEnum | WorkflowRoleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRole without action
+   */
+  export type WorkflowRoleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRole
+     */
+    select?: WorkflowRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WorkflowRoleAssignment
+   */
+
+  export type AggregateWorkflowRoleAssignment = {
+    _count: WorkflowRoleAssignmentCountAggregateOutputType | null
+    _min: WorkflowRoleAssignmentMinAggregateOutputType | null
+    _max: WorkflowRoleAssignmentMaxAggregateOutputType | null
+  }
+
+  export type WorkflowRoleAssignmentMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    workflowRoleId: string | null
+    assignedAt: Date | null
+    assignedBy: string | null
+  }
+
+  export type WorkflowRoleAssignmentMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    userEmail: string | null
+    workflowRoleId: string | null
+    assignedAt: Date | null
+    assignedBy: string | null
+  }
+
+  export type WorkflowRoleAssignmentCountAggregateOutputType = {
+    id: number
+    userId: number
+    userEmail: number
+    workflowRoleId: number
+    assignedAt: number
+    assignedBy: number
+    _all: number
+  }
+
+
+  export type WorkflowRoleAssignmentMinAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    workflowRoleId?: true
+    assignedAt?: true
+    assignedBy?: true
+  }
+
+  export type WorkflowRoleAssignmentMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    workflowRoleId?: true
+    assignedAt?: true
+    assignedBy?: true
+  }
+
+  export type WorkflowRoleAssignmentCountAggregateInputType = {
+    id?: true
+    userId?: true
+    userEmail?: true
+    workflowRoleId?: true
+    assignedAt?: true
+    assignedBy?: true
+    _all?: true
+  }
+
+  export type WorkflowRoleAssignmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRoleAssignment to aggregate.
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoleAssignments to fetch.
+     */
+    orderBy?: WorkflowRoleAssignmentOrderByWithRelationInput | WorkflowRoleAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WorkflowRoleAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoleAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoleAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WorkflowRoleAssignments
+    **/
+    _count?: true | WorkflowRoleAssignmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WorkflowRoleAssignmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WorkflowRoleAssignmentMaxAggregateInputType
+  }
+
+  export type GetWorkflowRoleAssignmentAggregateType<T extends WorkflowRoleAssignmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateWorkflowRoleAssignment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWorkflowRoleAssignment[P]>
+      : GetScalarType<T[P], AggregateWorkflowRoleAssignment[P]>
+  }
+
+
+
+
+  export type WorkflowRoleAssignmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WorkflowRoleAssignmentWhereInput
+    orderBy?: WorkflowRoleAssignmentOrderByWithAggregationInput | WorkflowRoleAssignmentOrderByWithAggregationInput[]
+    by: WorkflowRoleAssignmentScalarFieldEnum[] | WorkflowRoleAssignmentScalarFieldEnum
+    having?: WorkflowRoleAssignmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WorkflowRoleAssignmentCountAggregateInputType | true
+    _min?: WorkflowRoleAssignmentMinAggregateInputType
+    _max?: WorkflowRoleAssignmentMaxAggregateInputType
+  }
+
+  export type WorkflowRoleAssignmentGroupByOutputType = {
+    id: string
+    userId: string
+    userEmail: string | null
+    workflowRoleId: string
+    assignedAt: Date
+    assignedBy: string | null
+    _count: WorkflowRoleAssignmentCountAggregateOutputType | null
+    _min: WorkflowRoleAssignmentMinAggregateOutputType | null
+    _max: WorkflowRoleAssignmentMaxAggregateOutputType | null
+  }
+
+  type GetWorkflowRoleAssignmentGroupByPayload<T extends WorkflowRoleAssignmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WorkflowRoleAssignmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WorkflowRoleAssignmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WorkflowRoleAssignmentGroupByOutputType[P]>
+            : GetScalarType<T[P], WorkflowRoleAssignmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WorkflowRoleAssignmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    workflowRoleId?: boolean
+    assignedAt?: boolean
+    assignedBy?: boolean
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRoleAssignment"]>
+
+  export type WorkflowRoleAssignmentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    workflowRoleId?: boolean
+    assignedAt?: boolean
+    assignedBy?: boolean
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["workflowRoleAssignment"]>
+
+  export type WorkflowRoleAssignmentSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    userEmail?: boolean
+    workflowRoleId?: boolean
+    assignedAt?: boolean
+    assignedBy?: boolean
+  }
+
+  export type WorkflowRoleAssignmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+  }
+  export type WorkflowRoleAssignmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    workflowRole?: boolean | WorkflowRoleDefaultArgs<ExtArgs>
+  }
+
+  export type $WorkflowRoleAssignmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WorkflowRoleAssignment"
+    objects: {
+      workflowRole: Prisma.$WorkflowRolePayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      userEmail: string | null
+      workflowRoleId: string
+      assignedAt: Date
+      assignedBy: string | null
+    }, ExtArgs["result"]["workflowRoleAssignment"]>
+    composites: {}
+  }
+
+  type WorkflowRoleAssignmentGetPayload<S extends boolean | null | undefined | WorkflowRoleAssignmentDefaultArgs> = $Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload, S>
+
+  type WorkflowRoleAssignmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<WorkflowRoleAssignmentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: WorkflowRoleAssignmentCountAggregateInputType | true
+    }
+
+  export interface WorkflowRoleAssignmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WorkflowRoleAssignment'], meta: { name: 'WorkflowRoleAssignment' } }
+    /**
+     * Find zero or one WorkflowRoleAssignment that matches the filter.
+     * @param {WorkflowRoleAssignmentFindUniqueArgs} args - Arguments to find a WorkflowRoleAssignment
+     * @example
+     * // Get one WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WorkflowRoleAssignmentFindUniqueArgs>(args: SelectSubset<T, WorkflowRoleAssignmentFindUniqueArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one WorkflowRoleAssignment that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {WorkflowRoleAssignmentFindUniqueOrThrowArgs} args - Arguments to find a WorkflowRoleAssignment
+     * @example
+     * // Get one WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WorkflowRoleAssignmentFindUniqueOrThrowArgs>(args: SelectSubset<T, WorkflowRoleAssignmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first WorkflowRoleAssignment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentFindFirstArgs} args - Arguments to find a WorkflowRoleAssignment
+     * @example
+     * // Get one WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WorkflowRoleAssignmentFindFirstArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentFindFirstArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first WorkflowRoleAssignment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentFindFirstOrThrowArgs} args - Arguments to find a WorkflowRoleAssignment
+     * @example
+     * // Get one WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WorkflowRoleAssignmentFindFirstOrThrowArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more WorkflowRoleAssignments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WorkflowRoleAssignments
+     * const workflowRoleAssignments = await prisma.workflowRoleAssignment.findMany()
+     * 
+     * // Get first 10 WorkflowRoleAssignments
+     * const workflowRoleAssignments = await prisma.workflowRoleAssignment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const workflowRoleAssignmentWithIdOnly = await prisma.workflowRoleAssignment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WorkflowRoleAssignmentFindManyArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a WorkflowRoleAssignment.
+     * @param {WorkflowRoleAssignmentCreateArgs} args - Arguments to create a WorkflowRoleAssignment.
+     * @example
+     * // Create one WorkflowRoleAssignment
+     * const WorkflowRoleAssignment = await prisma.workflowRoleAssignment.create({
+     *   data: {
+     *     // ... data to create a WorkflowRoleAssignment
+     *   }
+     * })
+     * 
+     */
+    create<T extends WorkflowRoleAssignmentCreateArgs>(args: SelectSubset<T, WorkflowRoleAssignmentCreateArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many WorkflowRoleAssignments.
+     * @param {WorkflowRoleAssignmentCreateManyArgs} args - Arguments to create many WorkflowRoleAssignments.
+     * @example
+     * // Create many WorkflowRoleAssignments
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WorkflowRoleAssignmentCreateManyArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WorkflowRoleAssignments and returns the data saved in the database.
+     * @param {WorkflowRoleAssignmentCreateManyAndReturnArgs} args - Arguments to create many WorkflowRoleAssignments.
+     * @example
+     * // Create many WorkflowRoleAssignments
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WorkflowRoleAssignments and only return the `id`
+     * const workflowRoleAssignmentWithIdOnly = await prisma.workflowRoleAssignment.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WorkflowRoleAssignmentCreateManyAndReturnArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a WorkflowRoleAssignment.
+     * @param {WorkflowRoleAssignmentDeleteArgs} args - Arguments to delete one WorkflowRoleAssignment.
+     * @example
+     * // Delete one WorkflowRoleAssignment
+     * const WorkflowRoleAssignment = await prisma.workflowRoleAssignment.delete({
+     *   where: {
+     *     // ... filter to delete one WorkflowRoleAssignment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WorkflowRoleAssignmentDeleteArgs>(args: SelectSubset<T, WorkflowRoleAssignmentDeleteArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one WorkflowRoleAssignment.
+     * @param {WorkflowRoleAssignmentUpdateArgs} args - Arguments to update one WorkflowRoleAssignment.
+     * @example
+     * // Update one WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WorkflowRoleAssignmentUpdateArgs>(args: SelectSubset<T, WorkflowRoleAssignmentUpdateArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more WorkflowRoleAssignments.
+     * @param {WorkflowRoleAssignmentDeleteManyArgs} args - Arguments to filter WorkflowRoleAssignments to delete.
+     * @example
+     * // Delete a few WorkflowRoleAssignments
+     * const { count } = await prisma.workflowRoleAssignment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WorkflowRoleAssignmentDeleteManyArgs>(args?: SelectSubset<T, WorkflowRoleAssignmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WorkflowRoleAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WorkflowRoleAssignments
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WorkflowRoleAssignmentUpdateManyArgs>(args: SelectSubset<T, WorkflowRoleAssignmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one WorkflowRoleAssignment.
+     * @param {WorkflowRoleAssignmentUpsertArgs} args - Arguments to update or create a WorkflowRoleAssignment.
+     * @example
+     * // Update or create a WorkflowRoleAssignment
+     * const workflowRoleAssignment = await prisma.workflowRoleAssignment.upsert({
+     *   create: {
+     *     // ... data to create a WorkflowRoleAssignment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WorkflowRoleAssignment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WorkflowRoleAssignmentUpsertArgs>(args: SelectSubset<T, WorkflowRoleAssignmentUpsertArgs<ExtArgs>>): Prisma__WorkflowRoleAssignmentClient<$Result.GetResult<Prisma.$WorkflowRoleAssignmentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of WorkflowRoleAssignments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentCountArgs} args - Arguments to filter WorkflowRoleAssignments to count.
+     * @example
+     * // Count the number of WorkflowRoleAssignments
+     * const count = await prisma.workflowRoleAssignment.count({
+     *   where: {
+     *     // ... the filter for the WorkflowRoleAssignments we want to count
+     *   }
+     * })
+    **/
+    count<T extends WorkflowRoleAssignmentCountArgs>(
+      args?: Subset<T, WorkflowRoleAssignmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WorkflowRoleAssignmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WorkflowRoleAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WorkflowRoleAssignmentAggregateArgs>(args: Subset<T, WorkflowRoleAssignmentAggregateArgs>): Prisma.PrismaPromise<GetWorkflowRoleAssignmentAggregateType<T>>
+
+    /**
+     * Group by WorkflowRoleAssignment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WorkflowRoleAssignmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WorkflowRoleAssignmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WorkflowRoleAssignmentGroupByArgs['orderBy'] }
+        : { orderBy?: WorkflowRoleAssignmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WorkflowRoleAssignmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWorkflowRoleAssignmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WorkflowRoleAssignment model
+   */
+  readonly fields: WorkflowRoleAssignmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WorkflowRoleAssignment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WorkflowRoleAssignmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    workflowRole<T extends WorkflowRoleDefaultArgs<ExtArgs> = {}>(args?: Subset<T, WorkflowRoleDefaultArgs<ExtArgs>>): Prisma__WorkflowRoleClient<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WorkflowRoleAssignment model
+   */ 
+  interface WorkflowRoleAssignmentFieldRefs {
+    readonly id: FieldRef<"WorkflowRoleAssignment", 'String'>
+    readonly userId: FieldRef<"WorkflowRoleAssignment", 'String'>
+    readonly userEmail: FieldRef<"WorkflowRoleAssignment", 'String'>
+    readonly workflowRoleId: FieldRef<"WorkflowRoleAssignment", 'String'>
+    readonly assignedAt: FieldRef<"WorkflowRoleAssignment", 'DateTime'>
+    readonly assignedBy: FieldRef<"WorkflowRoleAssignment", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WorkflowRoleAssignment findUnique
+   */
+  export type WorkflowRoleAssignmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoleAssignment to fetch.
+     */
+    where: WorkflowRoleAssignmentWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRoleAssignment findUniqueOrThrow
+   */
+  export type WorkflowRoleAssignmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoleAssignment to fetch.
+     */
+    where: WorkflowRoleAssignmentWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRoleAssignment findFirst
+   */
+  export type WorkflowRoleAssignmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoleAssignment to fetch.
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoleAssignments to fetch.
+     */
+    orderBy?: WorkflowRoleAssignmentOrderByWithRelationInput | WorkflowRoleAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRoleAssignments.
+     */
+    cursor?: WorkflowRoleAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoleAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoleAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRoleAssignments.
+     */
+    distinct?: WorkflowRoleAssignmentScalarFieldEnum | WorkflowRoleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRoleAssignment findFirstOrThrow
+   */
+  export type WorkflowRoleAssignmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoleAssignment to fetch.
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoleAssignments to fetch.
+     */
+    orderBy?: WorkflowRoleAssignmentOrderByWithRelationInput | WorkflowRoleAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WorkflowRoleAssignments.
+     */
+    cursor?: WorkflowRoleAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoleAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoleAssignments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WorkflowRoleAssignments.
+     */
+    distinct?: WorkflowRoleAssignmentScalarFieldEnum | WorkflowRoleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRoleAssignment findMany
+   */
+  export type WorkflowRoleAssignmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter, which WorkflowRoleAssignments to fetch.
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WorkflowRoleAssignments to fetch.
+     */
+    orderBy?: WorkflowRoleAssignmentOrderByWithRelationInput | WorkflowRoleAssignmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WorkflowRoleAssignments.
+     */
+    cursor?: WorkflowRoleAssignmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WorkflowRoleAssignments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WorkflowRoleAssignments.
+     */
+    skip?: number
+    distinct?: WorkflowRoleAssignmentScalarFieldEnum | WorkflowRoleAssignmentScalarFieldEnum[]
+  }
+
+  /**
+   * WorkflowRoleAssignment create
+   */
+  export type WorkflowRoleAssignmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WorkflowRoleAssignment.
+     */
+    data: XOR<WorkflowRoleAssignmentCreateInput, WorkflowRoleAssignmentUncheckedCreateInput>
+  }
+
+  /**
+   * WorkflowRoleAssignment createMany
+   */
+  export type WorkflowRoleAssignmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WorkflowRoleAssignments.
+     */
+    data: WorkflowRoleAssignmentCreateManyInput | WorkflowRoleAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WorkflowRoleAssignment createManyAndReturn
+   */
+  export type WorkflowRoleAssignmentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many WorkflowRoleAssignments.
+     */
+    data: WorkflowRoleAssignmentCreateManyInput | WorkflowRoleAssignmentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WorkflowRoleAssignment update
+   */
+  export type WorkflowRoleAssignmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WorkflowRoleAssignment.
+     */
+    data: XOR<WorkflowRoleAssignmentUpdateInput, WorkflowRoleAssignmentUncheckedUpdateInput>
+    /**
+     * Choose, which WorkflowRoleAssignment to update.
+     */
+    where: WorkflowRoleAssignmentWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRoleAssignment updateMany
+   */
+  export type WorkflowRoleAssignmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WorkflowRoleAssignments.
+     */
+    data: XOR<WorkflowRoleAssignmentUpdateManyMutationInput, WorkflowRoleAssignmentUncheckedUpdateManyInput>
+    /**
+     * Filter which WorkflowRoleAssignments to update
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+  }
+
+  /**
+   * WorkflowRoleAssignment upsert
+   */
+  export type WorkflowRoleAssignmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WorkflowRoleAssignment to update in case it exists.
+     */
+    where: WorkflowRoleAssignmentWhereUniqueInput
+    /**
+     * In case the WorkflowRoleAssignment found by the `where` argument doesn't exist, create a new WorkflowRoleAssignment with this data.
+     */
+    create: XOR<WorkflowRoleAssignmentCreateInput, WorkflowRoleAssignmentUncheckedCreateInput>
+    /**
+     * In case the WorkflowRoleAssignment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WorkflowRoleAssignmentUpdateInput, WorkflowRoleAssignmentUncheckedUpdateInput>
+  }
+
+  /**
+   * WorkflowRoleAssignment delete
+   */
+  export type WorkflowRoleAssignmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+    /**
+     * Filter which WorkflowRoleAssignment to delete.
+     */
+    where: WorkflowRoleAssignmentWhereUniqueInput
+  }
+
+  /**
+   * WorkflowRoleAssignment deleteMany
+   */
+  export type WorkflowRoleAssignmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WorkflowRoleAssignments to delete
+     */
+    where?: WorkflowRoleAssignmentWhereInput
+  }
+
+  /**
+   * WorkflowRoleAssignment without action
+   */
+  export type WorkflowRoleAssignmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WorkflowRoleAssignment
+     */
+    select?: WorkflowRoleAssignmentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WorkflowRoleAssignmentInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -8457,15 +10640,15 @@ export namespace Prisma {
 
   export const WorkflowScalarFieldEnum: {
     id: 'id',
+    userId: 'userId',
     name: 'name',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
-    userId: 'userId',
+    isDeleted: 'isDeleted',
     isPublished: 'isPublished',
-    lastPublishedAt: 'lastPublishedAt',
-    publishedAt: 'publishedAt',
     publishedWorkflowId: 'publishedWorkflowId',
-    isDeleted: 'isDeleted'
+    publishedAt: 'publishedAt',
+    lastPublishedAt: 'lastPublishedAt'
   };
 
   export type WorkflowScalarFieldEnum = (typeof WorkflowScalarFieldEnum)[keyof typeof WorkflowScalarFieldEnum]
@@ -8531,6 +10714,31 @@ export namespace Prisma {
   };
 
   export type WorkflowFieldScalarFieldEnum = (typeof WorkflowFieldScalarFieldEnum)[keyof typeof WorkflowFieldScalarFieldEnum]
+
+
+  export const WorkflowRoleScalarFieldEnum: {
+    id: 'id',
+    workflowId: 'workflowId',
+    name: 'name',
+    description: 'description',
+    permissions: 'permissions',
+    isSystem: 'isSystem',
+    createdAt: 'createdAt'
+  };
+
+  export type WorkflowRoleScalarFieldEnum = (typeof WorkflowRoleScalarFieldEnum)[keyof typeof WorkflowRoleScalarFieldEnum]
+
+
+  export const WorkflowRoleAssignmentScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    userEmail: 'userEmail',
+    workflowRoleId: 'workflowRoleId',
+    assignedAt: 'assignedAt',
+    assignedBy: 'assignedBy'
+  };
+
+  export type WorkflowRoleAssignmentScalarFieldEnum = (typeof WorkflowRoleAssignmentScalarFieldEnum)[keyof typeof WorkflowRoleAssignmentScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -8643,6 +10851,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Permission[]'
+   */
+  export type ListEnumPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Permission[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Permission'
+   */
+  export type EnumPermissionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Permission'>
+    
+
+
+  /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -8699,36 +10921,38 @@ export namespace Prisma {
     OR?: WorkflowWhereInput[]
     NOT?: WorkflowWhereInput | WorkflowWhereInput[]
     id?: StringFilter<"Workflow"> | string
+    userId?: StringFilter<"Workflow"> | string
     name?: StringFilter<"Workflow"> | string
     createdAt?: DateTimeFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeFilter<"Workflow"> | Date | string
-    userId?: StringFilter<"Workflow"> | string
-    isPublished?: BoolFilter<"Workflow"> | boolean
-    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
     isDeleted?: BoolFilter<"Workflow"> | boolean
+    isPublished?: BoolFilter<"Workflow"> | boolean
+    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
+    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
+    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     edges?: WorkflowEdgeListRelationFilter
-    fields?: WorkflowFieldListRelationFilter
     nodes?: WorkflowNodeListRelationFilter
+    fields?: WorkflowFieldListRelationFilter
+    roles?: WorkflowRoleListRelationFilter
   }
 
   export type WorkflowOrderByWithRelationInput = {
     id?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    userId?: SortOrder
-    isPublished?: SortOrder
-    lastPublishedAt?: SortOrderInput | SortOrder
-    publishedAt?: SortOrderInput | SortOrder
-    publishedWorkflowId?: SortOrderInput | SortOrder
     isDeleted?: SortOrder
+    isPublished?: SortOrder
+    publishedWorkflowId?: SortOrderInput | SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    lastPublishedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
     edges?: WorkflowEdgeOrderByRelationAggregateInput
-    fields?: WorkflowFieldOrderByRelationAggregateInput
     nodes?: WorkflowNodeOrderByRelationAggregateInput
+    fields?: WorkflowFieldOrderByRelationAggregateInput
+    roles?: WorkflowRoleOrderByRelationAggregateInput
   }
 
   export type WorkflowWhereUniqueInput = Prisma.AtLeast<{
@@ -8736,32 +10960,33 @@ export namespace Prisma {
     AND?: WorkflowWhereInput | WorkflowWhereInput[]
     OR?: WorkflowWhereInput[]
     NOT?: WorkflowWhereInput | WorkflowWhereInput[]
+    userId?: StringFilter<"Workflow"> | string
     name?: StringFilter<"Workflow"> | string
     createdAt?: DateTimeFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeFilter<"Workflow"> | Date | string
-    userId?: StringFilter<"Workflow"> | string
-    isPublished?: BoolFilter<"Workflow"> | boolean
-    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
     isDeleted?: BoolFilter<"Workflow"> | boolean
+    isPublished?: BoolFilter<"Workflow"> | boolean
+    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
+    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
+    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
     user?: XOR<UserRelationFilter, UserWhereInput>
     edges?: WorkflowEdgeListRelationFilter
-    fields?: WorkflowFieldListRelationFilter
     nodes?: WorkflowNodeListRelationFilter
+    fields?: WorkflowFieldListRelationFilter
+    roles?: WorkflowRoleListRelationFilter
   }, "id">
 
   export type WorkflowOrderByWithAggregationInput = {
     id?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    userId?: SortOrder
-    isPublished?: SortOrder
-    lastPublishedAt?: SortOrderInput | SortOrder
-    publishedAt?: SortOrderInput | SortOrder
-    publishedWorkflowId?: SortOrderInput | SortOrder
     isDeleted?: SortOrder
+    isPublished?: SortOrder
+    publishedWorkflowId?: SortOrderInput | SortOrder
+    publishedAt?: SortOrderInput | SortOrder
+    lastPublishedAt?: SortOrderInput | SortOrder
     _count?: WorkflowCountOrderByAggregateInput
     _max?: WorkflowMaxOrderByAggregateInput
     _min?: WorkflowMinOrderByAggregateInput
@@ -8772,15 +10997,15 @@ export namespace Prisma {
     OR?: WorkflowScalarWhereWithAggregatesInput[]
     NOT?: WorkflowScalarWhereWithAggregatesInput | WorkflowScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Workflow"> | string
+    userId?: StringWithAggregatesFilter<"Workflow"> | string
     name?: StringWithAggregatesFilter<"Workflow"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Workflow"> | Date | string
-    userId?: StringWithAggregatesFilter<"Workflow"> | string
-    isPublished?: BoolWithAggregatesFilter<"Workflow"> | boolean
-    lastPublishedAt?: DateTimeNullableWithAggregatesFilter<"Workflow"> | Date | string | null
-    publishedAt?: DateTimeNullableWithAggregatesFilter<"Workflow"> | Date | string | null
-    publishedWorkflowId?: StringNullableWithAggregatesFilter<"Workflow"> | string | null
     isDeleted?: BoolWithAggregatesFilter<"Workflow"> | boolean
+    isPublished?: BoolWithAggregatesFilter<"Workflow"> | boolean
+    publishedWorkflowId?: StringNullableWithAggregatesFilter<"Workflow"> | string | null
+    publishedAt?: DateTimeNullableWithAggregatesFilter<"Workflow"> | Date | string | null
+    lastPublishedAt?: DateTimeNullableWithAggregatesFilter<"Workflow"> | Date | string | null
   }
 
   export type WorkflowNodeWhereInput = {
@@ -9120,6 +11345,136 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"WorkflowField"> | Date | string
   }
 
+  export type WorkflowRoleWhereInput = {
+    AND?: WorkflowRoleWhereInput | WorkflowRoleWhereInput[]
+    OR?: WorkflowRoleWhereInput[]
+    NOT?: WorkflowRoleWhereInput | WorkflowRoleWhereInput[]
+    id?: StringFilter<"WorkflowRole"> | string
+    workflowId?: StringFilter<"WorkflowRole"> | string
+    name?: StringFilter<"WorkflowRole"> | string
+    description?: StringNullableFilter<"WorkflowRole"> | string | null
+    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
+    isSystem?: BoolFilter<"WorkflowRole"> | boolean
+    createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
+    workflow?: XOR<WorkflowRelationFilter, WorkflowWhereInput>
+    assignments?: WorkflowRoleAssignmentListRelationFilter
+  }
+
+  export type WorkflowRoleOrderByWithRelationInput = {
+    id?: SortOrder
+    workflowId?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    permissions?: SortOrder
+    isSystem?: SortOrder
+    createdAt?: SortOrder
+    workflow?: WorkflowOrderByWithRelationInput
+    assignments?: WorkflowRoleAssignmentOrderByRelationAggregateInput
+  }
+
+  export type WorkflowRoleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    workflowId_name?: WorkflowRoleWorkflowIdNameCompoundUniqueInput
+    AND?: WorkflowRoleWhereInput | WorkflowRoleWhereInput[]
+    OR?: WorkflowRoleWhereInput[]
+    NOT?: WorkflowRoleWhereInput | WorkflowRoleWhereInput[]
+    workflowId?: StringFilter<"WorkflowRole"> | string
+    name?: StringFilter<"WorkflowRole"> | string
+    description?: StringNullableFilter<"WorkflowRole"> | string | null
+    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
+    isSystem?: BoolFilter<"WorkflowRole"> | boolean
+    createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
+    workflow?: XOR<WorkflowRelationFilter, WorkflowWhereInput>
+    assignments?: WorkflowRoleAssignmentListRelationFilter
+  }, "id" | "workflowId_name">
+
+  export type WorkflowRoleOrderByWithAggregationInput = {
+    id?: SortOrder
+    workflowId?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    permissions?: SortOrder
+    isSystem?: SortOrder
+    createdAt?: SortOrder
+    _count?: WorkflowRoleCountOrderByAggregateInput
+    _max?: WorkflowRoleMaxOrderByAggregateInput
+    _min?: WorkflowRoleMinOrderByAggregateInput
+  }
+
+  export type WorkflowRoleScalarWhereWithAggregatesInput = {
+    AND?: WorkflowRoleScalarWhereWithAggregatesInput | WorkflowRoleScalarWhereWithAggregatesInput[]
+    OR?: WorkflowRoleScalarWhereWithAggregatesInput[]
+    NOT?: WorkflowRoleScalarWhereWithAggregatesInput | WorkflowRoleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkflowRole"> | string
+    workflowId?: StringWithAggregatesFilter<"WorkflowRole"> | string
+    name?: StringWithAggregatesFilter<"WorkflowRole"> | string
+    description?: StringNullableWithAggregatesFilter<"WorkflowRole"> | string | null
+    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
+    isSystem?: BoolWithAggregatesFilter<"WorkflowRole"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"WorkflowRole"> | Date | string
+  }
+
+  export type WorkflowRoleAssignmentWhereInput = {
+    AND?: WorkflowRoleAssignmentWhereInput | WorkflowRoleAssignmentWhereInput[]
+    OR?: WorkflowRoleAssignmentWhereInput[]
+    NOT?: WorkflowRoleAssignmentWhereInput | WorkflowRoleAssignmentWhereInput[]
+    id?: StringFilter<"WorkflowRoleAssignment"> | string
+    userId?: StringFilter<"WorkflowRoleAssignment"> | string
+    userEmail?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRoleId?: StringFilter<"WorkflowRoleAssignment"> | string
+    assignedAt?: DateTimeFilter<"WorkflowRoleAssignment"> | Date | string
+    assignedBy?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRole?: XOR<WorkflowRoleRelationFilter, WorkflowRoleWhereInput>
+  }
+
+  export type WorkflowRoleAssignmentOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrderInput | SortOrder
+    workflowRoleId?: SortOrder
+    assignedAt?: SortOrder
+    assignedBy?: SortOrderInput | SortOrder
+    workflowRole?: WorkflowRoleOrderByWithRelationInput
+  }
+
+  export type WorkflowRoleAssignmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId_workflowRoleId?: WorkflowRoleAssignmentUserIdWorkflowRoleIdCompoundUniqueInput
+    AND?: WorkflowRoleAssignmentWhereInput | WorkflowRoleAssignmentWhereInput[]
+    OR?: WorkflowRoleAssignmentWhereInput[]
+    NOT?: WorkflowRoleAssignmentWhereInput | WorkflowRoleAssignmentWhereInput[]
+    userId?: StringFilter<"WorkflowRoleAssignment"> | string
+    userEmail?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRoleId?: StringFilter<"WorkflowRoleAssignment"> | string
+    assignedAt?: DateTimeFilter<"WorkflowRoleAssignment"> | Date | string
+    assignedBy?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRole?: XOR<WorkflowRoleRelationFilter, WorkflowRoleWhereInput>
+  }, "id" | "userId_workflowRoleId">
+
+  export type WorkflowRoleAssignmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrderInput | SortOrder
+    workflowRoleId?: SortOrder
+    assignedAt?: SortOrder
+    assignedBy?: SortOrderInput | SortOrder
+    _count?: WorkflowRoleAssignmentCountOrderByAggregateInput
+    _max?: WorkflowRoleAssignmentMaxOrderByAggregateInput
+    _min?: WorkflowRoleAssignmentMinOrderByAggregateInput
+  }
+
+  export type WorkflowRoleAssignmentScalarWhereWithAggregatesInput = {
+    AND?: WorkflowRoleAssignmentScalarWhereWithAggregatesInput | WorkflowRoleAssignmentScalarWhereWithAggregatesInput[]
+    OR?: WorkflowRoleAssignmentScalarWhereWithAggregatesInput[]
+    NOT?: WorkflowRoleAssignmentScalarWhereWithAggregatesInput | WorkflowRoleAssignmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WorkflowRoleAssignment"> | string
+    userId?: StringWithAggregatesFilter<"WorkflowRoleAssignment"> | string
+    userEmail?: StringNullableWithAggregatesFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRoleId?: StringWithAggregatesFilter<"WorkflowRoleAssignment"> | string
+    assignedAt?: DateTimeWithAggregatesFilter<"WorkflowRoleAssignment"> | Date | string
+    assignedBy?: StringNullableWithAggregatesFilter<"WorkflowRoleAssignment"> | string | null
+  }
+
   export type UserCreateInput = {
     id?: string
     workflows?: WorkflowCreateNestedManyWithoutUserInput
@@ -9157,31 +11512,33 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWorkflowsInput
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
-    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateInput = {
     id?: string
+    userId: string
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId: string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
-    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUpdateInput = {
@@ -9189,44 +11546,46 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
-    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
-    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowCreateManyInput = {
     id?: string
+    userId: string
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId: string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
   }
 
   export type WorkflowUpdateManyMutationInput = {
@@ -9234,24 +11593,24 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WorkflowUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WorkflowNodeCreateInput = {
@@ -9595,6 +11954,141 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type WorkflowRoleCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+    workflow: WorkflowCreateNestedOneWithoutRolesInput
+    assignments?: WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleUncheckedCreateInput = {
+    id?: string
+    workflowId: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflow?: WorkflowUpdateOneRequiredWithoutRolesNestedInput
+    assignments?: WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type WorkflowRoleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type WorkflowRoleCreateManyInput = {
+    id?: string
+    workflowId: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRoleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRoleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRoleAssignmentCreateInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    assignedAt?: Date | string
+    assignedBy?: string | null
+    workflowRole: WorkflowRoleCreateNestedOneWithoutAssignmentsInput
+  }
+
+  export type WorkflowRoleAssignmentUncheckedCreateInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    workflowRoleId: string
+    assignedAt?: Date | string
+    assignedBy?: string | null
+  }
+
+  export type WorkflowRoleAssignmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    workflowRole?: WorkflowRoleUpdateOneRequiredWithoutAssignmentsNestedInput
+  }
+
+  export type WorkflowRoleAssignmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WorkflowRoleAssignmentCreateManyInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    workflowRoleId: string
+    assignedAt?: Date | string
+    assignedBy?: string | null
+  }
+
+  export type WorkflowRoleAssignmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WorkflowRoleAssignmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    workflowRoleId?: StringFieldUpdateOperationsInput | string
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -9666,17 +12160,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -9692,6 +12175,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type UserRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
@@ -9703,16 +12197,22 @@ export namespace Prisma {
     none?: WorkflowEdgeWhereInput
   }
 
+  export type WorkflowNodeListRelationFilter = {
+    every?: WorkflowNodeWhereInput
+    some?: WorkflowNodeWhereInput
+    none?: WorkflowNodeWhereInput
+  }
+
   export type WorkflowFieldListRelationFilter = {
     every?: WorkflowFieldWhereInput
     some?: WorkflowFieldWhereInput
     none?: WorkflowFieldWhereInput
   }
 
-  export type WorkflowNodeListRelationFilter = {
-    every?: WorkflowNodeWhereInput
-    some?: WorkflowNodeWhereInput
-    none?: WorkflowNodeWhereInput
+  export type WorkflowRoleListRelationFilter = {
+    every?: WorkflowRoleWhereInput
+    some?: WorkflowRoleWhereInput
+    none?: WorkflowRoleWhereInput
   }
 
   export type SortOrderInput = {
@@ -9724,51 +12224,55 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type WorkflowNodeOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type WorkflowFieldOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type WorkflowNodeOrderByRelationAggregateInput = {
+  export type WorkflowRoleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type WorkflowCountOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    userId?: SortOrder
-    isPublished?: SortOrder
-    lastPublishedAt?: SortOrder
-    publishedAt?: SortOrder
-    publishedWorkflowId?: SortOrder
     isDeleted?: SortOrder
+    isPublished?: SortOrder
+    publishedWorkflowId?: SortOrder
+    publishedAt?: SortOrder
+    lastPublishedAt?: SortOrder
   }
 
   export type WorkflowMaxOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    userId?: SortOrder
-    isPublished?: SortOrder
-    lastPublishedAt?: SortOrder
-    publishedAt?: SortOrder
-    publishedWorkflowId?: SortOrder
     isDeleted?: SortOrder
+    isPublished?: SortOrder
+    publishedWorkflowId?: SortOrder
+    publishedAt?: SortOrder
+    lastPublishedAt?: SortOrder
   }
 
   export type WorkflowMinOrderByAggregateInput = {
     id?: SortOrder
+    userId?: SortOrder
     name?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    userId?: SortOrder
-    isPublished?: SortOrder
-    lastPublishedAt?: SortOrder
-    publishedAt?: SortOrder
-    publishedWorkflowId?: SortOrder
     isDeleted?: SortOrder
+    isPublished?: SortOrder
+    publishedWorkflowId?: SortOrder
+    publishedAt?: SortOrder
+    lastPublishedAt?: SortOrder
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -9793,20 +12297,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -9823,6 +12313,20 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
   export type JsonFilter<$PrismaModel = never> = 
     | PatchUndefined<
@@ -10127,6 +12631,94 @@ export namespace Prisma {
     createdAt?: SortOrder
   }
 
+  export type EnumPermissionNullableListFilter<$PrismaModel = never> = {
+    equals?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel> | null
+    has?: $Enums.Permission | EnumPermissionFieldRefInput<$PrismaModel> | null
+    hasEvery?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel>
+    hasSome?: $Enums.Permission[] | ListEnumPermissionFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type WorkflowRoleAssignmentListRelationFilter = {
+    every?: WorkflowRoleAssignmentWhereInput
+    some?: WorkflowRoleAssignmentWhereInput
+    none?: WorkflowRoleAssignmentWhereInput
+  }
+
+  export type WorkflowRoleAssignmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WorkflowRoleWorkflowIdNameCompoundUniqueInput = {
+    workflowId: string
+    name: string
+  }
+
+  export type WorkflowRoleCountOrderByAggregateInput = {
+    id?: SortOrder
+    workflowId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    permissions?: SortOrder
+    isSystem?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRoleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    workflowId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    isSystem?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRoleMinOrderByAggregateInput = {
+    id?: SortOrder
+    workflowId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    isSystem?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type WorkflowRoleRelationFilter = {
+    is?: WorkflowRoleWhereInput
+    isNot?: WorkflowRoleWhereInput
+  }
+
+  export type WorkflowRoleAssignmentUserIdWorkflowRoleIdCompoundUniqueInput = {
+    userId: string
+    workflowRoleId: string
+  }
+
+  export type WorkflowRoleAssignmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    workflowRoleId?: SortOrder
+    assignedAt?: SortOrder
+    assignedBy?: SortOrder
+  }
+
+  export type WorkflowRoleAssignmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    workflowRoleId?: SortOrder
+    assignedAt?: SortOrder
+    assignedBy?: SortOrder
+  }
+
+  export type WorkflowRoleAssignmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    userEmail?: SortOrder
+    workflowRoleId?: SortOrder
+    assignedAt?: SortOrder
+    assignedBy?: SortOrder
+  }
+
   export type WorkflowCreateNestedManyWithoutUserInput = {
     create?: XOR<WorkflowCreateWithoutUserInput, WorkflowUncheckedCreateWithoutUserInput> | WorkflowCreateWithoutUserInput[] | WorkflowUncheckedCreateWithoutUserInput[]
     connectOrCreate?: WorkflowCreateOrConnectWithoutUserInput | WorkflowCreateOrConnectWithoutUserInput[]
@@ -10186,6 +12778,13 @@ export namespace Prisma {
     connect?: WorkflowEdgeWhereUniqueInput | WorkflowEdgeWhereUniqueInput[]
   }
 
+  export type WorkflowNodeCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
+    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
+    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+  }
+
   export type WorkflowFieldCreateNestedManyWithoutWorkflowInput = {
     create?: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput> | WorkflowFieldCreateWithoutWorkflowInput[] | WorkflowFieldUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowFieldCreateOrConnectWithoutWorkflowInput | WorkflowFieldCreateOrConnectWithoutWorkflowInput[]
@@ -10193,11 +12792,11 @@ export namespace Prisma {
     connect?: WorkflowFieldWhereUniqueInput | WorkflowFieldWhereUniqueInput[]
   }
 
-  export type WorkflowNodeCreateNestedManyWithoutWorkflowInput = {
-    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
-    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
-    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
-    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+  export type WorkflowRoleCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput> | WorkflowRoleCreateWithoutWorkflowInput[] | WorkflowRoleUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutWorkflowInput | WorkflowRoleCreateOrConnectWithoutWorkflowInput[]
+    createMany?: WorkflowRoleCreateManyWorkflowInputEnvelope
+    connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
   }
 
   export type WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput = {
@@ -10207,6 +12806,13 @@ export namespace Prisma {
     connect?: WorkflowEdgeWhereUniqueInput | WorkflowEdgeWhereUniqueInput[]
   }
 
+  export type WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
+    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
+    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+  }
+
   export type WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput = {
     create?: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput> | WorkflowFieldCreateWithoutWorkflowInput[] | WorkflowFieldUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowFieldCreateOrConnectWithoutWorkflowInput | WorkflowFieldCreateOrConnectWithoutWorkflowInput[]
@@ -10214,11 +12820,11 @@ export namespace Prisma {
     connect?: WorkflowFieldWhereUniqueInput | WorkflowFieldWhereUniqueInput[]
   }
 
-  export type WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput = {
-    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
-    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
-    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
-    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+  export type WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput> | WorkflowRoleCreateWithoutWorkflowInput[] | WorkflowRoleUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutWorkflowInput | WorkflowRoleCreateOrConnectWithoutWorkflowInput[]
+    createMany?: WorkflowRoleCreateManyWorkflowInputEnvelope
+    connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -10229,12 +12835,12 @@ export namespace Prisma {
     set?: boolean
   }
 
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
-  }
-
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type UserUpdateOneRequiredWithoutWorkflowsNestedInput = {
@@ -10259,6 +12865,20 @@ export namespace Prisma {
     deleteMany?: WorkflowEdgeScalarWhereInput | WorkflowEdgeScalarWhereInput[]
   }
 
+  export type WorkflowNodeUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
+    upsert?: WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
+    set?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    disconnect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    delete?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    update?: WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput | WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+  }
+
   export type WorkflowFieldUpdateManyWithoutWorkflowNestedInput = {
     create?: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput> | WorkflowFieldCreateWithoutWorkflowInput[] | WorkflowFieldUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowFieldCreateOrConnectWithoutWorkflowInput | WorkflowFieldCreateOrConnectWithoutWorkflowInput[]
@@ -10273,18 +12893,18 @@ export namespace Prisma {
     deleteMany?: WorkflowFieldScalarWhereInput | WorkflowFieldScalarWhereInput[]
   }
 
-  export type WorkflowNodeUpdateManyWithoutWorkflowNestedInput = {
-    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
-    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
-    upsert?: WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput[]
-    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
-    set?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    disconnect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    delete?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    update?: WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput[]
-    updateMany?: WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput | WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput[]
-    deleteMany?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+  export type WorkflowRoleUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput> | WorkflowRoleCreateWithoutWorkflowInput[] | WorkflowRoleUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutWorkflowInput | WorkflowRoleCreateOrConnectWithoutWorkflowInput[]
+    upsert?: WorkflowRoleUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowRoleUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: WorkflowRoleCreateManyWorkflowInputEnvelope
+    set?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    disconnect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    delete?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    update?: WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput | WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
   }
 
   export type WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput = {
@@ -10301,6 +12921,20 @@ export namespace Prisma {
     deleteMany?: WorkflowEdgeScalarWhereInput | WorkflowEdgeScalarWhereInput[]
   }
 
+  export type WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
+    upsert?: WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
+    set?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    disconnect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    delete?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
+    update?: WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput | WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+  }
+
   export type WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput = {
     create?: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput> | WorkflowFieldCreateWithoutWorkflowInput[] | WorkflowFieldUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowFieldCreateOrConnectWithoutWorkflowInput | WorkflowFieldCreateOrConnectWithoutWorkflowInput[]
@@ -10315,18 +12949,18 @@ export namespace Prisma {
     deleteMany?: WorkflowFieldScalarWhereInput | WorkflowFieldScalarWhereInput[]
   }
 
-  export type WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput = {
-    create?: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput> | WorkflowNodeCreateWithoutWorkflowInput[] | WorkflowNodeUncheckedCreateWithoutWorkflowInput[]
-    connectOrCreate?: WorkflowNodeCreateOrConnectWithoutWorkflowInput | WorkflowNodeCreateOrConnectWithoutWorkflowInput[]
-    upsert?: WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput[]
-    createMany?: WorkflowNodeCreateManyWorkflowInputEnvelope
-    set?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    disconnect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    delete?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    connect?: WorkflowNodeWhereUniqueInput | WorkflowNodeWhereUniqueInput[]
-    update?: WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput[]
-    updateMany?: WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput | WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput[]
-    deleteMany?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+  export type WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput> | WorkflowRoleCreateWithoutWorkflowInput[] | WorkflowRoleUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutWorkflowInput | WorkflowRoleCreateOrConnectWithoutWorkflowInput[]
+    upsert?: WorkflowRoleUpsertWithWhereUniqueWithoutWorkflowInput | WorkflowRoleUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: WorkflowRoleCreateManyWorkflowInputEnvelope
+    set?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    disconnect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    delete?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+    update?: WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput | WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
   }
 
   export type WorkflowEdgeCreateNestedManyWithoutSourceNodeInput = {
@@ -10659,6 +13293,85 @@ export namespace Prisma {
     update?: XOR<XOR<WorkflowUpdateToOneWithWhereWithoutFieldsInput, WorkflowUpdateWithoutFieldsInput>, WorkflowUncheckedUpdateWithoutFieldsInput>
   }
 
+  export type WorkflowRoleCreatepermissionsInput = {
+    set: $Enums.Permission[]
+  }
+
+  export type WorkflowCreateNestedOneWithoutRolesInput = {
+    create?: XOR<WorkflowCreateWithoutRolesInput, WorkflowUncheckedCreateWithoutRolesInput>
+    connectOrCreate?: WorkflowCreateOrConnectWithoutRolesInput
+    connect?: WorkflowWhereUniqueInput
+  }
+
+  export type WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput = {
+    create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope
+    connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+  }
+
+  export type WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput = {
+    create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope
+    connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+  }
+
+  export type WorkflowRoleUpdatepermissionsInput = {
+    set?: $Enums.Permission[]
+    push?: $Enums.Permission | $Enums.Permission[]
+  }
+
+  export type WorkflowUpdateOneRequiredWithoutRolesNestedInput = {
+    create?: XOR<WorkflowCreateWithoutRolesInput, WorkflowUncheckedCreateWithoutRolesInput>
+    connectOrCreate?: WorkflowCreateOrConnectWithoutRolesInput
+    upsert?: WorkflowUpsertWithoutRolesInput
+    connect?: WorkflowWhereUniqueInput
+    update?: XOR<XOR<WorkflowUpdateToOneWithWhereWithoutRolesInput, WorkflowUpdateWithoutRolesInput>, WorkflowUncheckedUpdateWithoutRolesInput>
+  }
+
+  export type WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput = {
+    create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
+    upsert?: WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope
+    set?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    disconnect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    delete?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    update?: WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput[]
+    updateMany?: WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput[]
+    deleteMany?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
+  }
+
+  export type WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput = {
+    create?: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput> | WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput[] | WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput[]
+    connectOrCreate?: WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput | WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput[]
+    upsert?: WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput[]
+    createMany?: WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope
+    set?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    disconnect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    delete?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    connect?: WorkflowRoleAssignmentWhereUniqueInput | WorkflowRoleAssignmentWhereUniqueInput[]
+    update?: WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput[]
+    updateMany?: WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput | WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput[]
+    deleteMany?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
+  }
+
+  export type WorkflowRoleCreateNestedOneWithoutAssignmentsInput = {
+    create?: XOR<WorkflowRoleCreateWithoutAssignmentsInput, WorkflowRoleUncheckedCreateWithoutAssignmentsInput>
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutAssignmentsInput
+    connect?: WorkflowRoleWhereUniqueInput
+  }
+
+  export type WorkflowRoleUpdateOneRequiredWithoutAssignmentsNestedInput = {
+    create?: XOR<WorkflowRoleCreateWithoutAssignmentsInput, WorkflowRoleUncheckedCreateWithoutAssignmentsInput>
+    connectOrCreate?: WorkflowRoleCreateOrConnectWithoutAssignmentsInput
+    upsert?: WorkflowRoleUpsertWithoutAssignmentsInput
+    connect?: WorkflowRoleWhereUniqueInput
+    update?: XOR<XOR<WorkflowRoleUpdateToOneWithWhereWithoutAssignmentsInput, WorkflowRoleUpdateWithoutAssignmentsInput>, WorkflowRoleUncheckedUpdateWithoutAssignmentsInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -10717,17 +13430,6 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
-  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -10740,6 +13442,17 @@ export namespace Prisma {
     startsWith?: string | StringFieldRefInput<$PrismaModel>
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -10764,31 +13477,6 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>
   }
 
-  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -10804,6 +13492,31 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NestedFloatFilter<$PrismaModel = never> = {
@@ -10882,14 +13595,15 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
-    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutUserInput = {
@@ -10897,14 +13611,15 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
-    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutUserInput = {
@@ -10938,15 +13653,15 @@ export namespace Prisma {
     OR?: WorkflowScalarWhereInput[]
     NOT?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
     id?: StringFilter<"Workflow"> | string
+    userId?: StringFilter<"Workflow"> | string
     name?: StringFilter<"Workflow"> | string
     createdAt?: DateTimeFilter<"Workflow"> | Date | string
     updatedAt?: DateTimeFilter<"Workflow"> | Date | string
-    userId?: StringFilter<"Workflow"> | string
-    isPublished?: BoolFilter<"Workflow"> | boolean
-    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
-    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
     isDeleted?: BoolFilter<"Workflow"> | boolean
+    isPublished?: BoolFilter<"Workflow"> | boolean
+    publishedWorkflowId?: StringNullableFilter<"Workflow"> | string | null
+    publishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
+    lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
   }
 
   export type UserCreateWithoutWorkflowsInput = {
@@ -10986,34 +13701,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type WorkflowFieldCreateWithoutWorkflowInput = {
-    id?: string
-    fieldName: string
-    fieldPath: string
-    fieldType?: string | null
-    createdAt?: Date | string
-    sourceNode: WorkflowNodeCreateNestedOneWithoutFieldsInput
-  }
-
-  export type WorkflowFieldUncheckedCreateWithoutWorkflowInput = {
-    id?: string
-    sourceNodeId: string
-    fieldName: string
-    fieldPath: string
-    fieldType?: string | null
-    createdAt?: Date | string
-  }
-
-  export type WorkflowFieldCreateOrConnectWithoutWorkflowInput = {
-    where: WorkflowFieldWhereUniqueInput
-    create: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput>
-  }
-
-  export type WorkflowFieldCreateManyWorkflowInputEnvelope = {
-    data: WorkflowFieldCreateManyWorkflowInput | WorkflowFieldCreateManyWorkflowInput[]
-    skipDuplicates?: boolean
-  }
-
   export type WorkflowNodeCreateWithoutWorkflowInput = {
     id?: string
     config: JsonNullValueInput | InputJsonValue
@@ -11045,6 +13732,64 @@ export namespace Prisma {
 
   export type WorkflowNodeCreateManyWorkflowInputEnvelope = {
     data: WorkflowNodeCreateManyWorkflowInput | WorkflowNodeCreateManyWorkflowInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowFieldCreateWithoutWorkflowInput = {
+    id?: string
+    fieldName: string
+    fieldPath: string
+    fieldType?: string | null
+    createdAt?: Date | string
+    sourceNode: WorkflowNodeCreateNestedOneWithoutFieldsInput
+  }
+
+  export type WorkflowFieldUncheckedCreateWithoutWorkflowInput = {
+    id?: string
+    sourceNodeId: string
+    fieldName: string
+    fieldPath: string
+    fieldType?: string | null
+    createdAt?: Date | string
+  }
+
+  export type WorkflowFieldCreateOrConnectWithoutWorkflowInput = {
+    where: WorkflowFieldWhereUniqueInput
+    create: XOR<WorkflowFieldCreateWithoutWorkflowInput, WorkflowFieldUncheckedCreateWithoutWorkflowInput>
+  }
+
+  export type WorkflowFieldCreateManyWorkflowInputEnvelope = {
+    data: WorkflowFieldCreateManyWorkflowInput | WorkflowFieldCreateManyWorkflowInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowRoleCreateWithoutWorkflowInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+    assignments?: WorkflowRoleAssignmentCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleUncheckedCreateWithoutWorkflowInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedCreateNestedManyWithoutWorkflowRoleInput
+  }
+
+  export type WorkflowRoleCreateOrConnectWithoutWorkflowInput = {
+    where: WorkflowRoleWhereUniqueInput
+    create: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput>
+  }
+
+  export type WorkflowRoleCreateManyWorkflowInputEnvelope = {
+    data: WorkflowRoleCreateManyWorkflowInput | WorkflowRoleCreateManyWorkflowInput[]
     skipDuplicates?: boolean
   }
 
@@ -11094,6 +13839,35 @@ export namespace Prisma {
     isDeleted?: BoolFilter<"WorkflowEdge"> | boolean
   }
 
+  export type WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput = {
+    where: WorkflowNodeWhereUniqueInput
+    update: XOR<WorkflowNodeUpdateWithoutWorkflowInput, WorkflowNodeUncheckedUpdateWithoutWorkflowInput>
+    create: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput>
+  }
+
+  export type WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput = {
+    where: WorkflowNodeWhereUniqueInput
+    data: XOR<WorkflowNodeUpdateWithoutWorkflowInput, WorkflowNodeUncheckedUpdateWithoutWorkflowInput>
+  }
+
+  export type WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput = {
+    where: WorkflowNodeScalarWhereInput
+    data: XOR<WorkflowNodeUpdateManyMutationInput, WorkflowNodeUncheckedUpdateManyWithoutWorkflowInput>
+  }
+
+  export type WorkflowNodeScalarWhereInput = {
+    AND?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+    OR?: WorkflowNodeScalarWhereInput[]
+    NOT?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
+    id?: StringFilter<"WorkflowNode"> | string
+    workflowId?: StringFilter<"WorkflowNode"> | string
+    config?: JsonFilter<"WorkflowNode">
+    positionX?: FloatFilter<"WorkflowNode"> | number
+    positionY?: FloatFilter<"WorkflowNode"> | number
+    actionId?: StringFilter<"WorkflowNode"> | string
+    isDeleted?: BoolFilter<"WorkflowNode"> | boolean
+  }
+
   export type WorkflowFieldUpsertWithWhereUniqueWithoutWorkflowInput = {
     where: WorkflowFieldWhereUniqueInput
     update: XOR<WorkflowFieldUpdateWithoutWorkflowInput, WorkflowFieldUncheckedUpdateWithoutWorkflowInput>
@@ -11123,33 +13897,33 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"WorkflowField"> | Date | string
   }
 
-  export type WorkflowNodeUpsertWithWhereUniqueWithoutWorkflowInput = {
-    where: WorkflowNodeWhereUniqueInput
-    update: XOR<WorkflowNodeUpdateWithoutWorkflowInput, WorkflowNodeUncheckedUpdateWithoutWorkflowInput>
-    create: XOR<WorkflowNodeCreateWithoutWorkflowInput, WorkflowNodeUncheckedCreateWithoutWorkflowInput>
+  export type WorkflowRoleUpsertWithWhereUniqueWithoutWorkflowInput = {
+    where: WorkflowRoleWhereUniqueInput
+    update: XOR<WorkflowRoleUpdateWithoutWorkflowInput, WorkflowRoleUncheckedUpdateWithoutWorkflowInput>
+    create: XOR<WorkflowRoleCreateWithoutWorkflowInput, WorkflowRoleUncheckedCreateWithoutWorkflowInput>
   }
 
-  export type WorkflowNodeUpdateWithWhereUniqueWithoutWorkflowInput = {
-    where: WorkflowNodeWhereUniqueInput
-    data: XOR<WorkflowNodeUpdateWithoutWorkflowInput, WorkflowNodeUncheckedUpdateWithoutWorkflowInput>
+  export type WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput = {
+    where: WorkflowRoleWhereUniqueInput
+    data: XOR<WorkflowRoleUpdateWithoutWorkflowInput, WorkflowRoleUncheckedUpdateWithoutWorkflowInput>
   }
 
-  export type WorkflowNodeUpdateManyWithWhereWithoutWorkflowInput = {
-    where: WorkflowNodeScalarWhereInput
-    data: XOR<WorkflowNodeUpdateManyMutationInput, WorkflowNodeUncheckedUpdateManyWithoutWorkflowInput>
+  export type WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput = {
+    where: WorkflowRoleScalarWhereInput
+    data: XOR<WorkflowRoleUpdateManyMutationInput, WorkflowRoleUncheckedUpdateManyWithoutWorkflowInput>
   }
 
-  export type WorkflowNodeScalarWhereInput = {
-    AND?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
-    OR?: WorkflowNodeScalarWhereInput[]
-    NOT?: WorkflowNodeScalarWhereInput | WorkflowNodeScalarWhereInput[]
-    id?: StringFilter<"WorkflowNode"> | string
-    workflowId?: StringFilter<"WorkflowNode"> | string
-    config?: JsonFilter<"WorkflowNode">
-    positionX?: FloatFilter<"WorkflowNode"> | number
-    positionY?: FloatFilter<"WorkflowNode"> | number
-    actionId?: StringFilter<"WorkflowNode"> | string
-    isDeleted?: BoolFilter<"WorkflowNode"> | boolean
+  export type WorkflowRoleScalarWhereInput = {
+    AND?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
+    OR?: WorkflowRoleScalarWhereInput[]
+    NOT?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
+    id?: StringFilter<"WorkflowRole"> | string
+    workflowId?: StringFilter<"WorkflowRole"> | string
+    name?: StringFilter<"WorkflowRole"> | string
+    description?: StringNullableFilter<"WorkflowRole"> | string | null
+    permissions?: EnumPermissionNullableListFilter<"WorkflowRole">
+    isSystem?: BoolFilter<"WorkflowRole"> | boolean
+    createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
   }
 
   export type WorkflowEdgeCreateWithoutSourceNodeInput = {
@@ -11264,29 +14038,31 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWorkflowsInput
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutNodesInput = {
     id?: string
+    userId: string
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId: string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutNodesInput = {
@@ -11395,29 +14171,31 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutNodesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowNodeCreateWithoutOutgoingInput = {
@@ -11483,29 +14261,31 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWorkflowsInput
-    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutEdgesInput = {
     id?: string
+    userId: string
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId: string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
-    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutEdgesInput = {
@@ -11599,29 +14379,31 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
-    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutEdgesInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
-    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type ActionCreateWithoutCategoryInput = {
@@ -11816,29 +14598,31 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     user: UserCreateNestedOneWithoutWorkflowsInput
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutFieldsInput = {
     id?: string
+    userId: string
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    userId: string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutFieldsInput = {
@@ -11897,29 +14681,221 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutFieldsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    userId?: StringFieldUpdateOperationsInput | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowCreateWithoutRolesInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutWorkflowsInput
+    edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
+    nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowUncheckedCreateWithoutRolesInput = {
+    id?: string
+    userId: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
+    edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
+    nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowCreateOrConnectWithoutRolesInput = {
+    where: WorkflowWhereUniqueInput
+    create: XOR<WorkflowCreateWithoutRolesInput, WorkflowUncheckedCreateWithoutRolesInput>
+  }
+
+  export type WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    assignedAt?: Date | string
+    assignedBy?: string | null
+  }
+
+  export type WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    assignedAt?: Date | string
+    assignedBy?: string | null
+  }
+
+  export type WorkflowRoleAssignmentCreateOrConnectWithoutWorkflowRoleInput = {
+    where: WorkflowRoleAssignmentWhereUniqueInput
+    create: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRoleAssignmentCreateManyWorkflowRoleInputEnvelope = {
+    data: WorkflowRoleAssignmentCreateManyWorkflowRoleInput | WorkflowRoleAssignmentCreateManyWorkflowRoleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WorkflowUpsertWithoutRolesInput = {
+    update: XOR<WorkflowUpdateWithoutRolesInput, WorkflowUncheckedUpdateWithoutRolesInput>
+    create: XOR<WorkflowCreateWithoutRolesInput, WorkflowUncheckedCreateWithoutRolesInput>
+    where?: WorkflowWhereInput
+  }
+
+  export type WorkflowUpdateToOneWithWhereWithoutRolesInput = {
+    where?: WorkflowWhereInput
+    data: XOR<WorkflowUpdateWithoutRolesInput, WorkflowUncheckedUpdateWithoutRolesInput>
+  }
+
+  export type WorkflowUpdateWithoutRolesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
+    edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
+    nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowUncheckedUpdateWithoutRolesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
+    nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput = {
+    where: WorkflowRoleAssignmentWhereUniqueInput
+    update: XOR<WorkflowRoleAssignmentUpdateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedUpdateWithoutWorkflowRoleInput>
+    create: XOR<WorkflowRoleAssignmentCreateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedCreateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRoleAssignmentUpdateWithWhereUniqueWithoutWorkflowRoleInput = {
+    where: WorkflowRoleAssignmentWhereUniqueInput
+    data: XOR<WorkflowRoleAssignmentUpdateWithoutWorkflowRoleInput, WorkflowRoleAssignmentUncheckedUpdateWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRoleAssignmentUpdateManyWithWhereWithoutWorkflowRoleInput = {
+    where: WorkflowRoleAssignmentScalarWhereInput
+    data: XOR<WorkflowRoleAssignmentUpdateManyMutationInput, WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleInput>
+  }
+
+  export type WorkflowRoleAssignmentScalarWhereInput = {
+    AND?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
+    OR?: WorkflowRoleAssignmentScalarWhereInput[]
+    NOT?: WorkflowRoleAssignmentScalarWhereInput | WorkflowRoleAssignmentScalarWhereInput[]
+    id?: StringFilter<"WorkflowRoleAssignment"> | string
+    userId?: StringFilter<"WorkflowRoleAssignment"> | string
+    userEmail?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+    workflowRoleId?: StringFilter<"WorkflowRoleAssignment"> | string
+    assignedAt?: DateTimeFilter<"WorkflowRoleAssignment"> | Date | string
+    assignedBy?: StringNullableFilter<"WorkflowRoleAssignment"> | string | null
+  }
+
+  export type WorkflowRoleCreateWithoutAssignmentsInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+    workflow: WorkflowCreateNestedOneWithoutRolesInput
+  }
+
+  export type WorkflowRoleUncheckedCreateWithoutAssignmentsInput = {
+    id?: string
+    workflowId: string
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
+  }
+
+  export type WorkflowRoleCreateOrConnectWithoutAssignmentsInput = {
+    where: WorkflowRoleWhereUniqueInput
+    create: XOR<WorkflowRoleCreateWithoutAssignmentsInput, WorkflowRoleUncheckedCreateWithoutAssignmentsInput>
+  }
+
+  export type WorkflowRoleUpsertWithoutAssignmentsInput = {
+    update: XOR<WorkflowRoleUpdateWithoutAssignmentsInput, WorkflowRoleUncheckedUpdateWithoutAssignmentsInput>
+    create: XOR<WorkflowRoleCreateWithoutAssignmentsInput, WorkflowRoleUncheckedCreateWithoutAssignmentsInput>
+    where?: WorkflowRoleWhereInput
+  }
+
+  export type WorkflowRoleUpdateToOneWithWhereWithoutAssignmentsInput = {
+    where?: WorkflowRoleWhereInput
+    data: XOR<WorkflowRoleUpdateWithoutAssignmentsInput, WorkflowRoleUncheckedUpdateWithoutAssignmentsInput>
+  }
+
+  export type WorkflowRoleUpdateWithoutAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflow?: WorkflowUpdateOneRequiredWithoutRolesNestedInput
+  }
+
+  export type WorkflowRoleUncheckedUpdateWithoutAssignmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WorkflowCreateManyUserInput = {
@@ -11927,11 +14903,11 @@ export namespace Prisma {
     name: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    isPublished?: boolean
-    lastPublishedAt?: Date | string | null
-    publishedAt?: Date | string | null
-    publishedWorkflowId?: string | null
     isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
   }
 
   export type WorkflowUpdateWithoutUserInput = {
@@ -11939,14 +14915,15 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
-    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutUserInput = {
@@ -11954,14 +14931,15 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
-    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateManyWithoutUserInput = {
@@ -11969,17 +14947,26 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isPublished?: BoolFieldUpdateOperationsInput | boolean
-    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WorkflowEdgeCreateManyWorkflowInput = {
     id?: string
     sourceNodeId: string
     targetNodeId: string
+    isDeleted?: boolean
+  }
+
+  export type WorkflowNodeCreateManyWorkflowInput = {
+    id?: string
+    config: JsonNullValueInput | InputJsonValue
+    positionX: number
+    positionY: number
+    actionId: string
     isDeleted?: boolean
   }
 
@@ -11992,13 +14979,13 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
-  export type WorkflowNodeCreateManyWorkflowInput = {
+  export type WorkflowRoleCreateManyWorkflowInput = {
     id?: string
-    config: JsonNullValueInput | InputJsonValue
-    positionX: number
-    positionY: number
-    actionId: string
-    isDeleted?: boolean
+    name: string
+    description?: string | null
+    permissions?: WorkflowRoleCreatepermissionsInput | $Enums.Permission[]
+    isSystem?: boolean
+    createdAt?: Date | string
   }
 
   export type WorkflowEdgeUpdateWithoutWorkflowInput = {
@@ -12020,33 +15007,6 @@ export namespace Prisma {
     sourceNodeId?: StringFieldUpdateOperationsInput | string
     targetNodeId?: StringFieldUpdateOperationsInput | string
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
-  }
-
-  export type WorkflowFieldUpdateWithoutWorkflowInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
-    fieldPath?: StringFieldUpdateOperationsInput | string
-    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    sourceNode?: WorkflowNodeUpdateOneRequiredWithoutFieldsNestedInput
-  }
-
-  export type WorkflowFieldUncheckedUpdateWithoutWorkflowInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sourceNodeId?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
-    fieldPath?: StringFieldUpdateOperationsInput | string
-    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type WorkflowFieldUncheckedUpdateManyWithoutWorkflowInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    sourceNodeId?: StringFieldUpdateOperationsInput | string
-    fieldName?: StringFieldUpdateOperationsInput | string
-    fieldPath?: StringFieldUpdateOperationsInput | string
-    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WorkflowNodeUpdateWithoutWorkflowInput = {
@@ -12080,6 +15040,62 @@ export namespace Prisma {
     positionY?: FloatFieldUpdateOperationsInput | number
     actionId?: StringFieldUpdateOperationsInput | string
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type WorkflowFieldUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    fieldName?: StringFieldUpdateOperationsInput | string
+    fieldPath?: StringFieldUpdateOperationsInput | string
+    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sourceNode?: WorkflowNodeUpdateOneRequiredWithoutFieldsNestedInput
+  }
+
+  export type WorkflowFieldUncheckedUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceNodeId?: StringFieldUpdateOperationsInput | string
+    fieldName?: StringFieldUpdateOperationsInput | string
+    fieldPath?: StringFieldUpdateOperationsInput | string
+    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowFieldUncheckedUpdateManyWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceNodeId?: StringFieldUpdateOperationsInput | string
+    fieldName?: StringFieldUpdateOperationsInput | string
+    fieldPath?: StringFieldUpdateOperationsInput | string
+    fieldType?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WorkflowRoleUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: WorkflowRoleAssignmentUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type WorkflowRoleUncheckedUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignments?: WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleNestedInput
+  }
+
+  export type WorkflowRoleUncheckedUpdateManyWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: WorkflowRoleUpdatepermissionsInput | $Enums.Permission[]
+    isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WorkflowEdgeCreateManySourceNodeInput = {
@@ -12266,6 +15282,38 @@ export namespace Prisma {
     isDeleted?: BoolFieldUpdateOperationsInput | boolean
   }
 
+  export type WorkflowRoleAssignmentCreateManyWorkflowRoleInput = {
+    id?: string
+    userId: string
+    userEmail?: string | null
+    assignedAt?: Date | string
+    assignedBy?: string | null
+  }
+
+  export type WorkflowRoleAssignmentUpdateWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WorkflowRoleAssignmentUncheckedUpdateWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type WorkflowRoleAssignmentUncheckedUpdateManyWithoutWorkflowRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    userEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    assignedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignedBy?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
 
 
   /**
@@ -12291,6 +15339,10 @@ export namespace Prisma {
      * @deprecated Use ActionCountOutputTypeDefaultArgs instead
      */
     export type ActionCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ActionCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use WorkflowRoleCountOutputTypeDefaultArgs instead
+     */
+    export type WorkflowRoleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowRoleCountOutputTypeDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */
@@ -12319,6 +15371,14 @@ export namespace Prisma {
      * @deprecated Use WorkflowFieldDefaultArgs instead
      */
     export type WorkflowFieldArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowFieldDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use WorkflowRoleDefaultArgs instead
+     */
+    export type WorkflowRoleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowRoleDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use WorkflowRoleAssignmentDefaultArgs instead
+     */
+    export type WorkflowRoleAssignmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = WorkflowRoleAssignmentDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

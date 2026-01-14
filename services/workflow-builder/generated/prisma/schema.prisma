@@ -15,20 +15,23 @@ model User {
 }
 
 model Workflow {
-  id                  String          @id @default(uuid())
-  name                String
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  userId              String
-  isPublished         Boolean         @default(false)
-  lastPublishedAt     DateTime?
-  publishedAt         DateTime?
-  publishedWorkflowId String?
-  isDeleted           Boolean         @default(false)
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  edges               WorkflowEdge[]
-  fields              WorkflowField[]
-  nodes               WorkflowNode[]
+  id        String          @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  isDeleted Boolean         @default(false)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edges     WorkflowEdge[]
+  nodes     WorkflowNode[]
+  fields    WorkflowField[]
+  roles     WorkflowRole[]
+
+  // Publish status tracking (synced from runtime)
+  isPublished         Boolean   @default(false)
+  publishedWorkflowId String? // Runtime's published workflow ID
+  publishedAt         DateTime? // First publish time
+  lastPublishedAt     DateTime? // Most recent publish time
 
   @@index([userId])
 }
@@ -101,4 +104,47 @@ model WorkflowField {
 
   @@unique([workflowId, sourceNodeId, fieldName])
   @@index([workflowId])
+}
+
+// Available permissions in the system for role-based access control
+enum Permission {
+  WORKFLOW_VIEW // View workflow structure
+  WORKFLOW_EDIT // Edit workflow nodes/edges
+  WORKFLOW_PUBLISH // Publish/unpublish workflow
+  WORKFLOW_DELETE // Delete workflow
+  REVIEW_VIEW // View review queue
+  REVIEW_APPROVE // Approve reviewed items
+  REVIEW_REJECT // Reject reviewed items
+  ROLE_MANAGE // Manage roles and assignments
+}
+
+// Role definition with explicit permissions for each workflow
+model WorkflowRole {
+  id          String                   @id @default(uuid())
+  workflowId  String
+  name        String // "developer", "validator", custom names
+  description String?
+  permissions Permission[] // Array of granted permissions
+  isSystem    Boolean                  @default(false) // true for developer/validator
+  createdAt   DateTime                 @default(now())
+  workflow    Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  assignments WorkflowRoleAssignment[]
+
+  @@unique([workflowId, name])
+  @@index([workflowId])
+}
+
+// Role assignment - links users to roles for specific workflows
+model WorkflowRoleAssignment {
+  id             String       @id @default(uuid())
+  userId         String // Clerk user ID
+  userEmail      String? // For display/invite
+  workflowRoleId String
+  workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)
+  assignedAt     DateTime     @default(now())
+  assignedBy     String? // Who assigned this role
+
+  @@unique([userId, workflowRoleId])
+  @@index([userId])
+  @@index([workflowRoleId])
 }
