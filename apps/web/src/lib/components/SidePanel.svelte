@@ -12,7 +12,8 @@
 		Trash,
 		CopyPlus,
 		Settings2,
-		LifeBuoy
+		LifeBuoy,
+		FileText
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
