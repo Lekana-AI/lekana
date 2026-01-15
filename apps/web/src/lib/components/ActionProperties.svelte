@@ -39,7 +39,8 @@
 		// dynamically match node.config with step.uiSchema.fields
 		fields = step.uiSchema.fields.map((field) => ({
 			...field,
-			value: node?.config?.[field.name] ?? field.value ?? field.defaultValue
+			value: node?.config?.[field.name] ?? field.value ?? field.defaultValue,
+			testConnectionStatus: field.testConnection ? (node?.config?.testConnection ?? false) : false
 		}));
 	}
 
@@ -68,9 +69,10 @@
 		if (!sourceNode) return [];
 
 		// Get outputVariables from source node's config or action's configSchema
-		const variables = sourceNode?.config?.outputVariables 
-			|| sourceNode?.action?.configSchema?.outputVariables 
-			|| [];
+		const variables =
+			sourceNode?.config?.outputVariables ||
+			sourceNode?.action?.configSchema?.outputVariables ||
+			[];
 
 		return variables;
 	});
@@ -86,6 +88,10 @@
 	let isValid = $derived(
 		fields.every((field) => {
 			if (!isVisible(field) || !field.required) return true;
+
+			// If field requires connection test, it must be successful
+			if (field.testConnection && !field.testConnectionStatus) return false;
+
 			if (field.type === 'keyValue') {
 				return (field.value?.length ?? 0) > 0 && field.value.every((p) => p.key && p.value);
 			}
@@ -103,6 +109,9 @@
 			const config = fields.reduce((acc, field) => {
 				if (!isVisible(field)) return acc; // Don't submit hidden fields
 				acc[field.name] = field.value;
+				if (field.testConnection) {
+					acc['testConnection'] = field.testConnectionStatus;
+				}
 				return acc;
 			}, {});
 

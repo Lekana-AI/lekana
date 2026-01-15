@@ -38,6 +38,8 @@
 	let workflowsCollapsed = $state(false);
 	let panelCollapsed = $state(false);
 	let openMenuId = $state<string | null>(null);
+	let menuTop = $state(0);
+	let menuWorkflow = $state<any>(null);
 	let workflows = $state<any[]>([]);
 	let workflowsLoading = $state(false);
 	let isActionLoading = $state(false);
@@ -133,7 +135,7 @@
 <aside
 	class="flex h-screen {panelCollapsed
 		? 'w-16'
-		: 'w-56'} z-30 flex-col justify-between bg-zinc-900 px-2 py-4 backdrop-blur-md transition-[width] duration-300"
+		: 'w-56'} z-0 flex-col justify-between bg-zinc-900 px-2 py-4 backdrop-blur-md transition-[width] duration-300"
 	aria-label="Workflow sidebar"
 >
 	<div class="flex h-full flex-col gap-3">
@@ -233,6 +235,7 @@
 				{#if !workflowsCollapsed && !panelCollapsed}
 					<!-- Workflows list -->
 					<nav
+						onscroll={() => (openMenuId = null)}
 						class="flex max-h-[calc(100vh-250px)] w-full flex-col gap-1 overflow-y-auto pr-1 select-none"
 						aria-label="Workflow list"
 					>
@@ -257,57 +260,25 @@
 									<!-- OPTIONS BUTTON -->
 									<button
 										type="button"
-										onclick={(event) => (
-											event.preventDefault(),
-											event.stopPropagation(),
-											(openMenuId = openMenuId === workflow.id ? null : workflow.id)
-										)}
+										onclick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											const rect = event.currentTarget.getBoundingClientRect();
+											menuTop = rect.top;
+											menuWorkflow = workflow;
+											openMenuId = openMenuId === workflow.id ? null : workflow.id;
+										}}
 										class="absolute right-1 z-20 items-center justify-center rounded-md p-2 transition-colors duration-300 {openMenuId ===
 										workflow.id
 											? 'flex'
 											: 'hidden group-hover:flex'} 
 				{activeWorkflow === workflow.id
-											? 'bg-green-900 hover:bg-green-950'
-											: 'bg-zinc-900 hover:bg-zinc-950'}"
+											? 'bg-zinc-800 hover:bg-zinc-900'
+											: 'bg-zinc-800 hover:bg-zinc-900'}"
 									>
 										<EllipsisVertical class="h-4 w-4" />
 									</button>
 								</a>
-								<!-- DROPDOWN MENU -->
-								{#if openMenuId === workflow.id}
-									<div
-										class="absolute top-10 left-full z-30 min-w-full -translate-x-9 overflow-clip rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-xl"
-									>
-										<a
-											onclick={() => (window.location.href = '/w/' + workflow.id + '#settings')}
-											href="/w/{workflow.id}#settings"
-											type="button"
-											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-										>
-											<Settings2 class="h-4 w-4" />
-
-											Workflow Settings
-										</a>
-
-										<button
-											class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
-											onclick={() => duplicateWorkflow(workflow.id, workflow.name)}
-										>
-											<CopyPlus class="h-4 w-4" />
-
-											Duplicate Workflow
-										</button>
-										<!-- 
-										<button
-											class="flex w-full items-center gap-2 p-3 text-left text-xs text-red-400 hover:bg-red-500/10"
-											onclick={() => console.log('Delete', workflow.id)}
-										>
-											<Trash class="h-4 w-4" />
-
-											Delete Workflow
-										</button> -->
-									</div>
-								{/if}
 							</div>
 						{/each}
 					</nav>
@@ -316,34 +287,66 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col gap-1">
+	<div class="flex flex-col gap-4">
 		<!-- Support Button -->
 		<button
 			type="button"
 			onclick={() => (showSupportModal = true)}
-			class="flex w-full py-3 items-center gap-3 rounded-md text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
+			class="flex w-full items-center gap-3 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
 				? 'justify-center'
 				: 'p-2'}"
 		>
-			<LifeBuoy class="h-5 w-5" />
-			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Support & Feedback</span>
+			<LifeBuoy class="h-6 w-6" />
+			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Help & Resources</span>
 		</button>
 
 		<!-- Bottom welcome strip -->
 		<footer
-			class="mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 transition-colors duration-300 hover:bg-white/5 {panelCollapsed
+			class="group mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 {panelCollapsed
 				? 'justify-center  py-2'
 				: 'p-2'} "
 		>
-			<SignedIn>
-				<UserButton />
-			</SignedIn>
+			<div class="transition-all group-hover:scale-105">
+				<SignedIn>
+					<UserButton />
+				</SignedIn>
+			</div>
 			<p class="flex truncate text-xs {panelCollapsed ? 'hidden' : ''}">
 				Welcome<span class="font-medium">, {userName}</span>
 			</p>
 		</footer>
 	</div>
 </aside>
+
+<!-- WORKFLOW DROPDOWN MENU (Fixed Position) -->
+{#if openMenuId && menuWorkflow}
+	<div
+		class="fixed z-50 w-fit max-w-xs overflow-hidden rounded-xl border border-white/10 bg-zinc-900 font-medium text-gray-200 shadow-2xl {panelCollapsed
+			? 'left-16'
+			: 'left-56'} -translate-x-6"
+		style="top: {menuTop}px;"
+	>
+		<a
+			onclick={() => (window.location.href = '/w/' + menuWorkflow.id + '#settings')}
+			href="/w/{menuWorkflow.id}#settings"
+			type="button"
+			class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+		>
+			<Settings2 class="h-4 w-4" />
+
+			Workflow Settings
+		</a>
+
+		<button
+			class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
+			onclick={() => duplicateWorkflow(menuWorkflow.id, menuWorkflow.name)}
+		>
+			<CopyPlus class="h-4 w-4" />
+
+			Duplicate Workflow
+		</button>
+	</div>
+{/if}
 
 <svelte:window onclick={() => (openMenuId = null)} />
 

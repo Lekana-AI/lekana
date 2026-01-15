@@ -147,11 +147,11 @@
 						{#each suggestedPrompts as item}
 							<button
 								onclick={() => handleGenerate(item.text)}
-								class="group relative flex min-w-fit items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-left transition-all duration-300 hover:scale-[1.01] hover:bg-white/10 active:scale-[0.98]"
+								class="group relative flex min-w-fit items-center gap-3 rounded-xl bg-white/5 px-4 py-2 text-left transition-all duration-300 hover:scale-[1.01] hover:bg-white/10 active:scale-[0.98]"
 							>
-								<Sparkles class="h-3 w-3 text-zinc-400" />
+								<Sparkles class="h-2 w-2 text-zinc-400" />
 								<span
-									class="text-sm whitespace-nowrap text-zinc-400 transition-colors group-hover:text-zinc-200"
+									class="text-xs whitespace-nowrap text-zinc-400 transition-colors group-hover:text-zinc-200"
 								>
 									{item.text}
 								</span>
