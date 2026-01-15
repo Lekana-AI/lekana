@@ -351,7 +351,11 @@
 <svelte:window onclick={() => (openMenuId = null)} />
 
 {#if showSupportModal}
-	<SupportModal onClose={() => (showSupportModal = false)} />
+	<SupportModal
+		{workflows}
+		activeWorkflowId={activeWorkflow}
+		onClose={() => (showSupportModal = false)}
+	/>
 {/if}
 
 <LoadingOverlay show={isActionLoading} title={loadingTitle} message={loadingMessage} />

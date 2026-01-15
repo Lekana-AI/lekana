@@ -13,10 +13,11 @@
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
 
-	let { onClose } = $props();
+	let { onClose, workflows = [], activeWorkflowId = '' } = $props();
 
 	let activeTab = $state<'video' | 'feedback' | 'email' | null>(null);
 	let feedback = $state('');
+	let selectedWorkflowId = $state(activeWorkflowId);
 	let isSubmitting = $state(false);
 	let submitted = $state(false);
 
@@ -25,17 +26,34 @@
 
 		isSubmitting = true;
 
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 1500));
+		try {
+			const res = await fetch('/api/feedback', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					comment: feedback,
+					workflowId: selectedWorkflowId || null
+				})
+			});
 
-		console.log('Feedback submitted:', feedback);
-		isSubmitting = false;
-		submitted = true;
-		toast.success('Feedback sent successfully!');
+			if (!res.ok) {
+				throw new Error('Failed to submit feedback');
+			}
 
-		setTimeout(() => {
-			onClose();
-		}, 2000);
+			isSubmitting = false;
+			submitted = true;
+			toast.success('Feedback sent successfully!');
+
+			setTimeout(() => {
+				onClose();
+			}, 2000);
+		} catch (error) {
+			console.error('Feedback submission error:', error);
+			toast.error('Failed to send feedback. Please try again.');
+			isSubmitting = false;
+		}
 	}
 
 	function toggleTab(tab: 'video' | 'feedback' | 'email') {
@@ -155,6 +173,25 @@
 						<div class="px-4 pb-4" transition:slide>
 							{#if !submitted}
 								<div class="space-y-4 pt-2">
+									<div class="flex flex-col gap-1.5">
+										<label
+											for="workflow-select"
+											class="px-1 text-[10px] font-bold text-zinc-500 uppercase"
+										>
+											Related Workflow (Optional)
+										</label>
+										<select
+											id="workflow-select"
+											bind:value={selectedWorkflowId}
+											class="w-full cursor-pointer appearance-none rounded-xl border border-white/10 bg-zinc-950 px-3 py-2 text-sm text-white transition-all focus:border-green-500/50 focus:outline-none"
+										>
+											<option value="">None</option>
+											{#each workflows as workflow}
+												<option value={workflow.id}>{workflow.name}</option>
+											{/each}
+										</select>
+									</div>
+
 									<textarea
 										bind:value={feedback}
 										placeholder="What can we do better?"

@@ -80,6 +80,7 @@
 			}
 
 			await fetchKeys();
+			onSubmit();
 		} catch (error) {
 			console.error('Error publishing workflow:', error);
 		} finally {

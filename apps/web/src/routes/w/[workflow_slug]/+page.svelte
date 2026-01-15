@@ -151,6 +151,12 @@
 		workflowName = workflow.name;
 	});
 
+	let isSynced = $derived(
+		workflow.isPublished &&
+			workflow.lastPublishedAt &&
+			new Date(workflow.lastPublishedAt).getTime() >= new Date(workflow.updatedAt).getTime() - 1000
+	);
+
 	async function updateName() {
 		if (!workflowName || workflowName === workflow.name) {
 			workflowName = workflow.name;
@@ -319,7 +325,9 @@
 									e.stopPropagation();
 									showPublishModal = !showPublishModal;
 								}}
-								class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
+								class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 {isSynced
+									? 'hover:bg-white/10'
+									: 'bg-green-700 hover:bg-green-800'} active:scale-95"
 							>
 								<CornerRightUp class="h-3.5 w-3.5" />
 								<span>Publish</span>
