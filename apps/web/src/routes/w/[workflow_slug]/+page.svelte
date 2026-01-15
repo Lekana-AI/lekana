@@ -151,6 +151,12 @@
 		workflowName = workflow.name;
 	});
 
+	let isSynced = $derived(
+		workflow.isPublished &&
+			workflow.lastPublishedAt &&
+			new Date(workflow.lastPublishedAt).getTime() >= new Date(workflow.updatedAt).getTime() - 1000
+	);
+
 	async function updateName() {
 		if (!workflowName || workflowName === workflow.name) {
 			workflowName = workflow.name;
@@ -203,16 +209,6 @@
 </svelte:head>
 
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
-	{#if showPublishModal}
-		<Publish
-			{workflow}
-			onClose={() => (showPublishModal = false)}
-			onSubmit={async () => {
-				await reloadWorkflow();
-			}}
-		/>
-	{/if}
-
 	{#if propertiesVisible}
 		<ActionProperties
 			node={actionNode}
@@ -242,10 +238,7 @@
 	{/if}
 
 	{#if showRoleModal}
-		<RoleManagement
-			{workflow}
-			onClose={() => (showRoleModal = false)}
-		/>
+		<RoleManagement {workflow} onClose={() => (showRoleModal = false)} />
 	{/if}
 	<SidePanel
 		activeWorkflow={workflow.id ?? ''}
@@ -285,15 +278,30 @@
 					</a>
 
 					{#if !workflow.isPublished}
-						<button
-							onclick={() => (showPublishModal = true)}
-							class="group flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 transition-all duration-300 hover:bg-green-800 active:scale-95"
-						>
-							<ArrowUp class="h-3.5 w-3.5 text-white" />
-							<span class="text-xs font-medium tracking-wide text-white transition-colors">
-								Publish
-							</span>
-						</button>
+						<div class="relative">
+							<button
+								onclick={(e) => {
+									e.stopPropagation();
+									showPublishModal = !showPublishModal;
+								}}
+								class="group flex items-center gap-2 rounded-lg bg-green-700 px-4 py-2 transition-all duration-300 hover:bg-green-800 active:scale-95"
+							>
+								<ArrowUp class="h-3.5 w-3.5 text-white" />
+								<span class="text-xs font-medium tracking-wide text-white transition-colors">
+									Publish
+								</span>
+							</button>
+
+							{#if showPublishModal}
+								<Publish
+									{workflow}
+									onClose={() => (showPublishModal = false)}
+									onSubmit={async () => {
+										await reloadWorkflow();
+									}}
+								/>
+							{/if}
+						</div>
 					{:else}
 						<a
 							href="{workflow.id}/run"
@@ -311,13 +319,30 @@
 							<Activity class="h-3.5 w-3.5 text-green-400" />
 							<span>Monitor</span>
 						</a>
-						<button
-							onclick={() => (showPublishModal = true)}
-							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
-						>
-							<CornerRightUp class="h-3.5 w-3.5" />
-							<span>Publish</span>
-						</button>
+						<div class="relative">
+							<button
+								onclick={(e) => {
+									e.stopPropagation();
+									showPublishModal = !showPublishModal;
+								}}
+								class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 {isSynced
+									? 'hover:bg-white/10'
+									: 'bg-green-700 hover:bg-green-800'} active:scale-95"
+							>
+								<CornerRightUp class="h-3.5 w-3.5" />
+								<span>Publish</span>
+							</button>
+
+							{#if showPublishModal}
+								<Publish
+									{workflow}
+									onClose={() => (showPublishModal = false)}
+									onSubmit={async () => {
+										await reloadWorkflow();
+									}}
+								/>
+							{/if}
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -350,4 +375,4 @@
 	</div>
 </main>
 
-<svelte:window on:click={() => (open = false)} />
+<svelte:window on:click={() => ((open = false), (showPublishModal = false))} />
