@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { validateConfigKeys, mergeConfig } from '../utils/config.utils';
+import { touchWorkflow } from '../utils/workflow.utils';
 
 export const addNode = async (req: Request, res: Response) => {
     try {
@@ -53,6 +54,9 @@ export const addNode = async (req: Request, res: Response) => {
         // Auto-sync workflow fields for actions that produce output fields
         console.log(`[addNode] About to call syncWorkflowFields for action: ${node.action.name}`);
         await syncWorkflowFields(workflowId, node.id, node.action.name, mergedConfig as Record<string, any>);
+
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
 
         res.status(201).json(node);
     } catch (error) {
@@ -193,6 +197,9 @@ export const updateNode = async (req: Request, res: Response) => {
         console.log(`[updateNode] About to call syncWorkflowFields for action: ${updatedNode.action.name}`);
         await syncWorkflowFields(workflowId, nodeId, updatedNode.action.name, updatedNode.config as Record<string, any>);
 
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
+
         res.json(updatedNode);
     } catch (error) {
         console.error('Error updating node:', error);
@@ -239,6 +246,9 @@ export const duplicateNode = async (req: Request, res: Response) => {
 
         // Auto-sync workflow fields for the new node
         await syncWorkflowFields(workflowId, newNode.id, newNode.action.name, newNode.config as Record<string, any>);
+
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
 
         res.status(201).json(newNode);
     } catch (error) {
@@ -354,7 +364,6 @@ export const deleteNode = async (req: Request, res: Response) => {
             data: { isDeleted: true }
         });
 
-        // Also soft delete edges connected to this node
         await prisma.workflowEdge.updateMany({
             where: {
                 OR: [
@@ -364,6 +373,9 @@ export const deleteNode = async (req: Request, res: Response) => {
             },
             data: { isDeleted: true }
         });
+
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
 
         res.status(200).json({ message: 'Node deleted successfully' });
     } catch (error) {

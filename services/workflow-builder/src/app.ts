@@ -4,6 +4,7 @@ import workflowRoutes from './routes/workflow.routes';
 import actionRoutes from './routes/action.routes';
 import categoryRoutes from './routes/category.routes';
 import roleRoutes from './routes/role.routes';
+import feedbackRoutes from './routes/feedback.routes';
 import { checkJwt, handleAuthError, extractUserInfo } from './middleware/auth.middleware';
 import { getUserWorkflowRoles } from './controllers/role.controller';
 
@@ -43,6 +44,9 @@ app.get('/permissions/available', checkJwt, handleAuthError, extractUserInfo, ge
 // Utility endpoints
 import { testConnection } from './controllers/utils.controller';
 app.post('/utils/test-connection', checkJwt, handleAuthError, extractUserInfo, testConnection);
+
+// Feedback endpoint
+app.use('/feedback', checkJwt, handleAuthError, extractUserInfo, feedbackRoutes);
 
 export default app;
 

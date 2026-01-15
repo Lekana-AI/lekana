@@ -235,6 +235,14 @@ exports.Prisma.DefaultRolePermissionScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.FeedbackScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  workflowId: 'workflowId',
+  comment: 'comment',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -279,7 +287,8 @@ exports.Prisma.ModelName = {
   WorkflowRole: 'WorkflowRole',
   WorkflowRoleAssignment: 'WorkflowRoleAssignment',
   DefaultRole: 'DefaultRole',
-  DefaultRolePermission: 'DefaultRolePermission'
+  DefaultRolePermission: 'DefaultRolePermission',
+  Feedback: 'Feedback'
 };
 
 /**
