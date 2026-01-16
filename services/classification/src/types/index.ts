@@ -39,6 +39,7 @@ export interface ServiceMetadata {
     processingTime: number;
     serviceVersion: string;
     modelUsed: string;
+    tokensUsed?: number;
 }
 
 export interface ClassificationResponse {

@@ -125,6 +125,11 @@ export class ClassificationController {
 
             const processingTime = Date.now() - startTime;
 
+            // Aggregate total tokens used across all classifications
+            const totalTokensUsed = classifications.reduce((sum, c: any) => {
+                return sum + (c.tokensUsed?.totalTokens || 0);
+            }, 0);
+
             const response: ClassificationResponse = {
                 success: true,
                 data: {
@@ -133,7 +138,8 @@ export class ClassificationController {
                 metadata: {
                     processingTime,
                     serviceVersion: process.env.SERVICE_VERSION || '1.0.0',
-                    modelUsed: documentAIService.isConfigured() ? 'document-ai-with-gemini-fallback' : 'gemini'
+                    modelUsed: documentAIService.isConfigured() ? 'document-ai-with-gemini-fallback' : 'gemini',
+                    tokensUsed: totalTokensUsed
                 },
                 requiresHumanReview: anyRequiresReview
             };
@@ -247,6 +253,11 @@ export class ClassificationController {
 
             const processingTime = Date.now() - startTime;
 
+            // Aggregate total tokens used across all classifications
+            const totalTokensUsed = classifications.reduce((sum, c: any) => {
+                return sum + (c.tokensUsed?.totalTokens || 0);
+            }, 0);
+
             const response: ClassificationResponse = {
                 success: true,
                 data: {
@@ -255,7 +266,8 @@ export class ClassificationController {
                 metadata: {
                     processingTime,
                     serviceVersion: process.env.SERVICE_VERSION || '1.0.0',
-                    modelUsed: 'gemini'
+                    modelUsed: 'gemini',
+                    tokensUsed: totalTokensUsed
                 },
                 requiresHumanReview: anyRequiresReview
             };

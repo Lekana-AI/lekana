@@ -180,6 +180,15 @@ router.post('/process', async (req: Request, res: Response) => {
         const processingTime = Date.now() - startTime;
         logger.info(`[Process] Classification completed in ${processingTime}ms`);
 
+        // Aggregate total tokens used across all classifications
+        const totalTokensUsed = classifications.reduce((sum, c: any) => {
+            return sum + (c.tokensUsed?.totalTokens || 0);
+        }, 0);
+
+        if (totalTokensUsed > 0) {
+            logger.info(`[Process] Total tokens used: ${totalTokensUsed}`);
+        }
+
         // Build ServiceResponse
         res.json({
             success: true,
@@ -200,7 +209,8 @@ router.post('/process', async (req: Request, res: Response) => {
             metadata: {
                 processingTime,
                 serviceVersion: SERVICE_VERSION,
-                modelUsed: documentAIService.isConfigured() ? 'document-ai-with-gemini-fallback' : 'gemini'
+                modelUsed: documentAIService.isConfigured() ? 'document-ai-with-gemini-fallback' : 'gemini',
+                tokensUsed: totalTokensUsed
             },
             requiresHumanReview: anyRequiresReview,
             humanReviewData: anyRequiresReview ? {

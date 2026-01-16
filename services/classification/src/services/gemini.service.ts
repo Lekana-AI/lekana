@@ -73,6 +73,18 @@ export class GeminiService {
             const text = response.text();
             logger.info('Gemini raw response:', { responseText: text });
 
+            // Extract token usage from response
+            const usageMetadata = response.usageMetadata;
+            const tokensUsed = usageMetadata ? {
+                promptTokens: usageMetadata.promptTokenCount || 0,
+                completionTokens: usageMetadata.candidatesTokenCount || 0,
+                totalTokens: usageMetadata.totalTokenCount || 0
+            } : null;
+
+            if (tokensUsed) {
+                logger.info(`Gemini token usage: ${tokensUsed.promptTokens} prompt + ${tokensUsed.completionTokens} completion = ${tokensUsed.totalTokens} total`);
+            }
+
             // Parse classification from response
             const classification = this.parseClassificationResponse(
                 text,
@@ -80,10 +92,14 @@ export class GeminiService {
                 filename
             );
 
+            // Add token usage to classification result
+            (classification as any).tokensUsed = tokensUsed;
+
             logger.info('Gemini classification complete', {
                 filename,
                 label: classification.label,
-                confidence: classification.confidence
+                confidence: classification.confidence,
+                tokensUsed: tokensUsed?.totalTokens
             });
             logger.info('=== GEMINI CLASSIFICATION END ===');
 
