@@ -4,6 +4,7 @@ import workflowRoutes from './routes/workflow.routes';
 import actionRoutes from './routes/action.routes';
 import categoryRoutes from './routes/category.routes';
 import roleRoutes from './routes/role.routes';
+import usageRoutes from './routes/usage.routes';
 import { checkJwt, handleAuthError, extractUserInfo } from './middleware/auth.middleware';
 import { getUserWorkflowRoles } from './controllers/role.controller';
 
@@ -29,6 +30,7 @@ app.use('/workflows',
     handleAuthError, extractUserInfo, workflowRoutes);
 app.use('/actions', checkJwt, handleAuthError, extractUserInfo, actionRoutes);
 app.use('/categories', checkJwt, handleAuthError, extractUserInfo, categoryRoutes);
+app.use('/usage', checkJwt, handleAuthError, extractUserInfo, usageRoutes);
 
 // Role management routes (nested under workflows)
 app.use('/workflows/:id/roles', checkJwt, handleAuthError, extractUserInfo, roleRoutes);
