@@ -36,6 +36,25 @@ app.get("/health", (req, res) => {
 });
 
 // ============================================
+// Test Connection Endpoint (for config validation)
+// ============================================
+app.post("/api/v1/test-connection", async (req, res) => {
+  const { databaseUrl } = req.body;
+
+  if (!databaseUrl) {
+    return res.status(400).json({
+      success: false,
+      message: "databaseUrl is required",
+    });
+  }
+
+  console.log("[DB-Export] Testing connection...");
+  const result = await databaseService.testConnection(databaseUrl);
+
+  res.json(result);
+});
+
+// ============================================
 // Main Export Processing Endpoint
 // Follows ServiceRequest/ServiceResponse contract
 // ============================================
