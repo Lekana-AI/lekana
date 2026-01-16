@@ -131,6 +131,7 @@ app.post(
         },
         documents: result.uploadedFiles.map((f) => ({
           url: f.signedUrl || f.url,
+          storagePath: f.storagePath, // Actual GCS path for generating signed URLs later
           filename: f.filename,
           mimeType: f.mimeType,
         })),
@@ -212,6 +213,7 @@ app.post(
         },
         documents: result.uploadedFiles.map((f) => ({
           url: f.signedUrl || f.url,
+          storagePath: f.storagePath, // Actual GCS path for generating signed URLs later
           filename: f.filename,
           mimeType: f.mimeType,
         })),
@@ -237,6 +239,62 @@ app.post(
           serviceVersion: SERVICE_VERSION,
           bucket: bucketName,
         },
+      });
+    }
+  }
+);
+
+// ============================================
+// Signed URL Endpoint
+// Generates fresh signed URLs for existing files
+// ============================================
+app.post(
+  "/api/v1/signed-url",
+  //checkJwt,
+  handleAuthError,
+  extractUserInfo,
+  async (req, res) => {
+    try {
+      const { storagePath, expiryMinutes = 60 } = req.body;
+
+      if (!storagePath) {
+        return res.status(400).json({
+          success: false,
+          error: { code: "MISSING_PATH", message: "storagePath is required" },
+        });
+      }
+
+      // Import generateSignedUrl from storage service
+      const { generateSignedUrl } = require("./services/storage.service");
+
+      // Handle different storage path formats
+      let filePath = storagePath;
+
+      // If it's a full GCS URL, extract the path
+      if (storagePath.includes("storage.googleapis.com")) {
+        const url = new URL(storagePath);
+        // Remove leading slash and bucket name from path
+        filePath = url.pathname.split("/").slice(2).join("/");
+      } else if (storagePath.startsWith("gs://")) {
+        // Handle gs:// format
+        filePath = storagePath.replace(/^gs:\/\/[^\/]+\//, "");
+      }
+
+      const signedUrl = await generateSignedUrl(filePath, expiryMinutes);
+
+      res.json({
+        success: true,
+        data: {
+          signedUrl,
+          storagePath: filePath,
+          expiresIn: expiryMinutes * 60, // seconds
+        },
+      });
+    } catch (error) {
+      console.error("[Upload] Error generating signed URL:", error.message);
+      res.status(400).json({
+        success: false,
+        error: { code: "SIGNED_URL_ERROR", message: error.message },
       });
     }
   }
