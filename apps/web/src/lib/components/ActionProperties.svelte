@@ -3,6 +3,7 @@
 	import { CornerRightUp, X } from 'lucide-svelte';
 	import Input from './Input.svelte';
 	import { onMount } from 'svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	let { onClose, onSubmit, actionId, workflow, node, sourceNodeId } = $props();
 
@@ -19,29 +20,35 @@
 		const idToFetch = node?.action?.id || actionId;
 		if (!idToFetch) return;
 
-		const res = await fetch(`/api/actions/${idToFetch}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
+		try {
+			const res = await fetch(`/api/actions/${idToFetch}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to load action details');
+				throw new Error(`Failed to load action: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			throw new Error(`Failed to load action: ${res.status}`);
+			const data = await res.json();
+			step = data; // full action object
+
+			// build the fields array that the <Input> loop expects
+			// dynamically match node.config with step.uiSchema.fields
+			fields = step.uiSchema.fields.map((field) => ({
+				...field,
+				value: node?.config?.[field.name] ?? field.value ?? field.defaultValue,
+				testConnectionStatus: field.testConnection ? (node?.config?.testConnection ?? false) : false
+			}));
+		} catch (error) {
+			console.error('Error loading fields:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		}
-
-		const data = await res.json();
-		step = data; // full action object
-
-		// build the fields array that the <Input> loop expects
-		// dynamically match node.config with step.uiSchema.fields
-		fields = step.uiSchema.fields.map((field) => ({
-			...field,
-			value: node?.config?.[field.name] ?? field.value ?? field.defaultValue,
-			testConnectionStatus: field.testConnection ? (node?.config?.testConnection ?? false) : false
-		}));
 	}
 
 	let extractedFields = $derived.by(() => {
@@ -157,6 +164,7 @@
 			onClose();
 		} catch (error) {
 			console.error(error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		} finally {
 			loading = false;
 		}

@@ -1,8 +1,23 @@
 <script lang="ts">
-	import { X, Settings2, Pen, Trash2, ExternalLink, ArrowRight, Users } from 'lucide-svelte';
+	import {
+		X,
+		Settings2,
+		Pen,
+		Trash2,
+		ExternalLink,
+		ArrowRight,
+		Hash,
+		Database,
+		Clock,
+		Calendar,
+		CheckCircle2,
+		Copy
+	} from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 
-	let { workflow, onClose, onRename, onOpenRoles } = $props();
+	import { toast } from '$lib/toast.svelte';
+
+	let { workflow, onClose, onRename } = $props();
 
 	let workflowName = $state(workflow.name);
 	let confirmName = $state('');
@@ -21,12 +36,14 @@
 			if (!res.ok) {
 				const errorText = await res.text();
 				console.error('Backend response body:', errorText);
+				toast.error('Failed to delete workflow');
 				throw new Error(`Failed to delete workflow: ${res.status}`);
 			}
 
 			goto('/dashboard');
 		} catch (error) {
 			console.error('Error deleting workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 			isDeleting = false;
 		}
 	}
@@ -37,21 +54,28 @@
 			return;
 		}
 
-		const res = await fetch(`/api/workflows/${workflow.id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ name: workflowName })
-		});
+		try {
+			const res = await fetch(`/api/workflows/${workflow.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: workflowName })
+			});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			throw new Error(`Failed to update workflow name: ${res.status}`);
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to update workflow name');
+				throw new Error(`Failed to update workflow name: ${res.status}`);
+			}
+
+			onRename(workflowName);
+		} catch (error) {
+			console.error('Error updating workflow name:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
+			workflowName = workflow.name;
 		}
-
-		onRename(workflowName);
 	}
 </script>
 
@@ -62,7 +86,7 @@
 		<div class="w-full min-w-2xl rounded-2xl border border-white/5 bg-zinc-900 p-6 shadow-2xl">
 			{#if deletePrompt}
 				<!-- Delete Confirmation View -->
-				<div class="space-y-6">
+				<div class="space-y-6 max-w-2xl">
 					<div class="relative flex w-full flex-col gap-2 pb-2">
 						<div class="flex items-center justify-end">
 							<button
@@ -91,7 +115,7 @@
 						<div class="space-y-2">
 							<label
 								for="confirm-name"
-								class="flex items-center gap-2 text-[10px] font-bold tracking-widest text-zinc-500 uppercase"
+								class="flex items-center gap-2 text-xs font-semibold text-zinc-500"
 							>
 								Type <span class="text-white select-all">{workflow.name}</span> to confirm
 							</label>
@@ -125,7 +149,6 @@
 					</div>
 				</div>
 			{:else}
-				<!-- Main Settings View -->
 				<div class="relative flex w-full flex-col gap-2 pb-6">
 					<div class="flex items-center justify-end">
 						<button
@@ -135,60 +158,99 @@
 							<X class="h-4 w-4" />
 						</button>
 					</div>
-					<span class="flex items-center gap-2">
-						<Settings2 class="h-6 w-6 text-white" />
-						<h1 class="text-2xl font-semibold text-white md:text-3xl">Workflow Settings</h1>
-					</span>
-					<p class="mt-1 w-full text-sm text-zinc-400">
-						Manage configuration for <span class="font-medium text-white">{workflow.name}</span>.
+					<h1 class="text-3xl font-bold text-white">General</h1>
+					<p class="mt-1 w-full text-sm text-zinc-500">
+						Manage settings for <span class="font-medium text-zinc-300">{workflow.name}</span>.
 					</p>
 				</div>
 
-				<div class="space-y-8">
-					<!-- Rename Section -->
-					<div class="space-y-3">
-						<label
-							for="workflow-name-input"
-							class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase"
-							>Workflow Name</label
-						>
-						<div class="flex items-center gap-2">
-							<input
-								id="workflow-name-input"
-								type="text"
-								bind:value={workflowName}
-								class="w-full rounded-xl border border-white/10 bg-zinc-950 px-4 py-3 text-sm text-white transition-all focus:border-green-500/50 focus:outline-none"
-								placeholder="Enter workflow name"
-							/>
+				<div class="space-y-10">
+					<!-- Name & ID Section -->
+					<div class="grid grid-cols-2 items-start gap-8">
+						<div class="space-y-4">
+							<div class="flex flex-col gap-2">
+								<label for="workflow-name-input" class="text-xs font-semibold text-zinc-400"
+									>Workflow Name</label
+								>
+								<input
+									id="workflow-name-input"
+									type="text"
+									bind:value={workflowName}
+									class="w-full rounded-xl border border-white/10 bg-zinc-950 px-4 py-2.5 text-sm text-white transition-all focus:border-green-500/50 focus:outline-none"
+									placeholder="Enter workflow name"
+								/>
+							</div>
 							<button
 								onclick={updateName}
-								class="flex items-center gap-2 rounded-lg bg-white/5 px-4 py-2.5 text-xs font-semibold text-white transition-all hover:bg-white/10 active:scale-95"
+								class="rounded-lg mx-1 bg-white px-6 py-2 text-sm font-semibold text-black transition-all hover:bg-zinc-200 active:scale-95"
 							>
-								<Pen class="h-3.5 w-3.5" />
-								RENAME
+								Save
 							</button>
+						</div>
+
+						<div class="space-y-4">
+							<div class="flex flex-col gap-2">
+								<p class="text-xs font-semibold text-zinc-400">Workflow ID</p>
+								<div class="group relative">
+									<div
+										class="w-full rounded-xl border border-white/10 bg-zinc-950 px-4 py-2.5 font-mono text-sm text-zinc-400"
+									>
+										{workflow.id}
+									</div>
+									<button
+										onclick={() => {
+											navigator.clipboard.writeText(workflow.id);
+											toast.success('ID copied to clipboard');
+										}}
+										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-white"
+										title="Copy ID"
+									>
+										<Copy class="h-4 w-4" />
+									</button>
+								</div>
+							</div>
 						</div>
 					</div>
 
-					<!-- Role Management Section -->
-					<div class="space-y-3">
-						<p class="text-[10px] font-bold tracking-widest text-green-500 uppercase">Access Control</p>
-						<div
-							class="flex items-center justify-between rounded-xl border border-green-500/20 bg-green-500/5 p-4"
-						>
-							<div>
-								<h4 class="text-sm font-medium text-white">Role Management</h4>
-								<p class="text-[11px] text-zinc-400">
-									Manage roles and permissions for collaborators and validators.
+					<!-- Analytics/Metadata Section -->
+					<div class="space-y-4">
+						<p class="text-xs font-semibold text-zinc-400">Workflow Insights</p>
+						<div class="grid grid-cols-4 gap-4">
+							<div class="space-y-2 transition-all">
+								<div class="flex items-center gap-1.5 text-zinc-500">
+									<Hash class="h-3.5 w-3.5" />
+									<span class="text-[9px] font-bold tracking-wider uppercase">Nodes</span>
+								</div>
+								<p class="text-sm font-medium text-zinc-400">{workflow.nodes?.length || 0}</p>
+							</div>
+
+							<div class="space-y-2 transition-all">
+								<div class="flex items-center gap-1.5 text-zinc-500">
+									<Database class="h-3.5 w-3.5" />
+									<span class="text-[9px] font-bold tracking-wider uppercase">Edges</span>
+								</div>
+								<p class="text-sm font-medium text-zinc-400">{workflow.edges?.length || 0}</p>
+							</div>
+
+							<div class="space-y-2 transition-all">
+								<div class="flex items-center gap-1.5 text-zinc-500">
+									<Calendar class="h-3.5 w-3.5" />
+									<span class="text-[9px] font-bold tracking-wider uppercase">Created</span>
+								</div>
+								<p class="text-sm font-medium text-zinc-400">
+									{new Date(workflow.createdAt).toLocaleDateString()}
 								</p>
 							</div>
-							<button
-								onclick={onOpenRoles}
-								class="flex items-center gap-2 rounded-lg border border-green-500/50 px-4 py-2 text-xs font-semibold text-green-400 transition-all hover:bg-green-500/20 hover:text-white active:scale-95"
-							>
-								<Users class="h-3.5 w-3.5" />
-								MANAGE ROLES
-							</button>
+
+							<div class="space-y-2 transition-all">
+								<div class="flex items-center gap-1.5 text-zinc-500">
+									<Clock class="h-3.5 w-3.5" />
+									<span class="text-[9px] font-bold tracking-wider uppercase">Updated</span>
+								</div>
+								<p class="text-sm font-medium text-zinc-400">
+									{new Date(workflow.updatedAt).toLocaleDateString()}
+								</p>
+							</div>
 						</div>
 					</div>
 
@@ -206,10 +268,10 @@
 							</div>
 							<button
 								onclick={() => (deletePrompt = true)}
-								class="flex items-center gap-2 rounded-lg border border-red-500/50 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-500/20 hover:text-white active:scale-95"
+								class="flex items-center gap-2 rounded-lg border border-red-500/50 px-4 py-2 text-xs font-semibold text-red-500 transition-all hover:bg-red-800 hover:text-white active:scale-95"
 							>
 								<Trash2 class="h-3.5 w-3.5" />
-								DELETE
+								Delete
 							</button>
 						</div>
 					</div>
@@ -219,7 +281,7 @@
 							onclick={onClose}
 							class="rounded-lg border border-white/10 bg-white/5 px-6 py-2 text-xs font-semibold text-white transition-all hover:bg-white/10 active:scale-95"
 						>
-							DONE
+							Done
 						</button>
 					</div>
 				</div>

@@ -7,15 +7,14 @@
 		X,
 		Play,
 		Loader2,
-		CheckCircle2,
-		AlertCircle,
+		CircleCheck,
+		CircleAlert,
 		Plus,
 		Minus,
-
 		Upload
-
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { toast } from '$lib/toast.svelte';
 
 	let { data } = $props();
 
@@ -91,6 +90,7 @@
 			result = await response.json();
 		} catch (e: any) {
 			error = e.message || 'Something went wrong';
+			toast.error(`Failed to run workflow: ${error}. Please try again in a moment.`);
 		} finally {
 			loading = false;
 		}
@@ -260,7 +260,7 @@
 					class="mt-6 flex flex-col gap-4 rounded-2xl border border-green-500/30 bg-green-500/10 p-6"
 				>
 					<div class="flex items-center gap-3 text-green-400">
-						<CheckCircle2 class="h-6 w-6" />
+						<CircleCheck class="h-6 w-6" />
 						<h3 class="text-lg font-semibold">Uploaded Successfully</h3>
 					</div>
 				</div>
@@ -272,7 +272,7 @@
 					class="mt-6 flex flex-col gap-4 rounded-2xl border border-red-500/30 bg-red-500/10 p-6"
 				>
 					<div class="flex items-center gap-3 text-red-400">
-						<AlertCircle class="h-6 w-6" />
+						<CircleAlert class="h-6 w-6" />
 						<h3 class="text-lg font-semibold">Upload Failed</h3>
 					</div>
 					<p class="text-sm text-zinc-400">{error}</p>

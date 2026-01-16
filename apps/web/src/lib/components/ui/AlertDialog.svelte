@@ -2,7 +2,7 @@
 	import { fade, slide } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { confirmStore } from '$lib/confirm.svelte';
-	import { Check, X, AlertCircle, HelpCircle } from 'lucide-svelte';
+	import { Check, X, CircleAlert, HelpCircle } from 'lucide-svelte';
 
 	let { isOpen, title, message, confirmText, cancelText, type } = $derived(confirmStore.state);
 
@@ -35,7 +35,7 @@
 					<div
 						class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-500"
 					>
-						<AlertCircle size={22} />
+						<CircleAlert size={22} />
 					</div>
 				{/if}
 			</div>

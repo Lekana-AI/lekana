@@ -43,6 +43,11 @@
 	let activeSection = $state('introduction');
 
 	onMount(() => {
+		// Initialize from hash
+		if (window.location.hash) {
+			activeSection = window.location.hash.slice(1);
+		}
+
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
@@ -51,14 +56,25 @@
 					}
 				});
 			},
-			{ threshold: 0.2, rootMargin: '-10% 0% -70% 0%' }
+			{ threshold: 0.1, rootMargin: '-10% 0% -70% 0%' }
 		);
 
 		document.querySelectorAll('section[id]').forEach((section) => {
 			observer.observe(section);
 		});
 
-		return () => observer.disconnect();
+		const handleHashChange = () => {
+			if (window.location.hash) {
+				activeSection = window.location.hash.slice(1);
+			}
+		};
+
+		window.addEventListener('hashchange', handleHashChange);
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('hashchange', handleHashChange);
+		};
 	});
 </script>
 
@@ -237,12 +253,12 @@
 									class="group flex items-center justify-between rounded-xl border border-zinc-800 bg-black p-4"
 								>
 									<div class="scrollbar-hide overflow-x-auto font-mono text-sm">
-										<span class="text-zinc-600">https://api.lekana.io</span>{endpoint.path}
+										<span class="text-zinc-600">https://api.lekana.dev</span>{endpoint.path}
 									</div>
 									<button
 										onclick={() =>
 											copyToClipboard(
-												`https://api.lekana.io${endpoint.path}`,
+												`https://api.lekana.dev${endpoint.path}`,
 												endpoint.id + '_path'
 											)}
 										class="rounded-lg p-2 text-zinc-600 transition-colors group-hover:text-zinc-400 hover:bg-zinc-900"

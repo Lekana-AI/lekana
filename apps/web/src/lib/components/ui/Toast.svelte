@@ -1,5 +1,5 @@
 <script>
-	import { CheckCircle, AlertCircle, Info, X } from 'lucide-svelte';
+	import { CircleCheck, CircleAlert, Info, X } from 'lucide-svelte';
 	import { fade, slide, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
@@ -7,8 +7,8 @@
 	let { message, type = 'info', id, count = 1 } = $props();
 
 	const icons = {
-		success: CheckCircle,
-		error: AlertCircle,
+		success: CircleCheck,
+		error: CircleAlert,
 		info: Info
 	};
 

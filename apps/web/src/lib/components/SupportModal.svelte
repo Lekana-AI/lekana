@@ -4,10 +4,11 @@
 		Mail,
 		MessageSquare,
 		Send,
-		CheckCircle2,
+		CircleCheck,
 		ChevronDown,
 		ChevronRight,
-		Play
+		Play,
+		Shield
 	} from 'lucide-svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
@@ -96,7 +97,7 @@
 					<MessageSquare class="h-6 w-6" />
 				</div>
 				<h2 class="text-xl font-bold text-white">How can we help?</h2>
-				<p class="mt-1 text-sm text-zinc-400">Get support or share your thoughts with us.</p>
+				<p class="mt-1 text-sm text-zinc-400">Get support or give us your feedback.</p>
 			</div>
 
 			<div class="space-y-3">
@@ -218,7 +219,7 @@
 									<div
 										class="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-500"
 									>
-										<CheckCircle2 class="h-8 w-8" />
+										<CircleCheck class="h-8 w-8" />
 									</div>
 									<h3 class="text-lg font-bold text-white">Thank You!</h3>
 									<p class="mt-1 text-xs text-zinc-400">Your feedback has been received.</p>
@@ -262,14 +263,14 @@
 										>Support Email</span
 									>
 									<a
-										href="mailto:support@lekana.ai"
+										href="mailto:support@lekana.dev"
 										class="text-sm text-white transition-colors hover:text-green-400"
 									>
-										support@lekana.ai
+										support@lekana.dev
 									</a>
 								</div>
 								<a
-									href="mailto:support@lekana.ai"
+									href="mailto:support@lekana.dev"
 									class="rounded-lg bg-white/5 p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
 								>
 									<Mail class="h-4 w-4" />
@@ -278,6 +279,23 @@
 						</div>
 					{/if}
 				</div>
+			</div>
+			<div class="mt-6 px-2  flex items-center border-t border-white/5 pt-4">
+				<a
+					href="/privacy"
+					target="_blank"
+					class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
+				>
+					Privacy
+				</a>
+				<span class="mx-2 text-zinc-500"></span>
+				<a
+					href="/terms"
+					target="_blank"
+					class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
+				>
+					Terms
+				</a>
 			</div>
 		</div>
 	</div>

@@ -19,8 +19,8 @@
 		ChevronRight,
 		BookOpen,
 		Play,
-		CheckCircle2,
-		AlertCircle,
+		CircleCheck,
+		CircleAlert,
 		Clock,
 		Layers,
 		RefreshCcwDot,
@@ -30,6 +30,7 @@
 		ExternalLink,
 		Loader2
 	} from 'lucide-svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	// Existing execution state
 	let executions = $state<any[]>([]);
@@ -121,6 +122,7 @@
 			executions = data;
 		} catch (e) {
 			console.error('Failed to fetch executions:', e);
+			toast.error('Failed to load executions. Please try again in a moment.');
 		} finally {
 			loading = false;
 		}
@@ -185,6 +187,7 @@
 			executionDetails[id] = data;
 		} catch (e) {
 			console.error('Failed to fetch execution details:', e);
+			toast.error('Failed to load execution details. Please try again in a moment.');
 		} finally {
 			detailLoadingId = null;
 		}
@@ -255,7 +258,7 @@
 					</div>
 					<!-- <div class="h-4 w-px bg-white/10"></div> -->
 					<div class="flex min-w-[200px] flex-col rounded-lg">
-						<span class="truncate text-md font-semibold text-zinc-300">
+						<span class="text-md truncate font-semibold text-zinc-300">
 							{workflow.name}
 						</span>
 					</div>
@@ -280,7 +283,7 @@
 							<span>Run</span>
 						</a>
 					{/if}
-				<a
+					<a
 						href="/docs"
 						target="_blank"
 						class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
@@ -540,9 +543,9 @@
 											<h2 class="flex items-center gap-2 text-base font-bold text-white">
 												Execution {execution.id.slice(0, 8)}
 												{#if execution.status === 'COMPLETED'}
-													<CheckCircle2 class="h-4 w-4 text-green-500" />
+													<CircleCheck  class="h-4 w-4 text-green-500" />
 												{:else}
-													<AlertCircle class="h-4 w-4 text-red-500" />
+													<CircleAlert class="h-4 w-4 text-red-500" />
 												{/if}
 											</h2>
 											<p class="font-mono text-xs text-zinc-500">{execution.id}</p>
@@ -636,7 +639,7 @@
 																{step.actionName}
 															</span>
 															{#if step.status !== 'COMPLETED'}
-																<AlertCircle class="h-3 w-3 text-red-500" />
+																<CircleAlert class="h-3 w-3 text-red-500" />
 															{/if}
 														</div>
 														<div class="mt-0.5 flex items-center gap-2">
@@ -780,7 +783,7 @@
 													<h3
 														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"
 													>
-														<AlertCircle class="h-4 w-4" />
+														<CircleAlert class="h-4 w-4" />
 														Error Details
 													</h3>
 													<div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
@@ -811,7 +814,7 @@
 						<Activity class="h-10 w-10 text-zinc-500 opacity-20" />
 					</div>
 					<div class="space-y-2 text-center">
-						<h3 class="text-xl font-bold tracking-tight text-white/90">Monitor Not Available</h3>
+						<h3 class="text-xl font-bold tracking-tight text-white/90">Monitoring Not Available</h3>
 						<p class="text-sm font-medium text-zinc-500">
 							Publish workflow first to monitor executions
 						</p>

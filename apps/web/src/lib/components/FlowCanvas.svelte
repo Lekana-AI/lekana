@@ -30,22 +30,27 @@
 	};
 
 	async function updateNodePosition(value: any) {
-		const res = await fetch(`/api/workflows/${workflowId}/nodes/${value.targetNode.id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				positionX: value.targetNode.position.x,
-				positionY: value.targetNode.position.y
-			})
-		});
+		try {
+			const res = await fetch(`/api/workflows/${workflowId}/nodes/${value.targetNode.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					positionX: value.targetNode.position.x,
+					positionY: value.targetNode.position.y
+				})
+			});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Failed to update node:', errorText);
-
-			throw new Error(`Failed to update node: ${res.status}`);
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Failed to update node:', errorText);
+				toast.error('Failed to update node position');
+				throw new Error(`Failed to update node: ${res.status}`);
+			}
+		} catch (error) {
+			console.error('Error updating node position:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		}
 	}
 

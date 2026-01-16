@@ -10,7 +10,7 @@
 	import { onMount } from 'svelte';
 	import {
 		Settings2,
-		CheckCircle2,
+		CircleCheck,
 		Key,
 		Terminal,
 		Check,
@@ -29,7 +29,6 @@
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
-	import RoleManagement from '$lib/components/RoleManagement.svelte';
 	import { Activity, LineChart } from 'lucide-svelte';
 
 	let { data } = $props();
@@ -50,23 +49,30 @@
 	let reloading = $state(false);
 
 	async function reloadWorkflow() {
-		reloading = true;
-		const res = await fetch(`/api/workflows/${workflow.id}`, {
-			method: 'GET',
-			headers: {
-				'Content-Type': 'application/json'
+		try {
+			reloading = true;
+			const res = await fetch(`/api/workflows/${workflow.id}`, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to reload workflow');
+				throw new Error(`Failed to load workflow: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			throw new Error(`Failed to load workflow: ${res.status}`);
+			workflow = await res.json();
+			initFlow();
+		} catch (error) {
+			console.error('Error reloading workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
+		} finally {
+			reloading = false;
 		}
-
-		workflow = await res.json();
-		initFlow();
-		reloading = false;
 	}
 
 	function initFlow() {
@@ -103,41 +109,51 @@
 		);
 		if (!confirmed) return;
 
-		const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}`, {
-			method: 'DELETE',
-			headers: {
-				'Content-Type': 'application/json'
+		try {
+			const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}`, {
+				method: 'DELETE',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to delete action');
+				throw new Error(`Failed to delete node: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			toast.error('Failed to delete action');
-			throw new Error(`Failed to delete node: ${res.status}`);
+			toast.success('Action deleted');
+			reloadWorkflow();
+		} catch (error) {
+			console.error('Error deleting node:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		}
-
-		toast.success('Action deleted');
-		reloadWorkflow();
 	}
 
 	async function duplicateNode(id: string) {
-		const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}/duplicate`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
+		try {
+			const res = await fetch(`/api/workflows/${workflow.id}/nodes/${id}/duplicate`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to duplicate action');
+				throw new Error(`Failed to duplicate node: ${res.status}`);
 			}
-		});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			toast.error('Failed to duplicate action');
-			throw new Error(`Failed to duplicate node: ${res.status}`);
+			toast.success('Action duplicated');
+			reloadWorkflow();
+		} catch (error) {
+			console.error('Error duplicating node:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		}
-
-		toast.success('Action duplicated');
-		reloadWorkflow();
 	}
 
 	let showPublishModal = $state(false);
@@ -163,20 +179,27 @@
 			return;
 		}
 
-		const res = await fetch(`/api/workflows/${workflow.id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ name: workflowName })
-		});
+		try {
+			const res = await fetch(`/api/workflows/${workflow.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: workflowName })
+			});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			throw new Error(`Failed to update name: ${res.status}`);
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to update workflow name');
+				throw new Error(`Failed to update name: ${res.status}`);
+			}
+			workflow.name = workflowName;
+		} catch (error) {
+			console.error('Error updating name:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
+			workflowName = workflow.name;
 		}
-		workflow.name = workflowName;
 	}
 
 	onMount(() => {
@@ -237,9 +260,6 @@
 		/>
 	{/if}
 
-	{#if showRoleModal}
-		<RoleManagement {workflow} onClose={() => (showRoleModal = false)} />
-	{/if}
 	<SidePanel
 		activeWorkflow={workflow.id ?? ''}
 		userName={user.firstName ?? 'User'}

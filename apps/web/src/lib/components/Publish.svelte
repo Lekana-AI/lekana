@@ -17,11 +17,10 @@
 		ArrowRight,
 		BookOpen,
 		Play,
-
 		TriangleAlert
-
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	let { workflow, onClose, onSubmit } = $props();
 
@@ -44,6 +43,7 @@
 	let isCreatingKey = $state(false);
 	let newKeyName = $state('');
 	let publishError = $state<any>(null);
+	let showErrorDetails = $state(false);
 	let keyExpiration = $state('never'); // '7d', '30d', '90d', 'never'
 
 	async function publishWorkflow() {
@@ -83,6 +83,7 @@
 			onSubmit();
 		} catch (error) {
 			console.error('Error publishing workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		} finally {
 			isPublishing = false;
 		}
@@ -100,6 +101,7 @@
 			}
 		} catch (error) {
 			console.error('Error fetching keys:', error);
+			toast.error('Failed to load API keys. Please try again in a moment.');
 		} finally {
 			isLoadingKeys = false;
 		}
@@ -131,9 +133,12 @@
 				newKeyName = '';
 				isCreatingKey = false;
 				await fetchKeys();
+			} else {
+				toast.error('Failed to create API key');
 			}
 		} catch (error) {
 			console.error('Error creating key:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		} finally {
 			isCreatingKey = false;
 		}
@@ -153,9 +158,12 @@
 				revokePrompt = false;
 				keyToRevoke = null;
 				confirmKeyName = '';
+			} else {
+				toast.error('Failed to revoke API key');
 			}
 		} catch (error) {
 			console.error('Error revoking key:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 		} finally {
 			isRevoking = false;
 		}
@@ -234,7 +242,7 @@
 		onclick={(e) => e.stopPropagation()}
 	>
 		<div
-			class="w-full max-w-md space-y-6 rounded-2xl border border-white/10 bg-zinc-900 p-8 shadow-2xl"
+			class="w-full max-w-2xl space-y-6 rounded-2xl border border-white/10 bg-zinc-900 p-8 shadow-2xl"
 		>
 			<div class="relative flex w-full flex-col gap-3 pb-2">
 				<div class="flex items-center justify-between">
@@ -319,7 +327,9 @@
 		<section class="dark-scroll flex flex-col gap-4 overflow-y-auto pr-1">
 			{#if workflow.isPublished || publishResult}
 				<!-- Subtle Endpoint Display -->
-				<div class="flex flex-col gap-3 rounded-xl border border-white/5 bg-white/2 px-4 py-4 group">
+				<div
+					class="group flex flex-col gap-3 rounded-xl border border-white/5 bg-white/2 px-4 py-4"
+				>
 					<div class="flex items-center justify-between">
 						<span class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase"
 							>Production Endpoint</span
@@ -343,7 +353,10 @@
 						>
 							<Terminal class="h-4 w-4" />
 						</div>
-						<span class="truncate font-mono text-xs text-zinc-400 group-hover:text-zinc-300 transition-colors">{runEndpoint}</span>
+						<span
+							class="h-full font-mono text-xs text-zinc-400 transition-colors group-hover:text-zinc-300"
+							>https://api.lekana.dev{runEndpoint}</span
+						>
 					</div>
 				</div>
 			{/if}
@@ -359,25 +372,34 @@
 
 				{#if publishError}
 					<div class="space-y-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-						<div class="flex items-center gap-2 text-red-400">
-							<AlertTriangle class="h-4 w-4" />
-							<span class="text-sm font-semibold">{publishError.error || 'Publish Failed'}</span>
+						<div class="flex items-center justify-between gap-2">
+							<div class="flex items-center gap-2 text-red-400">
+								<AlertTriangle class="h-4 w-4" />
+								<span class="text-sm font-semibold">{publishError.error || 'Publish Failed'}</span>
+							</div>
+							{#if publishError.validationErrors}
+								<button
+									onclick={() => (showErrorDetails = !showErrorDetails)}
+									class="text-[10px] font-bold text-zinc-500 uppercase transition-colors hover:text-zinc-300"
+								>
+									{showErrorDetails ? 'Hide Details' : 'Show Details'}
+								</button>
+							{/if}
 						</div>
-						<p class="text-xs whitespace-pre-line text-zinc-400">{publishError.message}</p>
 
-						{#if publishError.validationErrors}
-							<div class="mt-2 space-y-2">
-								{#each publishError.validationErrors as err}
-									<div
-										class="flex flex-col gap-1 "
-									>
-										<div class="flex items-center justify-between">
-											<span class="text-xs font-bold text-red-400 uppercase">{err.nodeName}</span>
-											<span class="font-mono text-[10px] text-zinc-500">{err.fieldLabel}</span>
-										</div>
-										<p class="text-xs text-zinc-300">{err.message}</p>
-									</div>
-								{/each}
+						{#if !publishError.validationErrors}
+							<p class="text-xs whitespace-pre-line text-zinc-400">{publishError.message}</p>
+						{/if}
+
+						{#if publishError.validationErrors && showErrorDetails}
+							<div class="mt-2 space-y-3 border-t border-red-500/10 pt-3">
+								<ul class="ml-4 list-disc space-y-2 text-white">
+									{#each publishError.validationErrors as err}
+										<li class="text-xs text-zinc-200">
+											<span class="font-medium">{err.nodeName}</span>: {err.message}
+										</li>
+									{/each}
+								</ul>
 							</div>
 						{/if}
 					</div>

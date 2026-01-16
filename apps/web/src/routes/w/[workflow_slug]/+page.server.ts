@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ locals, params, fetch }) => {
 
     const slug = params.workflow_slug;
     if (!slug) {
-        throw error(400, 'Missing workflow slug');
+        throw error(404, 'Workflow not found');
     }
 
     const user = await clerkClient.users.getUser(userId);
@@ -25,7 +25,7 @@ export const load: PageServerLoad = async ({ locals, params, fetch }) => {
     });
 
     if (!res.ok) {
-        throw error(400, 'Workflow not found');
+        throw error(404, 'Workflow not found');
     }
 
     const workflow = await res.json();

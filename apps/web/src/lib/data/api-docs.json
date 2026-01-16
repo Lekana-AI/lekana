@@ -87,7 +87,7 @@
                     ],
                     "body": {
                         "type": "form-data",
-                        "raw": "curl -X POST https://api.lekana.io/workflows/:workflow_id/run-with-files \\\n  -H \"X-API-Key: YOUR_API_KEY\" \\\n  -F \"message=Analyze these documents\" \\\n  -F \"files=@/path/to/document.pdf\"",
+                        "raw": "curl -X POST https://api.lekana.dev/workflows/:workflow_id/run-with-files \\\n  -H \"X-API-Key: YOUR_API_KEY\" \\\n  -F \"message=Analyze these documents\" \\\n  -F \"files=@/path/to/document.pdf\"",
                         "fields": [
                             {
                                 "name": "message",
