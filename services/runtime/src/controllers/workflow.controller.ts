@@ -9,6 +9,7 @@ import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
 import { getActionByName } from '../services/action-lookup.service';
 import { validateWorkflowNodes, formatValidationErrors, validateDatabaseConnections, formatConnectionErrors } from '../services/validation.service';
+import { checkStorageLimit, incrementStorageUsage } from '../services/usage.service';
 
 const prisma = new PrismaClient();
 
@@ -475,6 +476,29 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
         console.log(`[Run] Running workflow with files: ${apiKeyInfo.publishedWorkflow.name} (${workflowId})`);
         console.log(`[Run] Files received: ${files?.length || 0}`);
 
+        const userId = apiKeyInfo.publishedWorkflow.userId;
+
+        // Check storage limit before uploading
+        if (files && files.length > 0) {
+            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+            console.log(`[Run] Total upload size: ${totalSize} bytes`);
+
+            const storageCheck = await checkStorageLimit(userId, totalSize);
+            if (!storageCheck.canProceed) {
+                console.log(`[Run] Storage limit exceeded for user ${userId}`);
+                return res.status(400).json({
+                    error: 'Storage limit exceeded',
+                    message: `Adding ${formatBytes(totalSize)} would exceed your ${formatBytes(storageCheck.limit)} limit. Currently using ${formatBytes(storageCheck.used)}.`,
+                    storage: {
+                        used: storageCheck.used,
+                        limit: storageCheck.limit,
+                        remaining: storageCheck.remaining,
+                        requested: totalSize
+                    }
+                });
+            }
+        }
+
         // Parse JSON input from form data
         let input: any = {};
         if (req.body.input) {
@@ -486,7 +510,7 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
         }
 
         // Upload files to Upload service and collect URLs
-        const documents: { url: string; filename: string; mimeType: string }[] = [];
+        const documents: { url: string; storagePath?: string; filename: string; mimeType: string }[] = [];
 
         if (files && files.length > 0) {
             // Get Upload service URL from workflow-builder database
@@ -558,8 +582,8 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
 
                     const uploadResult = uploadResponse.data as {
                         success: boolean;
-                        documents?: Array<{ url: string; filename: string; mimeType: string }>;
-                        data?: { uploadedFiles?: Array<{ url: string; filename: string; mimeType: string }> };
+                        documents?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }>;
+                        data?: { uploadedFiles?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }> };
                     };
 
                     // Get the first uploaded file from documents array or data.uploadedFiles
@@ -568,10 +592,11 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                     if (uploadResult.success && uploadedFile) {
                         documents.push({
                             url: uploadedFile.url,
+                            storagePath: uploadedFile.storagePath,
                             filename: uploadedFile.filename || file.originalname,
                             mimeType: uploadedFile.mimeType || file.mimetype
                         });
-                        console.log(`[Run] File uploaded successfully: ${uploadedFile.url}`);
+                        console.log(`[Run] File uploaded successfully: ${uploadedFile.storagePath || uploadedFile.url}`);
                     } else {
                         console.error(`[Run] Upload succeeded but no file data returned`);
                     }
@@ -598,6 +623,51 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
             { input, documents }
         );
 
+        // Log documents and update usage after successful execution start
+        if (documents.length > 0) {
+            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+
+            // Log each document to the database
+            for (let i = 0; i < documents.length; i++) {
+                const doc = documents[i];
+                const file = files[i];
+
+                // Skip macOS hidden files
+                if (doc.filename.startsWith('._') || doc.filename.startsWith('.')) {
+                    console.log(`[Run] Skipping hidden file: ${doc.filename}`);
+                    continue;
+                }
+
+                // Retry up to 3 times for transient DB errors
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        await prisma.document.create({
+                            data: {
+                                userId,
+                                filename: doc.filename,
+                                size: BigInt(file.size),
+                                mimeType: doc.mimeType,
+                                storagePath: doc.storagePath || doc.url,
+                                workflowExecutionId: executionId
+                            }
+                        });
+                        break; // Success, exit retry loop
+                    } catch (docError: any) {
+                        if (attempt === 3 || !docError.code?.startsWith('P1')) {
+                            console.error(`[Run] Error logging document ${doc.filename}:`, docError);
+                            break;
+                        }
+                        console.log(`[Run] DB retry ${attempt}/3 for ${doc.filename}...`);
+                        await new Promise(r => setTimeout(r, 500 * attempt));
+                    }
+                }
+            }
+
+            // Increment storage usage
+            await incrementStorageUsage(userId, totalSize);
+            console.log(`[Run] Logged ${documents.length} documents and updated storage usage`);
+        }
+
         res.status(202).json({
             success: true,
             message: 'Workflow execution started',
@@ -617,3 +687,12 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
         });
     }
 };
+
+// Helper function to format bytes
+function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}

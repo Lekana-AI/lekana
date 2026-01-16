@@ -6,6 +6,7 @@
 import { PrismaClient } from '@prisma/client';
 import { callService, callServiceWithUrl, ServiceRequest, ServiceResponse } from './service-client';
 import { getActionDetails } from './action-lookup.service';
+import { incrementTokenUsage } from './usage.service';
 
 const prisma = new PrismaClient();
 
@@ -335,6 +336,22 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
                 // Execute the action via external microservice
                 const output = await executeAction(node, input, context, { id: workflow.id, userId: workflow.userId });
 
+                // DEBUG: Trace token tracking
+                console.error(`[Engine] ====== TOKEN TRACKING DEBUG ======`);
+                console.error(`[Engine] Action: ${node.action.name}`);
+                console.error(`[Engine] output.success: ${output.success}`);
+                console.error(`[Engine] output.metadata: ${JSON.stringify(output.metadata)}`);
+
+                // Track token usage if returned by the service (e.g., OCR/Gemini)
+                const tokensUsed = output.metadata?.tokensUsed;
+                console.error(`[Engine] tokensUsed: ${tokensUsed}`);
+                if (tokensUsed && tokensUsed > 0) {
+                    console.error(`[Engine] Action ${node.action.name} used ${tokensUsed} tokens - INCREMENTING`);
+                    await incrementTokenUsage(workflow.userId, tokensUsed);
+                } else {
+                    console.error(`[Engine] No tokens to track (tokensUsed: ${tokensUsed})`);
+                }
+
                 // Store output for downstream nodes
                 context.nodeOutputs.set(nodeId, output);
 
@@ -492,6 +509,14 @@ export async function executeWorkflowWithInput(
 
             try {
                 const output = await executeAction(node, nodeInput, context, { id: workflowDefinition.id, userId });
+
+                // Track token usage if returned by the service (e.g., OCR/Gemini)
+                const tokensUsed = output.metadata?.tokensUsed;
+                if (tokensUsed && tokensUsed > 0) {
+                    console.log(`[Engine] Action ${node.action.name} used ${tokensUsed} tokens`);
+                    await incrementTokenUsage(userId, tokensUsed);
+                }
+
                 context.nodeOutputs.set(nodeId, output);
 
                 await prisma.nodeExecution.updateMany({
