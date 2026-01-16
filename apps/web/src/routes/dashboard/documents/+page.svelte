@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import SidePanel from '$lib/components/SidePanel.svelte';
-	import { FileText, Download, ExternalLink, HardDrive, Zap } from 'lucide-svelte';
+	import { FileText, Download, ExternalLink, HardDrive, Zap, Loader2 } from 'lucide-svelte';
 
 	interface Document {
 		id: string;
@@ -35,6 +35,7 @@
 	let usage = $state<UsageData | null>(null);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
+	let openingDocId = $state<string | null>(null);
 
 	let { data }: { data: any } = $props();
 	const user = data?.user;
@@ -67,6 +68,7 @@
 	}
 
 	async function openDocument(doc: Document) {
+		openingDocId = doc.id;
 		try {
 			const res = await fetch(`/api/runtime/documents/${doc.id}/url`);
 			if (!res.ok) throw new Error('Failed to get document URL');
@@ -75,6 +77,8 @@
 		} catch (e: any) {
 			console.error('Error opening document:', e);
 			alert('Failed to open document: ' + e.message);
+		} finally {
+			openingDocId = null;
 		}
 	}
 
@@ -215,10 +219,16 @@
 								</div>
 								<button
 									onclick={() => openDocument(doc)}
-									class="flex items-center gap-2 rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+									disabled={openingDocId === doc.id}
+									class="flex items-center gap-2 rounded-lg bg-zinc-800 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white disabled:opacity-50 disabled:cursor-wait"
 								>
-									<ExternalLink class="h-4 w-4" />
-									Open
+									{#if openingDocId === doc.id}
+										<Loader2 class="h-4 w-4 animate-spin" />
+										Loading...
+									{:else}
+										<ExternalLink class="h-4 w-4" />
+										Open
+									{/if}
 								</button>
 							</div>
 						{/each}
