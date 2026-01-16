@@ -48,7 +48,7 @@ app.get("/health", (req, res) => {
 // ============================================
 app.post(
   "/api/v1/process",
- // checkJwt, // Uncomment for production
+  // checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {
@@ -168,6 +168,7 @@ app.post(
           url: doc.url,
           result: refinedData,
           processorUsed: useFormParser ? "FORM_PARSER" : "OCR_PROCESSOR",
+          tokensUsed: refinedData.tokensUsed || null,
         };
 
         // If isRefined is true, include the raw Document AI result as well
@@ -180,6 +181,11 @@ app.post(
 
       const processingTime = Date.now() - startTime;
       console.log(`[OCR] Completed in ${processingTime}ms`);
+
+      // Aggregate total tokens used across all documents
+      const totalTokensUsed = results.reduce((sum, r) => {
+        return sum + (r.tokensUsed?.totalTokens || 0);
+      }, 0);
 
       // Build ServiceResponse
       res.json({
@@ -204,6 +210,7 @@ app.post(
           processingTime,
           serviceVersion: SERVICE_VERSION,
           steps: ["DOCUMENT_AI", "GEMINI_REFINEMENT"],
+          tokensUsed: totalTokensUsed, // Total tokens used for billing/tracking
         },
       });
     } catch (error) {
@@ -233,7 +240,7 @@ app.post(
 // ============================================
 app.post(
   "/api/v1/configure",
- // checkJwt, // Uncomment for production
+  // checkJwt, // Uncomment for production
   handleAuthError,
   extractUserInfo,
   async (req, res) => {

@@ -8,7 +8,9 @@ const axios = require("axios");
 
 // Initialize Gemini client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash-preview-09-2025",
+});
 
 // ============================================
 // Prompt Templates
@@ -193,6 +195,22 @@ async function refineExtraction({
     const response = await result.response;
     const text = response.text();
 
+    // Extract token usage from response
+    const usageMetadata = response.usageMetadata;
+    const tokensUsed = usageMetadata
+      ? {
+          promptTokens: usageMetadata.promptTokenCount || 0,
+          completionTokens: usageMetadata.candidatesTokenCount || 0,
+          totalTokens: usageMetadata.totalTokenCount || 0,
+        }
+      : null;
+
+    if (tokensUsed) {
+      console.log(
+        `[Gemini] Token usage: ${tokensUsed.promptTokens} prompt + ${tokensUsed.completionTokens} completion = ${tokensUsed.totalTokens} total`
+      );
+    }
+
     // Parse and clean the response
     const parsed = cleanAndParseJson(text);
     return {
@@ -203,6 +221,7 @@ async function refineExtraction({
             ? "field-extract"
             : "text-cleanup"
           : outputMode,
+      tokensUsed,
     };
   } catch (error) {
     console.error("[Gemini] Error during refinement:", error.message);
@@ -212,6 +231,7 @@ async function refineExtraction({
       ...previousOcrData,
       geminiError: error.message,
       refinementSkipped: true,
+      tokensUsed: null,
     };
   }
 }
