@@ -12,8 +12,7 @@
 		Trash,
 		CopyPlus,
 		Settings2,
-		LifeBuoy,
-		FileText
+		LifeBuoy
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
@@ -25,7 +24,7 @@
 		userName,
 		activeWorkflow,
 		activeWorkflowName
-	}: { userName: string; activeWorkflow: string; activeWorkflowName?: string } = $props();
+	}: { userName: string; activeWorkflow?: string; activeWorkflowName?: string } = $props();
 
 	$effect(() => {
 		if (activeWorkflowName && workflows.length > 0) {
@@ -289,17 +288,6 @@
 	</div>
 
 	<div class="flex flex-col gap-1">
-
-		<!-- Documents Link -->
-		<a
-			href="/dashboard/documents"
-			class="flex w-full items-center gap-3 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
-				? 'justify-center'
-				: 'p-2'}"
-		>
-			<FileText class="h-6 w-6" />
-			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Documents</span>
-		</a>
 
 		<!-- Support Button -->
 		<button
