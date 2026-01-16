@@ -25,6 +25,7 @@
 		Layers,
 		RefreshCcwDot
 	} from 'lucide-svelte';
+	import { toast } from '$lib/toast.svelte';
 
 	let executions = $state<any[]>([]);
 	let loading = $state(true);
@@ -80,6 +81,7 @@
 			executions = data;
 		} catch (e) {
 			console.error('Failed to fetch executions:', e);
+			toast.error('Failed to load executions. Please try again in a moment.');
 		} finally {
 			loading = false;
 		}
@@ -95,6 +97,7 @@
 			executionDetails[id] = data;
 		} catch (e) {
 			console.error('Failed to fetch execution details:', e);
+			toast.error('Failed to load execution details. Please try again in a moment.');
 		} finally {
 			detailLoadingId = null;
 		}
@@ -165,7 +168,7 @@
 					</div>
 					<!-- <div class="h-4 w-px bg-white/10"></div> -->
 					<div class="flex min-w-[200px] flex-col rounded-lg">
-						<span class="truncate text-md font-semibold text-zinc-300">
+						<span class="text-md truncate font-semibold text-zinc-300">
 							{workflow.name}
 						</span>
 					</div>
@@ -190,7 +193,7 @@
 							<span>Run</span>
 						</a>
 					{/if}
-				<a
+					<a
 						href="/docs"
 						target="_blank"
 						class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
@@ -607,7 +610,7 @@
 						<Activity class="h-10 w-10 text-zinc-500 opacity-20" />
 					</div>
 					<div class="space-y-2 text-center">
-						<h3 class="text-xl font-bold tracking-tight text-white/90">Monitor Not Available</h3>
+						<h3 class="text-xl font-bold tracking-tight text-white/90">Monitoring Not Available</h3>
 						<p class="text-sm font-medium text-zinc-500">
 							Publish workflow first to monitor executions
 						</p>

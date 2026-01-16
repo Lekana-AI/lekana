@@ -11,6 +11,8 @@
 		Lock,
 		LockOpen
 	} from 'lucide-svelte';
+	import { toast } from '$lib/toast.svelte';
+
 	let showPassword = $state(false);
 	let connectionTesting = $state(false);
 	let connectionResult = $state(null);
@@ -43,6 +45,8 @@
 				fieldData.testConnectionStatus = true;
 			}
 		} catch (error) {
+			console.error('Connection test error:', error);
+			toast.error('Failed to test connection. Please try again in a moment.');
 			connectionResult = {
 				success: false,
 				message: error.message || 'Connection test failed'

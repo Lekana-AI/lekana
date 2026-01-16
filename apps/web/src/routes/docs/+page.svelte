@@ -237,12 +237,12 @@
 									class="group flex items-center justify-between rounded-xl border border-zinc-800 bg-black p-4"
 								>
 									<div class="scrollbar-hide overflow-x-auto font-mono text-sm">
-										<span class="text-zinc-600">https://api.lekana.io</span>{endpoint.path}
+										<span class="text-zinc-600">https://api.lekana.dev</span>{endpoint.path}
 									</div>
 									<button
 										onclick={() =>
 											copyToClipboard(
-												`https://api.lekana.io${endpoint.path}`,
+												`https://api.lekana.dev${endpoint.path}`,
 												endpoint.id + '_path'
 											)}
 										class="rounded-lg p-2 text-zinc-600 transition-colors group-hover:text-zinc-400 hover:bg-zinc-900"

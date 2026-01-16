@@ -2,6 +2,8 @@
 	import { X, Settings2, Pen, Trash2, ExternalLink, ArrowRight, Users } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 
+	import { toast } from '$lib/toast.svelte';
+
 	let { workflow, onClose, onRename, onOpenRoles } = $props();
 
 	let workflowName = $state(workflow.name);
@@ -21,12 +23,14 @@
 			if (!res.ok) {
 				const errorText = await res.text();
 				console.error('Backend response body:', errorText);
+				toast.error('Failed to delete workflow');
 				throw new Error(`Failed to delete workflow: ${res.status}`);
 			}
 
 			goto('/dashboard');
 		} catch (error) {
 			console.error('Error deleting workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 			isDeleting = false;
 		}
 	}
@@ -37,21 +41,28 @@
 			return;
 		}
 
-		const res = await fetch(`/api/workflows/${workflow.id}`, {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({ name: workflowName })
-		});
+		try {
+			const res = await fetch(`/api/workflows/${workflow.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ name: workflowName })
+			});
 
-		if (!res.ok) {
-			const errorText = await res.text();
-			console.error('Backend response body:', errorText);
-			throw new Error(`Failed to update workflow name: ${res.status}`);
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Backend response body:', errorText);
+				toast.error('Failed to update workflow name');
+				throw new Error(`Failed to update workflow name: ${res.status}`);
+			}
+
+			onRename(workflowName);
+		} catch (error) {
+			console.error('Error updating workflow name:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
+			workflowName = workflow.name;
 		}
-
-		onRename(workflowName);
 	}
 </script>
 
@@ -172,7 +183,9 @@
 
 					<!-- Role Management Section -->
 					<div class="space-y-3">
-						<p class="text-[10px] font-bold tracking-widest text-green-500 uppercase">Access Control</p>
+						<p class="text-[10px] font-bold tracking-widest text-green-500 uppercase">
+							Access Control
+						</p>
 						<div
 							class="flex items-center justify-between rounded-xl border border-green-500/20 bg-green-500/5 p-4"
 						>

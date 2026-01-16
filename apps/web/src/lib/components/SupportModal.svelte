@@ -262,14 +262,14 @@
 										>Support Email</span
 									>
 									<a
-										href="mailto:support@lekana.ai"
+										href="mailto:support@lekana.dev"
 										class="text-sm text-white transition-colors hover:text-green-400"
 									>
-										support@lekana.ai
+										support@lekana.dev
 									</a>
 								</div>
 								<a
-									href="mailto:support@lekana.ai"
+									href="mailto:support@lekana.dev"
 									class="rounded-lg bg-white/5 p-2 text-zinc-400 transition-colors hover:bg-white/10 hover:text-white"
 								>
 									<Mail class="h-4 w-4" />

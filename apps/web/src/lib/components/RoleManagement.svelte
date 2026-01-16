@@ -54,6 +54,7 @@
 			}
 		} catch (error) {
 			console.error('Error loading permissions:', error);
+			toast.error('Failed to load permissions. Please try again in a moment.');
 			permissionsError = true;
 			availablePermissions = [];
 			permissionDescriptions = {};
@@ -83,6 +84,7 @@
 			}
 		} catch (error) {
 			console.error('Error loading assignments:', error);
+			toast.error('Failed to load assignments. Please try again in a moment.');
 		}
 	}
 
@@ -255,7 +257,7 @@
 				<!-- Roles List -->
 				<div class="w-1/3 border-r border-white/5 p-4">
 					<div class="mb-4 flex items-center justify-between">
-						<span class="text-xs font-bold uppercase tracking-wider text-zinc-500">Roles</span>
+						<span class="text-xs font-bold tracking-wider text-zinc-500 uppercase">Roles</span>
 						<button
 							onclick={() => (showNewRoleForm = !showNewRoleForm)}
 							class="rounded-lg p-1.5 text-green-400 transition-colors hover:bg-green-500/20"
@@ -278,10 +280,14 @@
 								>
 									<div>
 										<span class="block text-sm font-medium text-white">{role.name}</span>
-										<span class="block text-xs text-zinc-400">{role._count?.assignments || 0} users</span>
+										<span class="block text-xs text-zinc-400"
+											>{role._count?.assignments || 0} users</span
+										>
 									</div>
 									{#if role.isSystem}
-										<span class="rounded bg-zinc-700 px-2 py-0.5 text-[10px] text-zinc-300">SYSTEM</span>
+										<span class="rounded bg-zinc-700 px-2 py-0.5 text-[10px] text-zinc-300"
+											>SYSTEM</span
+										>
 									{:else}
 										<button
 											onclick={(e) => {
@@ -319,7 +325,7 @@
 								class="w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-green-500/50 focus:outline-none"
 							/>
 							<div class="space-y-1">
-								<span class="text-[10px] font-bold uppercase tracking-wider text-zinc-500"
+								<span class="text-[10px] font-bold tracking-wider text-zinc-500 uppercase"
 									>Permissions</span
 								>
 								{#if permissionsLoading}
@@ -328,10 +334,14 @@
 										Loading permissions...
 									</div>
 								{:else if permissionsError}
-								<div class="py-2 text-xs text-red-400">Failed to load permissions. <button onclick={loadPermissions} class="underline">Retry</button></div>
-							{:else if availablePermissions.length === 0}
-								<div class="py-2 text-xs text-zinc-500">No permissions available</div>
-							{:else}
+									<div class="py-2 text-xs text-red-400">
+										Failed to load permissions. <button onclick={loadPermissions} class="underline"
+											>Retry</button
+										>
+									</div>
+								{:else if availablePermissions.length === 0}
+									<div class="py-2 text-xs text-zinc-500">No permissions available</div>
+								{:else}
 									<div class="grid grid-cols-2 gap-1">
 										{#each availablePermissions as perm}
 											<label
@@ -343,10 +353,11 @@
 													onchange={() => togglePermission(perm)}
 													class="h-3 w-3 accent-green-500"
 												/>
-												<span class="text-[10px] text-zinc-300">{permissionDescriptions[perm]}</span>
+												<span class="text-[10px] text-zinc-300">{permissionDescriptions[perm]}</span
+												>
 											</label>
 										{/each}
-								</div>
+									</div>
 								{/if}
 							</div>
 							<div class="flex gap-2">
@@ -359,7 +370,7 @@
 								<button
 									onclick={createRole}
 									disabled={creatingRole}
-									class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+									class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
 								>
 									{#if creatingRole}
 										<Loader2 class="h-3.5 w-3.5 animate-spin" />
@@ -385,7 +396,7 @@
 
 							<!-- Permissions -->
 							<div>
-								<span class="text-xs font-bold uppercase tracking-wider text-zinc-500"
+								<span class="text-xs font-bold tracking-wider text-zinc-500 uppercase"
 									>Permissions</span
 								>
 								<div class="mt-2 flex flex-wrap gap-2">
@@ -400,7 +411,7 @@
 							<!-- Assignments -->
 							<div>
 								<div class="mb-3 flex items-center justify-between">
-									<span class="text-xs font-bold uppercase tracking-wider text-zinc-500"
+									<span class="text-xs font-bold tracking-wider text-zinc-500 uppercase"
 										>Assigned Users</span
 									>
 									<button
@@ -422,7 +433,9 @@
 												placeholder="user@example.com"
 												class="mt-1 w-full rounded-lg border border-white/10 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-green-500/50 focus:outline-none"
 											/>
-											<p class="mt-1 text-[10px] text-zinc-500">User will receive access when they sign up with this email</p>
+											<p class="mt-1 text-[10px] text-zinc-500">
+												User will receive access when they sign up with this email
+											</p>
 										</div>
 										<div class="flex gap-2">
 											<button
@@ -434,7 +447,7 @@
 											<button
 												onclick={assignUser}
 												disabled={assigningUser}
-												class="flex-1 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+												class="flex flex-1 items-center justify-center gap-2 rounded-lg bg-green-600 py-2 text-xs font-medium text-white hover:bg-green-700 disabled:opacity-50"
 											>
 												{#if assigningUser}
 													<Loader2 class="h-3.5 w-3.5 animate-spin" />

@@ -3,6 +3,7 @@
 	import { Search, Sparkles, ArrowRightToLine, Plus, ArrowUp, LayoutGrid, X } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { marked } from 'marked';
+	import { toast } from '$lib/toast.svelte';
 
 	let {
 		onAction,
@@ -85,6 +86,7 @@
 			actionSections = await res.json();
 		} catch (error) {
 			console.error('Failed to load actions:', error);
+			toast.error('Failed to load actions. Please try again in a moment.');
 		} finally {
 			actionsLoading = false;
 		}
@@ -149,7 +151,10 @@
 			await onGenerate?.();
 		} catch (error) {
 			console.error('Failed to generate workflow:', error);
+			toast.error('Failed to generate workflow. Please try again in a moment.');
 			thoughts = 'Error: Failed to generate workflow. Please try again.';
+		} finally {
+			generating = false;
 		}
 	}
 	async function generateExample(text: string) {
@@ -298,7 +303,7 @@
 										<span class="text-[10px] font-semibold tracking-wider uppercase">You</span>
 									</div>
 									<div
-										class="max-w-[85%] rounded-2xl rounded-tr-sm bg-neutral-800 px-3 py-2 text-white/90"
+										class="w-full max-w-[85%] rounded-2xl rounded-tr-sm bg-neutral-800 px-3 py-2 text-white/90"
 									>
 										{sentPrompt}
 									</div>

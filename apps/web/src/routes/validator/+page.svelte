@@ -23,6 +23,7 @@
 			}
 		} catch (error) {
 			console.error('Error loading stats:', error);
+			toast.error('Failed to load statistics. Please try again in a moment.');
 		}
 	}
 
@@ -45,12 +46,18 @@
 
 	function getStatusColor(status: string) {
 		switch (status) {
-			case 'PENDING': return 'text-yellow-400 bg-yellow-500/20';
-			case 'IN_REVIEW': return 'text-blue-400 bg-blue-500/20';
-			case 'APPROVED': return 'text-green-400 bg-green-500/20';
-			case 'REJECTED': return 'text-red-400 bg-red-500/20';
-			case 'NEEDS_CHANGES': return 'text-orange-400 bg-orange-500/20';
-			default: return 'text-zinc-400 bg-zinc-500/20';
+			case 'PENDING':
+				return 'text-yellow-400 bg-yellow-500/20';
+			case 'IN_REVIEW':
+				return 'text-blue-400 bg-blue-500/20';
+			case 'APPROVED':
+				return 'text-green-400 bg-green-500/20';
+			case 'REJECTED':
+				return 'text-red-400 bg-red-500/20';
+			case 'NEEDS_CHANGES':
+				return 'text-orange-400 bg-orange-500/20';
+			default:
+				return 'text-zinc-400 bg-zinc-500/20';
 		}
 	}
 </script>
@@ -129,7 +136,9 @@
 		{:else}
 			<table class="w-full">
 				<thead>
-					<tr class="border-b border-white/5 text-left text-xs uppercase tracking-wider text-zinc-500">
+					<tr
+						class="border-b border-white/5 text-left text-xs tracking-wider text-zinc-500 uppercase"
+					>
 						<th class="px-6 py-3">Document</th>
 						<th class="px-6 py-3">Workflow</th>
 						<th class="px-6 py-3">Status</th>
@@ -144,10 +153,14 @@
 								<span class="text-sm font-medium text-white">{task.id.slice(0, 8)}...</span>
 							</td>
 							<td class="px-6 py-4">
-								<span class="text-sm text-zinc-300">{task.workflowExecution?.workflowName || 'Unknown'}</span>
+								<span class="text-sm text-zinc-300"
+									>{task.workflowExecution?.workflowName || 'Unknown'}</span
+								>
 							</td>
 							<td class="px-6 py-4">
-								<span class="rounded-full px-2 py-1 text-xs font-medium {getStatusColor(task.status)}">
+								<span
+									class="rounded-full px-2 py-1 text-xs font-medium {getStatusColor(task.status)}"
+								>
 									{task.status}
 								</span>
 							</td>

@@ -11,11 +11,10 @@
 		AlertCircle,
 		Plus,
 		Minus,
-
 		Upload
-
 	} from 'lucide-svelte';
 	import { fade, fly } from 'svelte/transition';
+	import { toast } from '$lib/toast.svelte';
 
 	let { data } = $props();
 
@@ -91,6 +90,7 @@
 			result = await response.json();
 		} catch (e: any) {
 			error = e.message || 'Something went wrong';
+			toast.error(`Failed to run workflow: ${error}. Please try again in a moment.`);
 		} finally {
 			loading = false;
 		}

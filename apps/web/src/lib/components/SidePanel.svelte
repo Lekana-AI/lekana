@@ -12,7 +12,8 @@
 		Trash,
 		CopyPlus,
 		Settings2,
-		LifeBuoy
+		LifeBuoy,
+		MessageSquare
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
@@ -68,6 +69,7 @@
 			workflows = await res.json();
 		} catch (error) {
 			console.error('Failed to load workflows:', error);
+			toast.error('Failed to load workflows. Please try again in a moment.');
 		} finally {
 			workflowsLoading = false;
 		}
@@ -97,6 +99,7 @@
 			window.location.replace(`/w/${workflow.id}`);
 		} catch (error) {
 			console.error('Failed to create workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 			isActionLoading = false;
 		}
 	}
@@ -127,8 +130,16 @@
 			window.location.replace(`/w/${workflow.id}`);
 		} catch (error) {
 			console.error('Failed to duplicate workflow:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
 			isActionLoading = false;
 		}
+	}
+
+	function openWorkflow(id: string, name: string, hash: string = '') {
+		isActionLoading = true;
+		loadingTitle = `Launching ${name}`;
+		loadingMessage = 'Sit back. We are getting your workspace ready...';
+		window.location.href = `/w/${id}${hash}`;
 	}
 </script>
 
@@ -244,10 +255,9 @@
 								<a
 									href="/w/{workflow.id}"
 									onclick={(e) => {
-										if (activeWorkflow === workflow.id) {
-											e.preventDefault();
-										} else {
-											window.location.href = '/w/' + workflow.id;
+										e.preventDefault();
+										if (activeWorkflow !== workflow.id) {
+											openWorkflow(workflow.id, workflow.name);
 										}
 									}}
 									class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
@@ -292,11 +302,11 @@
 		<button
 			type="button"
 			onclick={() => (showSupportModal = true)}
-			class="flex w-full items-center gap-3 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
+			class="flex w-full items-center gap-4 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
 				? 'justify-center'
-				: 'p-2'}"
+				: 'p-3'}"
 		>
-			<LifeBuoy class="h-6 w-6" />
+			<MessageSquare class="h-5 w-5" />
 			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Help & Resources</span>
 		</button>
 
@@ -327,7 +337,10 @@
 		style="top: {menuTop}px;"
 	>
 		<a
-			onclick={() => (window.location.href = '/w/' + menuWorkflow.id + '#settings')}
+			onclick={(e) => {
+				e.preventDefault();
+				openWorkflow(menuWorkflow.id, menuWorkflow.name, '#settings');
+			}}
 			href="/w/{menuWorkflow.id}#settings"
 			type="button"
 			class="flex w-full items-center gap-2 p-3 text-left text-xs hover:bg-white/10"
