@@ -12,6 +12,7 @@ datasource db {
 model User {
   id        String     @id @default(uuid())
   workflows Workflow[]
+  feedbacks Feedback[]
 }
 
 model Workflow {
@@ -26,6 +27,7 @@ model Workflow {
   nodes     WorkflowNode[]
   fields    WorkflowField[]
   roles     WorkflowRole[]
+  feedbacks Feedback[]
 
   // Publish status tracking (synced from runtime)
   isPublished         Boolean   @default(false)
@@ -187,6 +189,20 @@ model DefaultRolePermission {
   @@unique([defaultRoleId, permissionId])
   @@index([defaultRoleId])
   @@index([permissionId])
+}
+
+model Feedback {
+  id         String   @id @default(uuid())
+  userId     String
+  workflowId String?
+  comment    String
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflow Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([workflowId])
 }
 
 // User usage tracking for storage and token limits
