@@ -136,7 +136,7 @@
 	}
 
 	function openWorkflow(id: string, name: string, hash: string = '') {
-		isActionLoading = true;
+		isActionLoading = id !== activeWorkflow;
 		loadingTitle = `Launching ${name}`;
 		loadingMessage = 'Sit back. We are getting your workspace ready...';
 		window.location.href = `/w/${id}${hash}`;
@@ -177,6 +177,23 @@
 				{/if}
 			</button>
 		</header>
+
+		<div
+			class="group flex w-full items-center gap-3 rounded-md text-zinc-300 {panelCollapsed
+				? 'justify-center  py-2'
+				: 'p-2'} "
+		>
+			<SignedIn>
+				<UserButton />
+			</SignedIn>
+			<div class="flex flex-col gap-1 {panelCollapsed ? 'hidden' : ''}">
+				<p class="flex items-center gap-1 truncate text-xs">Lekana Beta</p>
+				<span class="w-fit rounded-full text-[10px] font-medium text-green-500">Free</span>
+				<!-- <p class="flex truncate text-[10px] {panelCollapsed ? 'hidden' : ''}">
+					<span class="text-zinc-400">{userName}</span>
+				</p> -->
+			</div>
+		</div>
 
 		<!-- Workflows section -->
 		<button
@@ -297,35 +314,17 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col gap-4">
-		<!-- Support Button -->
-		<button
-			type="button"
-			onclick={() => (showSupportModal = true)}
-			class="flex w-full items-center gap-4 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
-				? 'justify-center'
-				: 'p-3'}"
-		>
-			<MessageSquare class="h-5 w-5" />
-			<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Help & Resources</span>
-		</button>
-
-		<!-- Bottom welcome strip -->
-		<footer
-			class="group mb-3 flex w-full items-center gap-3 rounded-md text-zinc-300 {panelCollapsed
-				? 'justify-center  py-2'
-				: 'p-2'} "
-		>
-			<div class="transition-all group-hover:scale-105">
-				<SignedIn>
-					<UserButton />
-				</SignedIn>
-			</div>
-			<p class="flex truncate text-xs {panelCollapsed ? 'hidden' : ''}">
-				Welcome<span class="font-medium">, {userName}</span>
-			</p>
-		</footer>
-	</div>
+	<!-- Support Button -->
+	<button
+		type="button"
+		onclick={() => (showSupportModal = true)}
+		class="flex w-full items-center gap-4 rounded-md py-3 text-zinc-400 transition-colors duration-300 hover:bg-white/5 hover:text-white {panelCollapsed
+			? 'justify-center'
+			: 'p-3'}"
+	>
+		<MessageSquare class="h-5 w-5" />
+		<span class="text-xs font-medium {panelCollapsed ? 'hidden' : ''}">Help & Resources</span>
+	</button>
 </aside>
 
 <!-- WORKFLOW DROPDOWN MENU (Fixed Position) -->

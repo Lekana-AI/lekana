@@ -10,7 +10,7 @@
 	import { onMount } from 'svelte';
 	import {
 		Settings2,
-		CheckCircle2,
+		CircleCheck,
 		Key,
 		Terminal,
 		Check,
@@ -29,7 +29,6 @@
 	import { toast } from '$lib/toast.svelte';
 	import Publish from '$lib/components/Publish.svelte';
 	import SettingsModal from '$lib/components/SettingsModal.svelte';
-	import RoleManagement from '$lib/components/RoleManagement.svelte';
 	import { Activity, LineChart } from 'lucide-svelte';
 
 	let { data } = $props();
@@ -261,9 +260,6 @@
 		/>
 	{/if}
 
-	{#if showRoleModal}
-		<RoleManagement {workflow} onClose={() => (showRoleModal = false)} />
-	{/if}
 	<SidePanel
 		activeWorkflow={workflow.id ?? ''}
 		userName={user.firstName ?? 'User'}

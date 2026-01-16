@@ -6,8 +6,8 @@
 		Eye,
 		EyeOff,
 		Loader2,
-		CheckCircle,
-		XCircle,
+		CircleCheck,
+		CircleX,
 		Lock,
 		LockOpen
 	} from 'lucide-svelte';
@@ -307,12 +307,12 @@
 				{#if connectionResult}
 					{#if connectionResult.success}
 						<span class="flex items-center gap-1 text-xs text-green-400">
-							<CheckCircle size="14" />
+							<CircleCheck size="14" />
 							Connected: {connectionResult.details?.database}
 						</span>
 					{:else}
 						<span class="flex items-center gap-1 text-xs text-red-400">
-							<XCircle size="14" />
+							<CircleX size="14" />
 							Connection Failed: {connectionResult.message}
 						</span>
 					{/if}

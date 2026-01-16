@@ -19,8 +19,8 @@
 		ChevronRight,
 		BookOpen,
 		Play,
-		CheckCircle2,
-		AlertCircle,
+		CircleCheck,
+		CircleAlert,
 		Clock,
 		Layers,
 		RefreshCcwDot
@@ -339,9 +339,9 @@
 											<h2 class="flex items-center gap-2 text-base font-bold text-white">
 												Execution {execution.id.slice(0, 8)}
 												{#if execution.status === 'COMPLETED'}
-													<CheckCircle2 class="h-4 w-4 text-green-500" />
+													<CircleCheck  class="h-4 w-4 text-green-500" />
 												{:else}
-													<AlertCircle class="h-4 w-4 text-red-500" />
+													<CircleAlert class="h-4 w-4 text-red-500" />
 												{/if}
 											</h2>
 											<p class="font-mono text-xs text-zinc-500">{execution.id}</p>
@@ -435,7 +435,7 @@
 																{step.actionName}
 															</span>
 															{#if step.status !== 'COMPLETED'}
-																<AlertCircle class="h-3 w-3 text-red-500" />
+																<CircleAlert class="h-3 w-3 text-red-500" />
 															{/if}
 														</div>
 														<div class="mt-0.5 flex items-center gap-2">
@@ -579,7 +579,7 @@
 													<h3
 														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"
 													>
-														<AlertCircle class="h-4 w-4" />
+														<CircleAlert class="h-4 w-4" />
 														Error Details
 													</h3>
 													<div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">

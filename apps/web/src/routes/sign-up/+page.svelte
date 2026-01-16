@@ -2,7 +2,7 @@
 	import { SignUp, SignedOut } from 'svelte-clerk';
 	import { page } from '$app/state';
 
-	let afterSignUpUrl = $derived(page.url.searchParams.get('redirect_url') || '/getting-started');
+	let afterSignUpUrl = $derived(page.url.searchParams.get('redirect_url') || '/dashboard');
 </script>
 
 <SignedOut>

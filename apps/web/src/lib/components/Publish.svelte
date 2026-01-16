@@ -242,7 +242,7 @@
 		onclick={(e) => e.stopPropagation()}
 	>
 		<div
-			class="w-full max-w-md space-y-6 rounded-2xl border border-white/10 bg-zinc-900 p-8 shadow-2xl"
+			class="w-full max-w-2xl space-y-6 rounded-2xl border border-white/10 bg-zinc-900 p-8 shadow-2xl"
 		>
 			<div class="relative flex w-full flex-col gap-3 pb-2">
 				<div class="flex items-center justify-between">

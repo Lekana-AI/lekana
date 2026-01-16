@@ -43,6 +43,11 @@
 	let activeSection = $state('introduction');
 
 	onMount(() => {
+		// Initialize from hash
+		if (window.location.hash) {
+			activeSection = window.location.hash.slice(1);
+		}
+
 		const observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
@@ -51,14 +56,25 @@
 					}
 				});
 			},
-			{ threshold: 0.2, rootMargin: '-10% 0% -70% 0%' }
+			{ threshold: 0.1, rootMargin: '-10% 0% -70% 0%' }
 		);
 
 		document.querySelectorAll('section[id]').forEach((section) => {
 			observer.observe(section);
 		});
 
-		return () => observer.disconnect();
+		const handleHashChange = () => {
+			if (window.location.hash) {
+				activeSection = window.location.hash.slice(1);
+			}
+		};
+
+		window.addEventListener('hashchange', handleHashChange);
+
+		return () => {
+			observer.disconnect();
+			window.removeEventListener('hashchange', handleHashChange);
+		};
 	});
 </script>
 
