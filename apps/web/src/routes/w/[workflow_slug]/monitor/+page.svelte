@@ -23,16 +23,57 @@
 		CircleAlert,
 		Clock,
 		Layers,
-		RefreshCcwDot
+		RefreshCcwDot,
+		FileText,
+		HardDrive,
+		Zap,
+		ExternalLink,
+		Loader2
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
 
+	// Existing execution state
 	let executions = $state<any[]>([]);
 	let loading = $state(true);
 	let selectedExecutionId = $state<string | null>(null);
 	let selectedStepId = $state<string | null>(null);
 	let executionDetails = $state<Record<string, any>>({});
 	let detailLoadingId = $state<string | null>(null);
+
+	// New: Documents and Usage state
+	interface Document {
+		id: string;
+		filename: string;
+		size: number;
+		sizeFormatted: string;
+		mimeType: string;
+		uploadedAt: string;
+		workflowExecution?: {
+			id: string;
+			workflowName: string;
+			status: string;
+		};
+	}
+
+	interface UsageData {
+		storage: {
+			used: number;
+			limit: number;
+			usedFormatted: string;
+			limitFormatted: string;
+			percentage: number;
+		};
+		tokens: {
+			used: number;
+			limit: number | null;
+		};
+	}
+
+	let documents = $state<Document[]>([]);
+	let documentsLoading = $state(false);
+	let usage = $state<UsageData | null>(null);
+	let openingDocId = $state<string | null>(null);
+	let showDocuments = $state(false);
 
 	let selectedExecution = $derived(executions.find((e) => e.id === selectedExecutionId) || null);
 
@@ -70,7 +111,7 @@
 	});
 
 	onMount(async () => {
-		await loadExecutions();
+		await Promise.all([loadExecutions(), loadDocuments(), loadUsage()]);
 	});
 
 	async function loadExecutions() {
@@ -85,6 +126,55 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	async function loadDocuments() {
+		documentsLoading = true;
+		try {
+			const res = await fetch(`/api/runtime/documents/by-workflow-id/${workflow.id}`);
+			if (res.ok) {
+				const data = await res.json();
+				documents = data.documents || [];
+			}
+		} catch (e) {
+			console.error('Failed to fetch documents:', e);
+		} finally {
+			documentsLoading = false;
+		}
+	}
+
+	async function loadUsage() {
+		try {
+			const res = await fetch('/api/usage');
+			if (res.ok) {
+				usage = await res.json();
+			}
+		} catch (e) {
+			console.error('Failed to fetch usage:', e);
+		}
+	}
+
+	async function openDocument(doc: Document) {
+		openingDocId = doc.id;
+		try {
+			const res = await fetch(`/api/runtime/documents/${doc.id}/url`);
+			if (!res.ok) throw new Error('Failed to get document URL');
+			const data = await res.json();
+			window.open(data.url, '_blank');
+		} catch (e: any) {
+			console.error('Error opening document:', e);
+			alert('Failed to open document: ' + e.message);
+		} finally {
+			openingDocId = null;
+		}
+	}
+
+	function getFileIcon(mimeType: string): string {
+		if (mimeType.includes('pdf')) return '📄';
+		if (mimeType.includes('image')) return '🖼️';
+		if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
+		if (mimeType.includes('sheet') || mimeType.includes('excel')) return '📊';
+		return '📁';
 	}
 
 	async function loadDetails(id: string) {
@@ -225,6 +315,56 @@
 									<p class="text-base font-bold text-white">{stats.avgDuration}s</p>
 								</div>
 							</div>
+
+							<!-- User Usage Stats -->
+							{#if usage}
+								<div class="mt-3 grid grid-cols-2 gap-2">
+									<!-- Storage -->
+									<div class="rounded-lg bg-white/2 p-2">
+										<div class="flex items-center gap-1.5 mb-1">
+											<HardDrive class="h-3 w-3 text-blue-400" />
+											<span class="text-[10px] font-bold text-zinc-500 uppercase">Storage</span>
+										</div>
+										<p class="text-xs font-medium text-white truncate">
+											{usage.storage.usedFormatted}
+											<span class="text-zinc-500">/ {usage.storage.limitFormatted}</span>
+										</p>
+										<div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-zinc-800">
+											<div
+												class="h-full rounded-full transition-all duration-500"
+												class:bg-blue-500={usage.storage.percentage < 80}
+												class:bg-yellow-500={usage.storage.percentage >= 80 && usage.storage.percentage < 95}
+												class:bg-red-500={usage.storage.percentage >= 95}
+												style="width: {Math.min(usage.storage.percentage, 100)}%"
+											></div>
+										</div>
+									</div>
+									<!-- Tokens -->
+									<div class="rounded-lg bg-white/2 p-2">
+										<div class="flex items-center gap-1.5 mb-1">
+											<Zap class="h-3 w-3 text-green-400" />
+											<span class="text-[10px] font-bold text-zinc-500 uppercase">AI Tokens</span>
+										</div>
+										<p class="text-xs font-medium text-white">
+											{usage.tokens.used.toLocaleString()}
+											{#if usage.tokens.limit}
+												<span class="text-zinc-500">/ {usage.tokens.limit.toLocaleString()}</span>
+											{/if}
+										</p>
+										{#if usage.tokens.limit}
+											{@const tokenPercentage = Math.round((usage.tokens.used / usage.tokens.limit) * 100)}
+											<div class="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-zinc-800">
+												<div
+													class="h-full rounded-full bg-green-500 transition-all duration-500"
+													style="width: {Math.min(tokenPercentage, 100)}%"
+												></div>
+											</div>
+										{:else}
+											<p class="text-[10px] text-zinc-600 mt-1">No limit</p>
+										{/if}
+									</div>
+								</div>
+							{/if}
 						</div>
 
 						<!-- Execution Log Header -->
@@ -298,6 +438,70 @@
 										</div>
 									</button>
 								{/each}
+							{/if}
+						</div>
+
+						<!-- Documents Section -->
+						<div class="border-t border-white/5">
+							<button
+								type="button"
+								onclick={() => (showDocuments = !showDocuments)}
+								class="relative z-20 flex w-full cursor-pointer items-center justify-between bg-zinc-950/80 px-4 py-3 hover:bg-zinc-900/80"
+							>
+								<div class="flex items-center gap-2">
+									<FileText class="h-3.5 w-3.5 text-zinc-500" />
+									<h3 class="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+										Documents
+									</h3>
+									<span class="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-bold text-zinc-400">
+										{documents.length}
+									</span>
+								</div>
+								<ChevronDown class="h-3 w-3 text-zinc-500 transition-transform {showDocuments ? 'rotate-180' : ''}" />
+							</button>
+							
+							{#if showDocuments}
+								<div class="dark-scroll max-h-48 space-y-1 overflow-y-auto p-2">
+									{#if documentsLoading}
+										{#each Array(3) as _}
+											<div class="animate-pulse rounded-lg bg-white/2 p-2.5">
+												<div class="h-3 w-24 rounded bg-white/10"></div>
+											</div>
+										{/each}
+									{:else if documents.length === 0}
+										<div class="flex flex-col items-center justify-center gap-2 py-6 text-zinc-600">
+											<FileText class="h-6 w-6 opacity-20" />
+											<p class="text-[10px] font-bold uppercase">No Documents</p>
+										</div>
+									{:else}
+										{#each documents as doc}
+											<div class="flex items-center justify-between rounded-lg bg-white/2 p-2.5 transition-colors hover:bg-white/5">
+												<div class="flex items-center gap-2 min-w-0 flex-1">
+													<span class="text-sm shrink-0">{getFileIcon(doc.mimeType)}</span>
+													<div class="min-w-0 flex-1">
+														<p class="truncate text-xs font-medium text-zinc-300">{doc.filename}</p>
+														<p class="text-[10px] text-zinc-600">{doc.sizeFormatted}</p>
+													</div>
+												</div>
+												<button
+													type="button"
+													onclick={(e) => {
+														e.stopPropagation();
+														openDocument(doc);
+													}}
+													disabled={openingDocId === doc.id}
+													class="relative z-30 ml-2 shrink-0 cursor-pointer rounded-md bg-zinc-600 px-2 py-1.5 text-zinc-200 transition-all hover:bg-green-600 hover:text-white disabled:opacity-50"
+												>
+													{#if openingDocId === doc.id}
+														<Loader2 class="h-3 w-3 animate-spin" />
+													{:else}
+														<ExternalLink class="h-3 w-3" />
+													{/if}
+												</button>
+											</div>
+										{/each}
+									{/if}
+								</div>
 							{/if}
 						</div>
 					</div>
