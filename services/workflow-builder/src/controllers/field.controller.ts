@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { touchWorkflow } from '../utils/workflow.utils';
 
 /**
  * Get all fields available in a workflow
@@ -74,6 +75,9 @@ export const deleteWorkflowField = async (req: Request, res: Response) => {
         await prisma.workflowField.delete({
             where: { id: fieldId }
         });
+
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
 
         res.json({ message: 'Field deleted successfully' });
     } catch (error) {

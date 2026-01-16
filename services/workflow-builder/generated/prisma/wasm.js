@@ -278,7 +278,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\pasid\\OneDrive\\Desktop\\lekana.ai\\services\\workflow-builder\\generated\\prisma",
+      "value": "C:\\Users\\Lasandu\\Software Projects\\Express\\lekana-ai-workflow-builder\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -294,7 +294,7 @@ const config = {
     "previewFeatures": [
       "driverAdapters"
     ],
-    "sourceFilePath": "C:\\Users\\pasid\\OneDrive\\Desktop\\lekana.ai\\services\\workflow-builder\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Lasandu\\Software Projects\\Express\\lekana-ai-workflow-builder\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

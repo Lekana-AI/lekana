@@ -89,6 +89,8 @@ export type UserUsage = $Result.DefaultSelection<Prisma.$UserUsagePayload>
  */
 export type SystemConfig = $Result.DefaultSelection<Prisma.$SystemConfigPayload>
 
+export type Feedback = $Result.DefaultSelection<Prisma.$FeedbackPayload>
+
 /**
  * ##  Prisma Client ʲˢ
  * 
@@ -2052,10 +2054,12 @@ export namespace Prisma {
 
   export type UserCountOutputType = {
     workflows: number
+    feedbacks: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflows?: boolean | UserCountOutputTypeCountWorkflowsArgs
+    feedbacks?: boolean | UserCountOutputTypeCountFeedbacksArgs
   }
 
   // Custom InputTypes
@@ -2076,6 +2080,13 @@ export namespace Prisma {
     where?: WorkflowWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountFeedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackWhereInput
+  }
+
 
   /**
    * Count Type WorkflowCountOutputType
@@ -2086,6 +2097,7 @@ export namespace Prisma {
     nodes: number
     fields: number
     roles: number
+    feedbacks: number
   }
 
   export type WorkflowCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2093,6 +2105,7 @@ export namespace Prisma {
     nodes?: boolean | WorkflowCountOutputTypeCountNodesArgs
     fields?: boolean | WorkflowCountOutputTypeCountFieldsArgs
     roles?: boolean | WorkflowCountOutputTypeCountRolesArgs
+    feedbacks?: boolean | WorkflowCountOutputTypeCountFeedbacksArgs
   }
 
   // Custom InputTypes
@@ -2132,6 +2145,13 @@ export namespace Prisma {
    */
   export type WorkflowCountOutputTypeCountRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WorkflowRoleWhereInput
+  }
+
+  /**
+   * WorkflowCountOutputType without action
+   */
+  export type WorkflowCountOutputTypeCountFeedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: FeedbackWhereInput
   }
 
 
@@ -2494,6 +2514,7 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     workflows?: boolean | User$workflowsArgs<ExtArgs>
+    feedbacks?: boolean | User$feedbacksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2507,6 +2528,7 @@ export namespace Prisma {
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     workflows?: boolean | User$workflowsArgs<ExtArgs>
+    feedbacks?: boolean | User$feedbacksArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2515,6 +2537,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       workflows: Prisma.$WorkflowPayload<ExtArgs>[]
+      feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2883,6 +2906,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     workflows<T extends User$workflowsArgs<ExtArgs> = {}>(args?: Subset<T, User$workflowsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowPayload<ExtArgs>, T, "findMany"> | Null>
+    feedbacks<T extends User$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, User$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3247,6 +3271,26 @@ export namespace Prisma {
   }
 
   /**
+   * User.feedbacks
+   */
+  export type User$feedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Feedback
+     */
+    select?: FeedbackSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FeedbackInclude<ExtArgs> | null
+    where?: FeedbackWhereInput
+    orderBy?: FeedbackOrderByWithRelationInput | FeedbackOrderByWithRelationInput[]
+    cursor?: FeedbackWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FeedbackScalarFieldEnum | FeedbackScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3470,6 +3514,7 @@ export namespace Prisma {
     nodes?: boolean | Workflow$nodesArgs<ExtArgs>
     fields?: boolean | Workflow$fieldsArgs<ExtArgs>
     roles?: boolean | Workflow$rolesArgs<ExtArgs>
+    feedbacks?: boolean | Workflow$feedbacksArgs<ExtArgs>
     _count?: boolean | WorkflowCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["workflow"]>
 
@@ -3506,6 +3551,7 @@ export namespace Prisma {
     nodes?: boolean | Workflow$nodesArgs<ExtArgs>
     fields?: boolean | Workflow$fieldsArgs<ExtArgs>
     roles?: boolean | Workflow$rolesArgs<ExtArgs>
+    feedbacks?: boolean | Workflow$feedbacksArgs<ExtArgs>
     _count?: boolean | WorkflowCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type WorkflowIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3520,6 +3566,7 @@ export namespace Prisma {
       nodes: Prisma.$WorkflowNodePayload<ExtArgs>[]
       fields: Prisma.$WorkflowFieldPayload<ExtArgs>[]
       roles: Prisma.$WorkflowRolePayload<ExtArgs>[]
+      feedbacks: Prisma.$FeedbackPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3901,6 +3948,7 @@ export namespace Prisma {
     nodes<T extends Workflow$nodesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$nodesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowNodePayload<ExtArgs>, T, "findMany"> | Null>
     fields<T extends Workflow$fieldsArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$fieldsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowFieldPayload<ExtArgs>, T, "findMany"> | Null>
     roles<T extends Workflow$rolesArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkflowRolePayload<ExtArgs>, T, "findMany"> | Null>
+    feedbacks<T extends Workflow$feedbacksArgs<ExtArgs> = {}>(args?: Subset<T, Workflow$feedbacksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FeedbackPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4335,6 +4383,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: WorkflowRoleScalarFieldEnum | WorkflowRoleScalarFieldEnum[]
+  }
+
+  /**
+   * Workflow.feedbacks
+   */
+  export type Workflow$feedbacksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Feedback
+     */
+    select?: FeedbackSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: FeedbackInclude<ExtArgs> | null
+    where?: FeedbackWhereInput
+    orderBy?: FeedbackOrderByWithRelationInput | FeedbackOrderByWithRelationInput[]
+    cursor?: FeedbackWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: FeedbackScalarFieldEnum | FeedbackScalarFieldEnum[]
   }
 
   /**
@@ -17128,11 +17196,13 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     workflows?: WorkflowListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     workflows?: WorkflowOrderByRelationAggregateInput
+    feedbacks?: FeedbackOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -17141,6 +17211,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     workflows?: WorkflowListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
   }, "id">
 
   export type UserOrderByWithAggregationInput = {
@@ -17176,6 +17247,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeListRelationFilter
     fields?: WorkflowFieldListRelationFilter
     roles?: WorkflowRoleListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
   }
 
   export type WorkflowOrderByWithRelationInput = {
@@ -17194,6 +17266,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeOrderByRelationAggregateInput
     fields?: WorkflowFieldOrderByRelationAggregateInput
     roles?: WorkflowRoleOrderByRelationAggregateInput
+    feedbacks?: FeedbackOrderByRelationAggregateInput
   }
 
   export type WorkflowWhereUniqueInput = Prisma.AtLeast<{
@@ -17215,6 +17288,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeListRelationFilter
     fields?: WorkflowFieldListRelationFilter
     roles?: WorkflowRoleListRelationFilter
+    feedbacks?: FeedbackListRelationFilter
   }, "id">
 
   export type WorkflowOrderByWithAggregationInput = {
@@ -18049,21 +18123,25 @@ export namespace Prisma {
   export type UserCreateInput = {
     id?: string
     workflows?: WorkflowCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
     id?: string
     workflows?: WorkflowUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     workflows?: WorkflowUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     workflows?: WorkflowUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -18093,6 +18171,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateInput = {
@@ -18110,6 +18189,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUpdateInput = {
@@ -18127,6 +18207,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateInput = {
@@ -18144,6 +18225,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowCreateManyInput = {
@@ -19015,7 +19097,17 @@ export namespace Prisma {
     none?: WorkflowWhereInput
   }
 
+  export type FeedbackListRelationFilter = {
+    every?: FeedbackWhereInput
+    some?: FeedbackWhereInput
+    none?: FeedbackWhereInput
+  }
+
   export type WorkflowOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type FeedbackOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -19871,11 +19963,25 @@ export namespace Prisma {
     connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
   }
 
+  export type FeedbackCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
+    createMany?: FeedbackCreateManyUserInputEnvelope
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+  }
+
   export type WorkflowUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<WorkflowCreateWithoutUserInput, WorkflowUncheckedCreateWithoutUserInput> | WorkflowCreateWithoutUserInput[] | WorkflowUncheckedCreateWithoutUserInput[]
     connectOrCreate?: WorkflowCreateOrConnectWithoutUserInput | WorkflowCreateOrConnectWithoutUserInput[]
     createMany?: WorkflowCreateManyUserInputEnvelope
     connect?: WorkflowWhereUniqueInput | WorkflowWhereUniqueInput[]
+  }
+
+  export type FeedbackUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
+    createMany?: FeedbackCreateManyUserInputEnvelope
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -19896,6 +20002,20 @@ export namespace Prisma {
     deleteMany?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
   }
 
+  export type FeedbackUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
+    upsert?: FeedbackUpsertWithWhereUniqueWithoutUserInput | FeedbackUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeedbackCreateManyUserInputEnvelope
+    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    update?: FeedbackUpdateWithWhereUniqueWithoutUserInput | FeedbackUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeedbackUpdateManyWithWhereWithoutUserInput | FeedbackUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
+  }
+
   export type WorkflowUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<WorkflowCreateWithoutUserInput, WorkflowUncheckedCreateWithoutUserInput> | WorkflowCreateWithoutUserInput[] | WorkflowUncheckedCreateWithoutUserInput[]
     connectOrCreate?: WorkflowCreateOrConnectWithoutUserInput | WorkflowCreateOrConnectWithoutUserInput[]
@@ -19908,6 +20028,20 @@ export namespace Prisma {
     update?: WorkflowUpdateWithWhereUniqueWithoutUserInput | WorkflowUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: WorkflowUpdateManyWithWhereWithoutUserInput | WorkflowUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: WorkflowScalarWhereInput | WorkflowScalarWhereInput[]
+  }
+
+  export type FeedbackUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput> | FeedbackCreateWithoutUserInput[] | FeedbackUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutUserInput | FeedbackCreateOrConnectWithoutUserInput[]
+    upsert?: FeedbackUpsertWithWhereUniqueWithoutUserInput | FeedbackUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: FeedbackCreateManyUserInputEnvelope
+    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    update?: FeedbackUpdateWithWhereUniqueWithoutUserInput | FeedbackUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: FeedbackUpdateManyWithWhereWithoutUserInput | FeedbackUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutWorkflowsInput = {
@@ -19944,6 +20078,13 @@ export namespace Prisma {
     connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
   }
 
+  export type FeedbackCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput> | FeedbackCreateWithoutWorkflowInput[] | FeedbackUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutWorkflowInput | FeedbackCreateOrConnectWithoutWorkflowInput[]
+    createMany?: FeedbackCreateManyWorkflowInputEnvelope
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+  }
+
   export type WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput = {
     create?: XOR<WorkflowEdgeCreateWithoutWorkflowInput, WorkflowEdgeUncheckedCreateWithoutWorkflowInput> | WorkflowEdgeCreateWithoutWorkflowInput[] | WorkflowEdgeUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowEdgeCreateOrConnectWithoutWorkflowInput | WorkflowEdgeCreateOrConnectWithoutWorkflowInput[]
@@ -19970,6 +20111,13 @@ export namespace Prisma {
     connectOrCreate?: WorkflowRoleCreateOrConnectWithoutWorkflowInput | WorkflowRoleCreateOrConnectWithoutWorkflowInput[]
     createMany?: WorkflowRoleCreateManyWorkflowInputEnvelope
     connect?: WorkflowRoleWhereUniqueInput | WorkflowRoleWhereUniqueInput[]
+  }
+
+  export type FeedbackUncheckedCreateNestedManyWithoutWorkflowInput = {
+    create?: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput> | FeedbackCreateWithoutWorkflowInput[] | FeedbackUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutWorkflowInput | FeedbackCreateOrConnectWithoutWorkflowInput[]
+    createMany?: FeedbackCreateManyWorkflowInputEnvelope
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -20052,6 +20200,20 @@ export namespace Prisma {
     deleteMany?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
   }
 
+  export type FeedbackUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput> | FeedbackCreateWithoutWorkflowInput[] | FeedbackUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutWorkflowInput | FeedbackCreateOrConnectWithoutWorkflowInput[]
+    upsert?: FeedbackUpsertWithWhereUniqueWithoutWorkflowInput | FeedbackUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: FeedbackCreateManyWorkflowInputEnvelope
+    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    update?: FeedbackUpdateWithWhereUniqueWithoutWorkflowInput | FeedbackUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: FeedbackUpdateManyWithWhereWithoutWorkflowInput | FeedbackUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
+  }
+
   export type WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput = {
     create?: XOR<WorkflowEdgeCreateWithoutWorkflowInput, WorkflowEdgeUncheckedCreateWithoutWorkflowInput> | WorkflowEdgeCreateWithoutWorkflowInput[] | WorkflowEdgeUncheckedCreateWithoutWorkflowInput[]
     connectOrCreate?: WorkflowEdgeCreateOrConnectWithoutWorkflowInput | WorkflowEdgeCreateOrConnectWithoutWorkflowInput[]
@@ -20106,6 +20268,20 @@ export namespace Prisma {
     update?: WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput | WorkflowRoleUpdateWithWhereUniqueWithoutWorkflowInput[]
     updateMany?: WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput | WorkflowRoleUpdateManyWithWhereWithoutWorkflowInput[]
     deleteMany?: WorkflowRoleScalarWhereInput | WorkflowRoleScalarWhereInput[]
+  }
+
+  export type FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput = {
+    create?: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput> | FeedbackCreateWithoutWorkflowInput[] | FeedbackUncheckedCreateWithoutWorkflowInput[]
+    connectOrCreate?: FeedbackCreateOrConnectWithoutWorkflowInput | FeedbackCreateOrConnectWithoutWorkflowInput[]
+    upsert?: FeedbackUpsertWithWhereUniqueWithoutWorkflowInput | FeedbackUpsertWithWhereUniqueWithoutWorkflowInput[]
+    createMany?: FeedbackCreateManyWorkflowInputEnvelope
+    set?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    disconnect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    delete?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    connect?: FeedbackWhereUniqueInput | FeedbackWhereUniqueInput[]
+    update?: FeedbackUpdateWithWhereUniqueWithoutWorkflowInput | FeedbackUpdateWithWhereUniqueWithoutWorkflowInput[]
+    updateMany?: FeedbackUpdateManyWithWhereWithoutWorkflowInput | FeedbackUpdateManyWithWhereWithoutWorkflowInput[]
+    deleteMany?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
   }
 
   export type WorkflowEdgeCreateNestedManyWithoutSourceNodeInput = {
@@ -21034,6 +21210,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutUserInput = {
@@ -21050,6 +21227,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutUserInput = {
@@ -21059,6 +21237,30 @@ export namespace Prisma {
 
   export type WorkflowCreateManyUserInputEnvelope = {
     data: WorkflowCreateManyUserInput | WorkflowCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type FeedbackCreateWithoutUserInput = {
+    id?: string
+    comment: string
+    createdAt?: Date | string
+    workflow?: WorkflowCreateNestedOneWithoutFeedbacksInput
+  }
+
+  export type FeedbackUncheckedCreateWithoutUserInput = {
+    id?: string
+    workflowId?: string | null
+    comment: string
+    createdAt?: Date | string
+  }
+
+  export type FeedbackCreateOrConnectWithoutUserInput = {
+    where: FeedbackWhereUniqueInput
+    create: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput>
+  }
+
+  export type FeedbackCreateManyUserInputEnvelope = {
+    data: FeedbackCreateManyUserInput | FeedbackCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -21094,12 +21296,41 @@ export namespace Prisma {
     lastPublishedAt?: DateTimeNullableFilter<"Workflow"> | Date | string | null
   }
 
+  export type FeedbackUpsertWithWhereUniqueWithoutUserInput = {
+    where: FeedbackWhereUniqueInput
+    update: XOR<FeedbackUpdateWithoutUserInput, FeedbackUncheckedUpdateWithoutUserInput>
+    create: XOR<FeedbackCreateWithoutUserInput, FeedbackUncheckedCreateWithoutUserInput>
+  }
+
+  export type FeedbackUpdateWithWhereUniqueWithoutUserInput = {
+    where: FeedbackWhereUniqueInput
+    data: XOR<FeedbackUpdateWithoutUserInput, FeedbackUncheckedUpdateWithoutUserInput>
+  }
+
+  export type FeedbackUpdateManyWithWhereWithoutUserInput = {
+    where: FeedbackScalarWhereInput
+    data: XOR<FeedbackUpdateManyMutationInput, FeedbackUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type FeedbackScalarWhereInput = {
+    AND?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
+    OR?: FeedbackScalarWhereInput[]
+    NOT?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
+    id?: StringFilter<"Feedback"> | string
+    userId?: StringFilter<"Feedback"> | string
+    workflowId?: StringNullableFilter<"Feedback"> | string | null
+    comment?: StringFilter<"Feedback"> | string
+    createdAt?: DateTimeFilter<"Feedback"> | Date | string
+  }
+
   export type UserCreateWithoutWorkflowsInput = {
     id?: string
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutWorkflowsInput = {
     id?: string
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutWorkflowsInput = {
@@ -21223,6 +21454,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type FeedbackCreateWithoutWorkflowInput = {
+    id?: string
+    comment: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutFeedbacksInput
+  }
+
+  export type FeedbackUncheckedCreateWithoutWorkflowInput = {
+    id?: string
+    userId: string
+    comment: string
+    createdAt?: Date | string
+  }
+
+  export type FeedbackCreateOrConnectWithoutWorkflowInput = {
+    where: FeedbackWhereUniqueInput
+    create: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput>
+  }
+
+  export type FeedbackCreateManyWorkflowInputEnvelope = {
+    data: FeedbackCreateManyWorkflowInput | FeedbackCreateManyWorkflowInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutWorkflowsInput = {
     update: XOR<UserUpdateWithoutWorkflowsInput, UserUncheckedUpdateWithoutWorkflowsInput>
     create: XOR<UserCreateWithoutWorkflowsInput, UserUncheckedCreateWithoutWorkflowsInput>
@@ -21236,10 +21491,12 @@ export namespace Prisma {
 
   export type UserUpdateWithoutWorkflowsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutWorkflowsInput = {
     id?: StringFieldUpdateOperationsInput | string
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type WorkflowEdgeUpsertWithWhereUniqueWithoutWorkflowInput = {
@@ -21353,6 +21610,22 @@ export namespace Prisma {
     description?: StringNullableFilter<"WorkflowRole"> | string | null
     isSystem?: BoolFilter<"WorkflowRole"> | boolean
     createdAt?: DateTimeFilter<"WorkflowRole"> | Date | string
+  }
+
+  export type FeedbackUpsertWithWhereUniqueWithoutWorkflowInput = {
+    where: FeedbackWhereUniqueInput
+    update: XOR<FeedbackUpdateWithoutWorkflowInput, FeedbackUncheckedUpdateWithoutWorkflowInput>
+    create: XOR<FeedbackCreateWithoutWorkflowInput, FeedbackUncheckedCreateWithoutWorkflowInput>
+  }
+
+  export type FeedbackUpdateWithWhereUniqueWithoutWorkflowInput = {
+    where: FeedbackWhereUniqueInput
+    data: XOR<FeedbackUpdateWithoutWorkflowInput, FeedbackUncheckedUpdateWithoutWorkflowInput>
+  }
+
+  export type FeedbackUpdateManyWithWhereWithoutWorkflowInput = {
+    where: FeedbackScalarWhereInput
+    data: XOR<FeedbackUpdateManyMutationInput, FeedbackUncheckedUpdateManyWithoutWorkflowInput>
   }
 
   export type WorkflowEdgeCreateWithoutSourceNodeInput = {
@@ -21476,6 +21749,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutNodesInput = {
@@ -21492,6 +21766,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutNodesInput = {
@@ -21609,6 +21884,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutNodesInput = {
@@ -21625,6 +21901,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowNodeCreateWithoutOutgoingInput = {
@@ -21699,6 +21976,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutEdgesInput = {
@@ -21715,6 +21993,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutEdgesInput = {
@@ -21817,6 +22096,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutEdgesInput = {
@@ -21833,6 +22113,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type ActionCreateWithoutCategoryInput = {
@@ -22036,6 +22317,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutFieldsInput = {
@@ -22052,6 +22334,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
     roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutFieldsInput = {
@@ -22119,6 +22402,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutFieldsInput = {
@@ -22135,6 +22419,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowRolePermissionCreateWithoutPermissionInput = {
@@ -22359,6 +22644,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowUncheckedCreateWithoutRolesInput = {
@@ -22375,6 +22661,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
     nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
     fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutWorkflowInput
   }
 
   export type WorkflowCreateOrConnectWithoutRolesInput = {
@@ -22455,6 +22742,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutRolesInput = {
@@ -22471,6 +22759,7 @@ export namespace Prisma {
     edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowRoleAssignmentUpsertWithWhereUniqueWithoutWorkflowRoleInput = {
@@ -22715,6 +23004,126 @@ export namespace Prisma {
     rolePermissions?: WorkflowRolePermissionUncheckedUpdateManyWithoutPermissionNestedInput
   }
 
+  export type UserCreateWithoutFeedbacksInput = {
+    id?: string
+    workflows?: WorkflowCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutFeedbacksInput = {
+    id?: string
+    workflows?: WorkflowUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutFeedbacksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutFeedbacksInput, UserUncheckedCreateWithoutFeedbacksInput>
+  }
+
+  export type WorkflowCreateWithoutFeedbacksInput = {
+    id?: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutWorkflowsInput
+    edges?: WorkflowEdgeCreateNestedManyWithoutWorkflowInput
+    nodes?: WorkflowNodeCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowUncheckedCreateWithoutFeedbacksInput = {
+    id?: string
+    userId: string
+    name: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    isDeleted?: boolean
+    isPublished?: boolean
+    publishedWorkflowId?: string | null
+    publishedAt?: Date | string | null
+    lastPublishedAt?: Date | string | null
+    edges?: WorkflowEdgeUncheckedCreateNestedManyWithoutWorkflowInput
+    nodes?: WorkflowNodeUncheckedCreateNestedManyWithoutWorkflowInput
+    fields?: WorkflowFieldUncheckedCreateNestedManyWithoutWorkflowInput
+    roles?: WorkflowRoleUncheckedCreateNestedManyWithoutWorkflowInput
+  }
+
+  export type WorkflowCreateOrConnectWithoutFeedbacksInput = {
+    where: WorkflowWhereUniqueInput
+    create: XOR<WorkflowCreateWithoutFeedbacksInput, WorkflowUncheckedCreateWithoutFeedbacksInput>
+  }
+
+  export type UserUpsertWithoutFeedbacksInput = {
+    update: XOR<UserUpdateWithoutFeedbacksInput, UserUncheckedUpdateWithoutFeedbacksInput>
+    create: XOR<UserCreateWithoutFeedbacksInput, UserUncheckedCreateWithoutFeedbacksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutFeedbacksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutFeedbacksInput, UserUncheckedUpdateWithoutFeedbacksInput>
+  }
+
+  export type UserUpdateWithoutFeedbacksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflows?: WorkflowUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutFeedbacksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflows?: WorkflowUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type WorkflowUpsertWithoutFeedbacksInput = {
+    update: XOR<WorkflowUpdateWithoutFeedbacksInput, WorkflowUncheckedUpdateWithoutFeedbacksInput>
+    create: XOR<WorkflowCreateWithoutFeedbacksInput, WorkflowUncheckedCreateWithoutFeedbacksInput>
+    where?: WorkflowWhereInput
+  }
+
+  export type WorkflowUpdateToOneWithWhereWithoutFeedbacksInput = {
+    where?: WorkflowWhereInput
+    data: XOR<WorkflowUpdateWithoutFeedbacksInput, WorkflowUncheckedUpdateWithoutFeedbacksInput>
+  }
+
+  export type WorkflowUpdateWithoutFeedbacksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutWorkflowsNestedInput
+    edges?: WorkflowEdgeUpdateManyWithoutWorkflowNestedInput
+    nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+  }
+
+  export type WorkflowUncheckedUpdateWithoutFeedbacksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isDeleted?: BoolFieldUpdateOperationsInput | boolean
+    isPublished?: BoolFieldUpdateOperationsInput | boolean
+    publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    edges?: WorkflowEdgeUncheckedUpdateManyWithoutWorkflowNestedInput
+    nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
+    fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
+    roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+  }
+
   export type WorkflowCreateManyUserInput = {
     id?: string
     name: string
@@ -22725,6 +23134,13 @@ export namespace Prisma {
     publishedWorkflowId?: string | null
     publishedAt?: Date | string | null
     lastPublishedAt?: Date | string | null
+  }
+
+  export type FeedbackCreateManyUserInput = {
+    id?: string
+    workflowId?: string | null
+    comment: string
+    createdAt?: Date | string
   }
 
   export type WorkflowUpdateWithoutUserInput = {
@@ -22741,6 +23157,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateWithoutUserInput = {
@@ -22757,6 +23174,7 @@ export namespace Prisma {
     nodes?: WorkflowNodeUncheckedUpdateManyWithoutWorkflowNestedInput
     fields?: WorkflowFieldUncheckedUpdateManyWithoutWorkflowNestedInput
     roles?: WorkflowRoleUncheckedUpdateManyWithoutWorkflowNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutWorkflowNestedInput
   }
 
   export type WorkflowUncheckedUpdateManyWithoutUserInput = {
@@ -22769,6 +23187,27 @@ export namespace Prisma {
     publishedWorkflowId?: NullableStringFieldUpdateOperationsInput | string | null
     publishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     lastPublishedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type FeedbackUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    workflow?: WorkflowUpdateOneWithoutFeedbacksNestedInput
+  }
+
+  export type FeedbackUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    workflowId?: NullableStringFieldUpdateOperationsInput | string | null
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type WorkflowEdgeCreateManyWorkflowInput = {
@@ -22801,6 +23240,13 @@ export namespace Prisma {
     name: string
     description?: string | null
     isSystem?: boolean
+    createdAt?: Date | string
+  }
+
+  export type FeedbackCreateManyWorkflowInput = {
+    id?: string
+    userId: string
+    comment: string
     createdAt?: Date | string
   }
 
@@ -22910,6 +23356,27 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     isSystem?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutFeedbacksNestedInput
+  }
+
+  export type FeedbackUncheckedUpdateWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type FeedbackUncheckedUpdateManyWithoutWorkflowInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    comment?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

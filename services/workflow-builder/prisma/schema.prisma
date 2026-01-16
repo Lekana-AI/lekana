@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
   previewFeatures = ["driverAdapters"]
 }
 
@@ -12,20 +12,22 @@ datasource db {
 model User {
   id        String     @id @default(uuid())
   workflows Workflow[]
+  feedbacks Feedback[]
 }
 
 model Workflow {
-  id                  String          @id @default(uuid())
-  userId              String
-  name                String
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  isDeleted           Boolean         @default(false)
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  edges               WorkflowEdge[]
-  nodes               WorkflowNode[]
-  fields              WorkflowField[]
-  roles               WorkflowRole[]
+  id        String          @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  isDeleted Boolean         @default(false)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edges     WorkflowEdge[]
+  nodes     WorkflowNode[]
+  fields    WorkflowField[]
+  roles     WorkflowRole[]
+  feedbacks Feedback[]
 
   // Publish status tracking (synced from runtime)
   isPublished         Boolean   @default(false)
@@ -108,13 +110,13 @@ model WorkflowField {
 
 // Available permissions in the system for role-based access control
 model Permission {
-  id          String                   @id @default(uuid())
-  code        String                   @unique // e.g., "WORKFLOW_VIEW"
-  name        String                   // e.g., "View Workflow"
-  description String?                  // Detailed description
-  category    String                   @default("general") // e.g., "workflow", "review", "admin"
-  createdAt   DateTime                 @default(now())
-  rolePermissions WorkflowRolePermission[]
+  id                     String                   @id @default(uuid())
+  code                   String                   @unique // e.g., "WORKFLOW_VIEW"
+  name                   String // e.g., "View Workflow"
+  description            String? // Detailed description
+  category               String                   @default("general") // e.g., "workflow", "review", "admin"
+  createdAt              DateTime                 @default(now())
+  rolePermissions        WorkflowRolePermission[]
   defaultRolePermissions DefaultRolePermission[]
 
   @@index([category])
@@ -138,7 +140,7 @@ model WorkflowRolePermission {
 model WorkflowRole {
   id              String                   @id @default(uuid())
   workflowId      String
-  name            String                   // "developer", "validator", custom names
+  name            String // "developer", "validator", custom names
   description     String?
   isSystem        Boolean                  @default(false) // true for developer/validator
   createdAt       DateTime                 @default(now())
@@ -153,12 +155,12 @@ model WorkflowRole {
 // Role assignment - links users to roles for specific workflows
 model WorkflowRoleAssignment {
   id             String       @id @default(uuid())
-  userId         String       // Clerk user ID
-  userEmail      String?      // For display/invite
+  userId         String // Clerk user ID
+  userEmail      String? // For display/invite
   workflowRoleId String
   workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)
   assignedAt     DateTime     @default(now())
-  assignedBy     String?      // Who assigned this role
+  assignedBy     String? // Who assigned this role
 
   @@unique([userId, workflowRoleId])
   @@index([userId])
@@ -167,11 +169,11 @@ model WorkflowRoleAssignment {
 
 // Default role templates - automatically created for each new workflow
 model DefaultRole {
-  id                     String                    @id @default(uuid())
-  name                   String                    @unique // e.g., "developer", "validator"
+  id                     String                  @id @default(uuid())
+  name                   String                  @unique // e.g., "developer", "validator"
   description            String?
-  isActive               Boolean                   @default(true) // Can disable without deleting
-  createdAt              DateTime                  @default(now())
+  isActive               Boolean                 @default(true) // Can disable without deleting
+  createdAt              DateTime                @default(now())
   defaultRolePermissions DefaultRolePermission[]
 }
 
@@ -187,6 +189,20 @@ model DefaultRolePermission {
   @@unique([defaultRoleId, permissionId])
   @@index([defaultRoleId])
   @@index([permissionId])
+}
+
+model Feedback {
+  id         String   @id @default(uuid())
+  userId     String
+  workflowId String?
+  comment    String
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflow Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([workflowId])
 }
 
 // User usage tracking for storage and token limits

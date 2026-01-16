@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
+import { touchWorkflow } from '../utils/workflow.utils';
 
 export const addEdge = async (req: Request, res: Response) => {
     try {
@@ -68,6 +69,9 @@ export const addEdge = async (req: Request, res: Response) => {
             },
         });
 
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
+
         res.status(201).json(edge);
     } catch (error) {
         console.error('Error adding edge:', error);
@@ -100,6 +104,9 @@ export const deleteEdge = async (req: Request, res: Response) => {
             where: { id: edgeId },
             data: { isDeleted: true }
         });
+
+        // Touch workflow to update updatedAt
+        await touchWorkflow(workflowId);
 
         res.status(200).json({ message: 'Edge deleted successfully' });
     } catch (error) {
