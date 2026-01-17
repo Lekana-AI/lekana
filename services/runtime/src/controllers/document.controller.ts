@@ -54,19 +54,28 @@ async function getIamToken(targetUrl: string): Promise<string | null> {
     try {
         // Extract base URL for audience (remove path)
         const url = new URL(targetUrl);
-        const audience = url.origin; // e.g., https://lekana-ai-upload-PROJECT_NUMBER.europe-west1.run.app
+        const audience = `${url.protocol}//${url.host}`; // e.g., https://lekana-ai-upload-PROJECT_NUMBER.europe-west1.run.app
 
         console.log(`[Document] Generating IAM token for audience: ${audience}`);
         const auth = new GoogleAuth();
         const client = await auth.getIdTokenClient(audience);
-        const headers = await client.getRequestHeaders() as unknown as Record<string, string>;
+
+        // IMPORTANT: Pass the audience to getRequestHeaders() - this is required!
+        const headers = await client.getRequestHeaders(audience) as unknown as Record<string, string>;
         const authHeader = headers['Authorization'] || headers['authorization'];
         const token = authHeader?.replace('Bearer ', '') || null;
 
         if (token) {
-            console.log('[Document] IAM token generated successfully');
+            console.log(`[Document] IAM token generated successfully (length: ${token.length})`);
         } else {
             console.log('[Document] IAM token was empty');
+            console.log('[Document] Headers received:', JSON.stringify(headers));
+
+            // Fallback: try to get token from client credentials directly
+            if ((client as any).credentials?.id_token) {
+                console.log('[Document] Using fallback: client.credentials.id_token');
+                return (client as any).credentials.id_token;
+            }
         }
         return token;
     } catch (err) {
@@ -74,6 +83,7 @@ async function getIamToken(targetUrl: string): Promise<string | null> {
         return null;
     }
 }
+
 
 
 /**
