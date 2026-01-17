@@ -102,10 +102,15 @@
 
 	async function loadExecutions() {
 		loading = true;
+		const id = selectedExecutionId;
+			selectedExecutionId = null;
 		try {
 			const res = await fetch('/rime/executions?limit=50&offset=0');
 			const data = await res.json();
 			executions = data;
+			if (id) {
+				selectExecution(id)
+			}
 		} catch (e) {
 			console.error('Failed to fetch executions:', e);
 			toast.error('Failed to load executions. Please try again in a moment.');
