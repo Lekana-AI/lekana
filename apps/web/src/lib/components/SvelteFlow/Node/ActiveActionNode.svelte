@@ -39,12 +39,6 @@
 			const value = config[key];
 			const label = meta.label || key;
 
-			// If field requires connection test, it must be successful
-			if (meta.testConnection && !config.testConnection) {
-				msgs.push(`${label}: Connection test required`);
-				return;
-			}
-
 			if (meta.type === 'keyValue') {
 				if (!value || value.length === 0 || value.some((v: any) => !v || !v.key || !v.value)) {
 					msgs.push(`${label}: All mappings must be filled`);

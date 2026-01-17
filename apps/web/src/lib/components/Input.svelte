@@ -332,7 +332,8 @@
 				type="button"
 				class="flex items-center self-stretch rounded-md bg-zinc-800/70 px-4 text-[11px] text-zinc-200 transition-colors hover:bg-zinc-800 disabled:bg-zinc-800/50 disabled:opacity-50"
 				onclick={() => {
-					fieldData.value = [...(fieldData.value ?? []), ''];
+					if (!fieldData.value) fieldData.value = [];
+					fieldData.value.push('');
 					onInput?.({ target: { value: fieldData.value } }, fieldData);
 				}}
 			>
@@ -377,7 +378,8 @@
 				type="button"
 				class="flex items-center self-stretch rounded-md bg-zinc-800/70 px-4 text-[11px] text-zinc-200 transition-colors hover:bg-zinc-800 disabled:bg-zinc-800/50 disabled:opacity-50"
 				onclick={() => {
-					fieldData.value = [...(fieldData.value ?? []), { key: '', value: '' }];
+					if (!fieldData.value) fieldData.value = [];
+					fieldData.value.push({ key: '', value: '' });
 					onInput?.({ target: { value: fieldData.value } }, fieldData);
 				}}
 			>
@@ -389,7 +391,7 @@
 			</button>
 		</div>
 
-		{#each fieldData.value ?? [] as item, index}
+		{#each fieldData.value ?? [] as item, index (item)}
 			<div class="flex w-full items-center gap-2">
 				<div
 					class="flex w-full items-stretch overflow-clip rounded-lg border border-zinc-700 bg-black/50 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500"
