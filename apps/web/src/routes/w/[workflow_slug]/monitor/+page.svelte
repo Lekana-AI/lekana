@@ -30,7 +30,6 @@
 		Image,
 		File,
 		Workflow
-		RefreshCcwDot
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
 
