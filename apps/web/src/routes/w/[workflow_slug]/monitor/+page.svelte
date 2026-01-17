@@ -23,6 +23,13 @@
 		CircleAlert,
 		Clock,
 		Layers,
+		RefreshCcwDot,
+		FileText,
+		ExternalLink,
+		Loader2,
+		Image,
+		File,
+		Workflow
 		RefreshCcwDot
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
@@ -33,6 +40,27 @@
 	let selectedStepId = $state<string | null>(null);
 	let executionDetails = $state<Record<string, any>>({});
 	let detailLoadingId = $state<string | null>(null);
+
+	// New: Documents and Usage state
+	interface Document {
+		id: string;
+		filename: string;
+		size: number;
+		sizeFormatted: string;
+		mimeType: string;
+		uploadedAt: string;
+		workflowExecution?: {
+			id: string;
+			workflowName: string;
+			status: string;
+		};
+	}
+
+	let documents = $state<Document[]>([]);
+	let documentsLoading = $state(false);
+
+	let openingDocId = $state<string | null>(null);
+	let showDocuments = $state(false);
 
 	let selectedExecution = $derived(executions.find((e) => e.id === selectedExecutionId) || null);
 
@@ -70,7 +98,7 @@
 	});
 
 	onMount(async () => {
-		await loadExecutions();
+		await Promise.all([loadExecutions(), loadDocuments()]);
 	});
 
 	async function loadExecutions() {
@@ -84,6 +112,36 @@
 			toast.error('Failed to load executions. Please try again in a moment.');
 		} finally {
 			loading = false;
+		}
+	}
+
+	async function loadDocuments() {
+		documentsLoading = true;
+		try {
+			const res = await fetch(`/rime/documents/by-workflow-id/${workflow.id}`);
+			if (res.ok) {
+				const data = await res.json();
+				documents = data.documents || [];
+			}
+		} catch (e) {
+			console.error('Failed to fetch documents:', e);
+		} finally {
+			documentsLoading = false;
+		}
+	}
+
+	async function openDocument(doc: Document) {
+		openingDocId = doc.id;
+		try {
+			const res = await fetch(`/rime/documents/${doc.id}/url`);
+			if (!res.ok) throw new Error('Failed to get document URL');
+			const data = await res.json();
+			window.open(data.url, '_blank');
+		} catch (e: any) {
+			console.error('Error opening document:', e);
+			toast.error('Failed to open document. Please try again in a moment.');
+		} finally {
+			openingDocId = null;
 		}
 	}
 
@@ -148,6 +206,16 @@
 	</details>
 {/snippet}
 
+{#snippet FileIconItem(mimeType: string)}
+	{#if mimeType.includes('pdf')}
+		<FileText class="h-4 w-4 text-red-400" />
+	{:else if mimeType.includes('image')}
+		<Image class="h-4 w-4 text-purple-400" />
+	{:else}
+		<File class="h-4 w-4 text-zinc-500" />
+	{/if}
+{/snippet}
+
 <main class="flex h-screen w-screen overflow-hidden bg-zinc-900">
 	<SidePanel
 		activeWorkflow={workflow.id ?? ''}
@@ -185,7 +253,7 @@
 					</a>
 					{#if workflow.isPublished}
 						<a
-							href="{workflow.id}/run"
+							href="run"
 							target="_blank"
 							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
 						>
@@ -225,17 +293,24 @@
 									<p class="text-base font-bold text-white">{stats.avgDuration}s</p>
 								</div>
 							</div>
+
+							<!-- User Usage Stats -->
 						</div>
 
 						<!-- Execution Log Header -->
 						<div
 							class="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/80 px-4 py-3"
 						>
-							<h3 class="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+						<div class="flex items-center gap-2">
+							<Workflow class="h-3.5 w-3.5 text-zinc-500" />
+							<h3 class="rounded-lg text-xs font-bold tracking-widest text-zinc-500 uppercase">
 								Execution Log
 							</h3>
+							</div>
 							<button
-								onclick={() => loadExecutions()}
+								onclick={() => {
+									(loadExecutions(), loadDocuments());
+								}}
 								class="text-zinc-500 transition-colors hover:text-white"
 							>
 								<RefreshCcw class="h-3 w-3 {loading ? 'animate-spin' : ''}" />
@@ -300,6 +375,78 @@
 								{/each}
 							{/if}
 						</div>
+
+						<!-- Documents Section -->
+						<div class="border-t border-white/5">
+							<button
+								type="button"
+								onclick={() => (showDocuments = !showDocuments)}
+								class="relative z-20 flex w-full cursor-pointer items-center justify-between rounded-lg bg-zinc-950/80 px-4 py-3 hover:bg-zinc-900/80"
+							>
+								<div class="flex items-center gap-2">
+									<FileText class="h-3.5 w-3.5 text-zinc-500" />
+									<h3 class="text-xs font-bold tracking-widest text-zinc-500 uppercase">
+										Documents
+									</h3>
+									<span
+										class="rounded-full bg-white/5 px-2 py-0.5 text-[10px] font-bold text-zinc-400"
+									>
+										{documents.length}
+									</span>
+								</div>
+								<ChevronDown
+									class="h-3 w-3 text-zinc-500 transition-transform {showDocuments
+										? 'rotate-180'
+										: ''}"
+								/>
+							</button>
+
+							{#if showDocuments}
+								<div class="dark-scroll max-h-48 space-y-1 overflow-y-auto p-2">
+									{#if documentsLoading}
+										{#each Array(2) as _}
+											<div class="animate-pulse rounded-lg bg-white/2 p-2.5 py-4">
+												<div class="h-3 w-24 rounded bg-white/10"></div>
+											</div>
+										{/each}
+									{:else if documents.length === 0}
+										<div class="flex flex-col items-center justify-center gap-2 py-6 text-zinc-600">
+											<FileText class="h-6 w-6 opacity-20" />
+											<p class="text-[10px] font-bold uppercase">No Documents</p>
+										</div>
+									{:else}
+										{#each documents as doc}
+											<div
+												class="flex items-center justify-between rounded-lg bg-white/2 p-2.5 transition-colors hover:bg-white/5"
+											>
+												<div class="flex min-w-0 flex-1 items-center gap-2">
+													<span class="shrink-0 text-sm">{@render FileIconItem(doc.mimeType)}</span>
+													<div class="min-w-0 flex-1">
+														<p class="truncate text-xs font-medium text-zinc-300">{doc.filename}</p>
+														<p class="text-[10px] text-zinc-600">{doc.sizeFormatted}</p>
+													</div>
+												</div>
+												<button
+													type="button"
+													onclick={(e) => {
+														e.stopPropagation();
+														openDocument(doc);
+													}}
+													disabled={openingDocId === doc.id}
+													class="relative z-30 ml-2 shrink-0 cursor-pointer rounded-md px-2 py-1.5 text-zinc-200 transition-all hover:text-green-400 disabled:opacity-50"
+												>
+													{#if openingDocId === doc.id}
+														<Loader2 class="h-3 w-3 animate-spin" />
+													{:else}
+														<ExternalLink class="h-3 w-3" />
+													{/if}
+												</button>
+											</div>
+										{/each}
+									{/if}
+								</div>
+							{/if}
+						</div>
 					</div>
 
 					<!-- Right Panel: Execution Details -->
@@ -339,7 +486,7 @@
 											<h2 class="flex items-center gap-2 text-base font-bold text-white">
 												Execution {execution.id.slice(0, 8)}
 												{#if execution.status === 'COMPLETED'}
-													<CircleCheck  class="h-4 w-4 text-green-500" />
+													<CircleCheck class="h-4 w-4 text-green-500" />
 												{:else}
 													<CircleAlert class="h-4 w-4 text-red-500" />
 												{/if}
