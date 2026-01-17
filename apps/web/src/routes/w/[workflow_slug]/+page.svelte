@@ -167,6 +167,8 @@
 		workflowName = workflow.name;
 	});
 
+	let newKeyData = $state(null);
+
 	let isSynced = $derived(
 		workflow.isPublished &&
 			workflow.lastPublishedAt &&
@@ -314,6 +316,7 @@
 
 							{#if showPublishModal}
 								<Publish
+									bind:newlyCreatedKeyData={newKeyData}
 									{workflow}
 									onClose={() => (showPublishModal = false)}
 									onSubmit={async () => {
@@ -355,6 +358,7 @@
 
 							{#if showPublishModal}
 								<Publish
+									bind:newlyCreatedKeyData={newKeyData}
 									{workflow}
 									onClose={() => (showPublishModal = false)}
 									onSubmit={async () => {

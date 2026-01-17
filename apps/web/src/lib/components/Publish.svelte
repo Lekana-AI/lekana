@@ -22,12 +22,12 @@
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/toast.svelte';
 
-	let { workflow, onClose, onSubmit } = $props();
+	let { workflow, onClose, onSubmit, newlyCreatedKeyData = $bindable(null) } = $props();
 
 	let isPublishing = $state(false);
 	let publishResult = $state<any>(null);
 	let keys = $state<any[]>([]);
-	let newlyCreatedKeyData = $state<any>(null);
+	// let newlyCreatedKeyData = $state<any>(null); // Replaced by prop
 	let expandedKeyId = $state<string | null>(null);
 	let isLoadingKeys = $state(false);
 	let copiedKey = $state(false);
@@ -211,20 +211,7 @@
 		});
 	}
 
-	const runEndpoint = $derived(
-		publishResult?.runEndpoint || `/api/v1/workflows/${workflow.id}/run`
-	);
 	const activeKeys = $derived(keys.filter((k) => k.isActive));
-	const firstPublishedAt = $derived(
-		activeKeys.length > 0 ? activeKeys[activeKeys.length - 1].createdAt : null
-	);
-	const lastUsedAt = $derived(
-		activeKeys.reduce((latest, key) => {
-			if (!key.lastUsedAt) return latest;
-			const current = new Date(key.lastUsedAt).getTime();
-			return latest === null || current > new Date(latest).getTime() ? key.lastUsedAt : latest;
-		}, null)
-	);
 
 	const expirationOptions = [
 		{ label: '7 Days', value: '7d' },
@@ -325,42 +312,6 @@
 		</style>
 
 		<section class="dark-scroll flex flex-col gap-4 overflow-y-auto pr-1">
-			{#if workflow.isPublished || publishResult}
-				<!-- Subtle Endpoint Display -->
-				<div
-					class="group flex flex-col gap-3 rounded-xl border border-white/5 bg-white/2 px-4 py-4"
-				>
-					<div class="flex items-center justify-between">
-						<span class="text-[10px] font-bold tracking-widest text-zinc-500 uppercase"
-							>Production Endpoint</span
-						>
-						<button
-							onclick={() => copyToClipboard(runEndpoint, 'endpoint')}
-							class="flex items-center gap-2 text-xs font-bold text-zinc-400 transition-colors hover:text-white"
-						>
-							{#if copiedEndpoint}
-								<Check class="h-3 w-3 text-green-500" />
-								<span class="text-green-500">Copied</span>
-							{:else}
-								<Copy class="h-3 w-3" />
-								<span class="">Copy</span>
-							{/if}
-						</button>
-					</div>
-					<div class="flex items-center gap-3 overflow-hidden">
-						<div
-							class="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-zinc-800 text-zinc-500"
-						>
-							<Terminal class="h-4 w-4" />
-						</div>
-						<span
-							class="h-full font-mono text-xs text-zinc-400 transition-colors group-hover:text-zinc-300"
-							>https://api.lekana.dev{runEndpoint}</span
-						>
-					</div>
-				</div>
-			{/if}
-
 			<div class="space-y-4">
 				<!-- Publish / Re-publish Section -->
 				{#if !workflow.isPublished && !publishResult}
@@ -572,12 +523,9 @@
 														>
 													</div>
 													<div class="flex items-center gap-3">
-														<span class="text-xs text-zinc-500"
-															>{formatRelativeTime(key.createdAt)}</span
-														>
 														{#if key.lastUsedAt}
 															<span class="text-xs text-zinc-400"
-																>• Last used {formatRelativeTime(key.lastUsedAt)}</span
+																>Last used {formatRelativeTime(key.lastUsedAt)}</span
 															>
 														{/if}
 													</div>
