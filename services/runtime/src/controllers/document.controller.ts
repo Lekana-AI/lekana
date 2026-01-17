@@ -48,19 +48,33 @@ async function getUploadServiceUrl(): Promise<string> {
 // Get IAM token for Cloud Run authentication
 async function getIamToken(targetUrl: string): Promise<string | null> {
     if (!targetUrl.includes('.run.app')) {
+        console.log('[Document] Skipping IAM token - not a Cloud Run URL');
         return null;
     }
     try {
+        // Extract base URL for audience (remove path)
+        const url = new URL(targetUrl);
+        const audience = url.origin; // e.g., https://lekana-ai-upload-PROJECT_NUMBER.europe-west1.run.app
+
+        console.log(`[Document] Generating IAM token for audience: ${audience}`);
         const auth = new GoogleAuth();
-        const client = await auth.getIdTokenClient(targetUrl);
+        const client = await auth.getIdTokenClient(audience);
         const headers = await client.getRequestHeaders() as unknown as Record<string, string>;
         const authHeader = headers['Authorization'] || headers['authorization'];
-        return authHeader?.replace('Bearer ', '') || null;
+        const token = authHeader?.replace('Bearer ', '') || null;
+
+        if (token) {
+            console.log('[Document] IAM token generated successfully');
+        } else {
+            console.log('[Document] IAM token was empty');
+        }
+        return token;
     } catch (err) {
         console.error('[Document] Error getting IAM token:', err);
         return null;
     }
 }
+
 
 /**
  * GET /api/v1/documents
