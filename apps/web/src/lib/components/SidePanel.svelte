@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import {
 		PanelLeftClose,
 		Network,
@@ -13,7 +12,9 @@
 		CopyPlus,
 		Settings2,
 		LifeBuoy,
-		MessageSquare
+		MessageSquare,
+		Zap,
+		HardDrive
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { SignedIn, UserButton } from 'svelte-clerk';
@@ -48,9 +49,37 @@
 	let loadingTitle = $state('Creating Workflow');
 	let loadingMessage = $state('Sit back. We are getting your workspace ready...');
 
+	interface UsageData {
+		storage: {
+			used: number;
+			limit: number;
+			usedFormatted: string;
+			limitFormatted: string;
+			percentage: number;
+		};
+		tokens: {
+			used: number;
+			limit: number | null;
+		};
+	}
+
+	let usage = $state<UsageData | null>(null);
+
 	onMount(() => {
 		loadWorkflows();
+		loadUsage();
 	});
+
+	async function loadUsage() {
+		try {
+			const res = await fetch('/api/usage');
+			if (res.ok) {
+				usage = await res.json();
+			}
+		} catch (e) {
+			console.error('Failed to fetch usage:', e);
+		}
+	}
 
 	async function loadWorkflows() {
 		workflowsLoading = true;
@@ -178,23 +207,6 @@
 			</button>
 		</header>
 
-		<div
-			class="group flex w-full items-center gap-3 rounded-md text-zinc-300 {panelCollapsed
-				? 'justify-center  py-2'
-				: 'p-2'} "
-		>
-			<SignedIn>
-				<UserButton />
-			</SignedIn>
-			<div class="flex flex-col gap-1 {panelCollapsed ? 'hidden' : ''}">
-				<p class="flex items-center gap-1 truncate text-xs">Lekana Beta</p>
-				<span class="w-fit rounded-full text-[10px] font-medium text-green-500">Free</span>
-				<!-- <p class="flex truncate text-[10px] {panelCollapsed ? 'hidden' : ''}">
-					<span class="text-zinc-400">{userName}</span>
-				</p> -->
-			</div>
-		</div>
-
 		<!-- Workflows section -->
 		<button
 			aria-label="New workflow"
@@ -314,6 +326,79 @@
 		{/if}
 	</div>
 
+	<div class="group relative mb-4 w-full">
+		{#if usage && !panelCollapsed}
+			<div
+				class="pointer-events-none absolute bottom-full left-0 z-50 mb-2 w-full px-2 opacity-0 transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100"
+			>
+				<div
+					class="flex flex-col gap-3 rounded-xl border border-white/5 bg-zinc-900/95 p-3 shadow-xl backdrop-blur-md"
+				>
+					<!-- Tokens -->
+					<div class="flex flex-col gap-1.5">
+						<div class="flex items-center justify-between text-[10px]">
+							<div class="flex items-center gap-1.5 font-medium text-zinc-300">
+								<Zap class="h-3 w-3 text-green-400" />
+								<span>Tokens</span>
+							</div>
+							<span class="text-zinc-500">
+								{usage.tokens.used.toLocaleString()} <span class="text-zinc-600">/</span>
+								{usage.tokens.limit?.toLocaleString() ?? '∞'}
+							</span>
+						</div>
+					</div>
+
+					<!-- Storage (Text Only) -->
+					<div class="flex items-center justify-between border-t border-white/5 pt-2 text-[10px]">
+						<div class="flex items-center gap-1.5 font-medium text-zinc-400">
+							<HardDrive class="h-3 w-3 text-blue-400" />
+							<span>Storage</span>
+						</div>
+						<span class="text-zinc-500">
+							{usage.storage.usedFormatted} <span class="text-zinc-600">/</span>
+							{usage.storage.limitFormatted}
+						</span>
+					</div>
+				</div>
+			</div>
+		{/if}
+
+		<!-- User Info -->
+		<div
+			class="flex w-full items-center gap-3 rounded-md text-zinc-300 {panelCollapsed
+				? 'justify-center  py-2'
+				: 'p-2'} "
+		>
+			<SignedIn>
+				<UserButton />
+			</SignedIn>
+			<div class="flex w-full flex-col gap-2 {panelCollapsed ? 'hidden' : ''}">
+				<div class="flex gap-1">
+					<p class="flex items-center gap-1 truncate text-xs">Lekana</p>
+					<span class="w-fit rounded-full text-[10px] font-medium text-green-500">Beta</span>
+					<!-- <p class="flex truncate text-[10px] {panelCollapsed ? 'hidden' : ''}">
+						<span class="text-zinc-400">{userName}</span>
+					</p> -->
+				</div>
+				{#if usage}
+					{#if usage.tokens.limit}
+						{@const percent = Math.min((usage.tokens.used / usage.tokens.limit) * 100, 100)}
+						<div class="h-1.5 w-full overflow-hidden rounded-full bg-zinc-800">
+							<div
+								class=" h-full rounded-full bg-linear-to-r from-green-500 to-emerald-400 transition-all duration-500"
+								style="width: {percent}%"
+							>
+								<span class="text-[10px] text-zinc-500">
+									{usage.tokens.used.toLocaleString()} <span class="text-zinc-600">/</span>
+									{usage.tokens.limit?.toLocaleString() ?? '∞'}
+								</span>
+							</div>
+						</div>
+					{/if}
+				{/if}
+			</div>
+		</div>
+	</div>
 	<!-- Support Button -->
 	<button
 		type="button"
