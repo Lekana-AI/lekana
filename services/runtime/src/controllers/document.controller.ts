@@ -248,6 +248,81 @@ export const listDocumentsByWorkflow = async (req: Request, res: Response) => {
     }
 };
 
+/**
+ * GET /api/v1/documents/by-workflow-id/:workflowId
+ * List documents for a specific workflow (across all executions)
+ */
+export const listDocumentsByWorkflowId = async (req: Request, res: Response) => {
+    try {
+        const userId = req.auth?.sub;
+        const { workflowId } = req.params;
+        const { limit = 50, offset = 0 } = req.query;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthorized',
+                message: 'User ID not found in token'
+            });
+        }
+
+        // Find all documents for executions of this workflow
+        const [documents, total] = await Promise.all([
+            prisma.document.findMany({
+                where: {
+                    userId,
+                    workflowExecution: {
+                        workflowId
+                    }
+                },
+                orderBy: { uploadedAt: 'desc' },
+                take: Number(limit),
+                skip: Number(offset),
+                include: {
+                    workflowExecution: {
+                        select: {
+                            id: true,
+                            workflowName: true,
+                            status: true,
+                            startedAt: true
+                        }
+                    }
+                }
+            }),
+            prisma.document.count({
+                where: {
+                    userId,
+                    workflowExecution: {
+                        workflowId
+                    }
+                }
+            })
+        ]);
+
+        res.json({
+            workflowId,
+            documents: documents.map(doc => ({
+                id: doc.id,
+                filename: doc.filename,
+                size: Number(doc.size),
+                sizeFormatted: formatBytes(Number(doc.size)),
+                mimeType: doc.mimeType,
+                uploadedAt: doc.uploadedAt,
+                workflowExecution: doc.workflowExecution
+            })),
+            pagination: {
+                total,
+                limit: Number(limit),
+                offset: Number(offset),
+                hasMore: Number(offset) + documents.length < total
+            }
+        });
+
+    } catch (error: any) {
+        console.error('Error listing documents by workflow ID:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
 // Helper function to format bytes
 function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Bytes';

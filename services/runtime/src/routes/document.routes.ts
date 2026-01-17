@@ -7,7 +7,8 @@ import express from 'express';
 import {
     listDocuments,
     getSignedUrl,
-    listDocumentsByWorkflow
+    listDocumentsByWorkflow,
+    listDocumentsByWorkflowId
 } from '../controllers/document.controller';
 
 const router = express.Router();
@@ -20,5 +21,8 @@ router.get('/:id/url', getSignedUrl);
 
 // List documents for a specific workflow execution
 router.get('/by-workflow/:workflowExecutionId', listDocumentsByWorkflow);
+
+// List documents for a specific workflow (across all executions)
+router.get('/by-workflow-id/:workflowId', listDocumentsByWorkflowId);
 
 export default router;
