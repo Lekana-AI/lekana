@@ -22,12 +22,12 @@
 	import { onMount } from 'svelte';
 	import { toast } from '$lib/toast.svelte';
 
-	let { workflow, onClose, onSubmit } = $props();
+	let { workflow, onClose, onSubmit, newlyCreatedKeyData = $bindable(null) } = $props();
 
 	let isPublishing = $state(false);
 	let publishResult = $state<any>(null);
 	let keys = $state<any[]>([]);
-	let newlyCreatedKeyData = $state<any>(null);
+	// let newlyCreatedKeyData = $state<any>(null); // Replaced by prop
 	let expandedKeyId = $state<string | null>(null);
 	let isLoadingKeys = $state(false);
 	let copiedKey = $state(false);
@@ -213,7 +213,6 @@
 
 	const activeKeys = $derived(keys.filter((k) => k.isActive));
 
-
 	const expirationOptions = [
 		{ label: '7 Days', value: '7d' },
 		{ label: '30 Days', value: '30d' },
@@ -313,7 +312,6 @@
 		</style>
 
 		<section class="dark-scroll flex flex-col gap-4 overflow-y-auto pr-1">
-			
 			<div class="space-y-4">
 				<!-- Publish / Re-publish Section -->
 				{#if !workflow.isPublished && !publishResult}

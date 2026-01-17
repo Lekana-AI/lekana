@@ -13,7 +13,7 @@
 </svelte:head>
 
 <main
-	class="relative flex min-h-screen flex-col items-center overflow-x-clip bg-neutral-950 text-white"
+	class="relative flex overflow-hidden h-screen flex-col items-center bg-neutral-950 text-white"
 >
 	<!-- Background Glows -->
 	<div
@@ -35,7 +35,7 @@
 				{status}
 			</h1>
 
-			<h2 class="mb-4 text-2xl font-bold text-white md:text-3xl">
+			<h2 class="mb-4 text-2xl font-bold text-white">
 				{message}
 			</h2>
 

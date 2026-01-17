@@ -60,15 +60,21 @@
 	$effect(() => {
 		if (fieldData.type === 'keyValue' && fieldData.useExtractedFields && extractedFields) {
 			const currentMapping = fieldData.value || [];
-			const currentKeys = currentMapping.map((m) => m.key);
+			// Create a set of existing keys for easier lookup, normalizing to lowercase/trimmed
+			const currentKeys = new Set(
+				currentMapping.map((m) => (m.key ? m.key.toString().trim().toLowerCase() : ''))
+			);
 
 			let updated = false;
 			const newMapping = [...currentMapping];
 
 			extractedFields.forEach((field) => {
-				if (!currentKeys.includes(field)) {
+				const normalizedField = field ? field.toString().trim().toLowerCase() : '';
+				if (normalizedField && !currentKeys.has(normalizedField)) {
 					newMapping.push({ key: field, value: '' });
 					updated = true;
+					// Add to currentKeys to prevent duplicates within the extractedFields list itself if any
+					currentKeys.add(normalizedField);
 				}
 			});
 
@@ -332,7 +338,8 @@
 				type="button"
 				class="flex items-center self-stretch rounded-md bg-zinc-800/70 px-4 text-[11px] text-zinc-200 transition-colors hover:bg-zinc-800 disabled:bg-zinc-800/50 disabled:opacity-50"
 				onclick={() => {
-					fieldData.value = [...(fieldData.value ?? []), ''];
+					if (!fieldData.value) fieldData.value = [];
+					fieldData.value.push('');
 					onInput?.({ target: { value: fieldData.value } }, fieldData);
 				}}
 			>
@@ -377,7 +384,8 @@
 				type="button"
 				class="flex items-center self-stretch rounded-md bg-zinc-800/70 px-4 text-[11px] text-zinc-200 transition-colors hover:bg-zinc-800 disabled:bg-zinc-800/50 disabled:opacity-50"
 				onclick={() => {
-					fieldData.value = [...(fieldData.value ?? []), { key: '', value: '' }];
+					if (!fieldData.value) fieldData.value = [];
+					fieldData.value.push({ key: '', value: '' });
 					onInput?.({ target: { value: fieldData.value } }, fieldData);
 				}}
 			>
@@ -389,7 +397,7 @@
 			</button>
 		</div>
 
-		{#each fieldData.value ?? [] as item, index}
+		{#each fieldData.value ?? [] as item, index (item)}
 			<div class="flex w-full items-center gap-2">
 				<div
 					class="flex w-full items-stretch overflow-clip rounded-lg border border-zinc-700 bg-black/50 focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500"
@@ -407,7 +415,7 @@
 						bind:value={fieldData.value[index].value}
 						class="w-2/3 px-3 py-2 text-sm text-white transition-all outline-none placeholder:text-zinc-500"
 						placeholder={fieldData.valueLabel}
-						oninput={() => onInput?.({ target: { value: fieldData.value } }, fieldData)}
+						oninput={() => 	onInput?.({ target: { value: fieldData.value } }, fieldData)}
 					/>
 				</div>
 

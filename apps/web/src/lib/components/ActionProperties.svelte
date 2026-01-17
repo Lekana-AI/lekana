@@ -116,8 +116,8 @@
 			const config = fields.reduce((acc, field) => {
 				if (!isVisible(field)) return acc; // Don't submit hidden fields
 				acc[field.name] = field.value;
-				if (field.testConnection) {
-					acc['testConnection'] = field.testConnectionStatus;
+				if (field.testConnection && !field.testConnectionStatus) {
+					return acc;
 				}
 				return acc;
 			}, {});

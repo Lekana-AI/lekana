@@ -30,10 +30,10 @@
 		Image,
 		File,
 		Workflow
+		RefreshCcwDot
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
 
-	// Existing execution state
 	let executions = $state<any[]>([]);
 	let loading = $state(true);
 	let selectedExecutionId = $state<string | null>(null);
