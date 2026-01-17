@@ -25,7 +25,7 @@
 		userName,
 		activeWorkflow,
 		activeWorkflowName
-	}: { userName: string; activeWorkflow?: string; activeWorkflowName?: string } = $props();
+	}: { userName: string; activeWorkflow: string; activeWorkflowName?: string } = $props();
 
 	$effect(() => {
 		if (activeWorkflowName && workflows.length > 0) {
@@ -149,7 +149,7 @@
 		: 'w-56'} z-0 flex-col justify-between bg-zinc-900 px-2 py-4 backdrop-blur-md transition-[width] duration-300"
 	aria-label="Workflow sidebar"
 >
-	<div class="flex flex-1 flex-col gap-3 overflow-hidden">
+	<div class="flex h-full flex-col gap-3">
 		<header class="flex items-center {panelCollapsed ? 'justify-center' : 'justify-between'} group">
 			<!-- Logo / brand -->
 			<a
