@@ -193,7 +193,7 @@
 								<p class="text-xs font-semibold text-zinc-400">Workflow ID</p>
 								<div class="group relative">
 									<div
-										class="w-full rounded-xl border border-white/10 bg-zinc-950 px-4 py-2.5 font-mono text-sm text-zinc-400"
+										class="w-full rounded-xl border truncate  border-white/10 bg-zinc-950 px-4 py-2.5 font-mono text-sm text-zinc-400"
 									>
 										{workflow.id}
 									</div>
@@ -202,7 +202,7 @@
 											navigator.clipboard.writeText(workflow.id);
 											toast.success('ID copied to clipboard');
 										}}
-										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-white/5 hover:text-white"
+										class="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg p-1.5 text-zinc-500 transition-colors bg-zinc-950 hover:text-white"
 										title="Copy ID"
 									>
 										<Copy class="h-4 w-4" />

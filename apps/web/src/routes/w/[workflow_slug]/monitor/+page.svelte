@@ -131,7 +131,7 @@
 	async function loadDocuments() {
 		documentsLoading = true;
 		try {
-			const res = await fetch(`/api/runtime/documents/by-workflow-id/${workflow.id}`);
+			const res = await fetch(`/rime/documents/by-workflow-id/${workflow.id}`);
 			if (res.ok) {
 				const data = await res.json();
 				documents = data.documents || [];
@@ -157,7 +157,7 @@
 	async function openDocument(doc: Document) {
 		openingDocId = doc.id;
 		try {
-			const res = await fetch(`/api/runtime/documents/${doc.id}/url`);
+			const res = await fetch(`/rime/documents/${doc.id}/url`);
 			if (!res.ok) throw new Error('Failed to get document URL');
 			const data = await res.json();
 			window.open(data.url, '_blank');
@@ -275,7 +275,7 @@
 					</a>
 					{#if workflow.isPublished}
 						<a
-							href="{workflow.id}/run"
+							href="run"
 							target="_blank"
 							class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
 						>
