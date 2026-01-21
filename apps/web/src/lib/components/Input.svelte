@@ -87,6 +87,9 @@
 </script>
 
 {#snippet infoTooltip()}
+	{#if fieldData.required}
+		<span class="text-green-500">*</span>
+	{/if}
 	{#if fieldData.info}
 		<div class="group relative inline-block">
 			<Info
@@ -196,12 +199,12 @@
 		{/each}
 	</div>
 {:else if fieldData.type === 'select'}
-	<!-- for "method" in your backend (GET/POST/PUT/DELETE) -->
 	<div class="flex flex-col gap-2 text-sm">
 		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
 			{@render infoTooltip()}
 		</label>
+
 		<select
 			id={fieldData.name}
 			bind:value={fieldData.value}
@@ -415,7 +418,7 @@
 						bind:value={fieldData.value[index].value}
 						class="w-2/3 px-3 py-2 text-sm text-white transition-all outline-none placeholder:text-zinc-500"
 						placeholder={fieldData.valueLabel}
-						oninput={() => 	onInput?.({ target: { value: fieldData.value } }, fieldData)}
+						oninput={() => onInput?.({ target: { value: fieldData.value } }, fieldData)}
 					/>
 				</div>
 

@@ -12,7 +12,7 @@
 				<p class="text-xs font-semibold tracking-[0.2em] text-green-400/80 uppercase">
 					welcome back
 				</p>
-				<h1 class="mt-3 text-3xl font-semibold text-white md:text-5xl">Login to Lekana</h1>
+				<h1 class="mt-3 text-3xl font-semibold text-white md:text-5xl">Sign In to Lekana</h1>
 			</div>
 
 			<div class="flex w-full max-w-md flex-col items-center gap-6">

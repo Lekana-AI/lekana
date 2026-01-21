@@ -6,6 +6,8 @@
 	import { dark } from '@clerk/themes';
 	import ToastContainer from '$lib/components/ui/ToastContainer.svelte';
 	import AlertDialog from '$lib/components/ui/AlertDialog.svelte';
+	import { navState } from '$lib/nav.svelte.js';
+	import SignInModal from '$lib/components/SignInModal.svelte';
 
 	let { children } = $props();
 </script>
@@ -23,4 +25,7 @@
 	{@render children()}
 	<ToastContainer />
 	<AlertDialog />
+	{#if navState.showSignInModal}
+		<SignInModal />
+	{/if}
 </ClerkProvider>

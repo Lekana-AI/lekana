@@ -40,13 +40,13 @@
 			</h2>
 
 			<div class="flex gap-6 self-stretch justify-center">
-				<!-- <button
+				<button
 					onclick={() => window.history.back()}
 					class="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-8 py-3 text-sm font-medium transition-all hover:bg-white/10"
 				>
 					<ArrowLeft size="18" />
 					Go Back
-				</button> -->
+				</button>
 
 				<a
 					href="/"

@@ -71,8 +71,8 @@
 		selectedExecutionSteps.find((s: any) => s.id === selectedStepId) || null
 	);
 
-	let filteredExecutions = $derived(executions.filter((e) => e.workflowId === workflow.id));
-	// let filteredExecutions = $derived(executions);
+	// let filteredExecutions = $derived(executions.filter((e) => e.workflowId === workflow.id));
+	let filteredExecutions = $derived(executions);
 
 	let stats = $derived.by(() => {
 		if (filteredExecutions.length === 0)
