@@ -82,7 +82,6 @@ export async function incrementStorageUsage(userId: string, bytes: number): Prom
             SET "storageUsed" = "storageUsed" + ${bytes}, "updatedAt" = NOW()
             WHERE "userId" = ${userId}
         `;
-        console.log(`[UsageService] Incremented storage for ${userId} by ${bytes} bytes`);
     } catch (error) {
         console.error('[UsageService] Error incrementing storage usage:', error);
     }
@@ -103,7 +102,6 @@ export async function incrementTokenUsage(userId: string, tokens: number): Promi
             SET "tokensUsed" = "tokensUsed" + ${tokens}, "updatedAt" = NOW()
             WHERE "userId" = ${userId}
         `;
-        console.log(`[UsageService] Incremented tokens for ${userId} by ${tokens}`);
     } catch (error) {
         console.error('[UsageService] Error incrementing token usage:', error);
     }

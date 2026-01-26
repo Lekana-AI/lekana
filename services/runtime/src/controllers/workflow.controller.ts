@@ -525,15 +525,11 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
             }
         }
 
-        console.log(`[Run] Running workflow with files: ${apiKeyInfo.publishedWorkflow.name} (${workflowId})`);
-        console.log(`[Run] Files received: ${files?.length || 0}`);
-
         const userId = apiKeyInfo.publishedWorkflow.userId;
 
         // Check storage limit before uploading
         if (files && files.length > 0) {
             const totalSize = files.reduce((sum, file) => sum + file.size, 0);
-            console.log(`[Run] Total upload size: ${totalSize} bytes`);
 
             const storageCheck = await checkStorageLimit(userId, totalSize);
             if (!storageCheck.canProceed) {
@@ -572,7 +568,6 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                 const uploadAction = await getActionByName('Upload files');
                 if (uploadAction?.serviceUrl) {
                     uploadServiceUrl = uploadAction.serviceUrl;
-                    console.log(`[Run] Using Upload service from DB: ${uploadServiceUrl}`);
                 } else {
                     console.warn(`[Run] Upload action not found in DB, using fallback: ${uploadServiceUrl}`);
                 }
@@ -582,8 +577,6 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
 
             for (const file of files) {
                 try {
-                    console.log(`[Run] Uploading file: ${file.originalname} (${file.mimetype})`);
-
                     // Create form data for upload service using form-data package
                     const FormData = require('form-data');
                     const axios = require('axios');
@@ -603,7 +596,6 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                     // Add IAM token for Cloud Run URLs
                     if (uploadServiceUrl.includes('.run.app')) {
                         try {
-                            console.log(`[Run] Getting IAM token for ${uploadServiceUrl}`);
                             const auth = new GoogleAuth();
                             const url = new URL(uploadServiceUrl);
                             const audience = `${url.protocol}//${url.host}`;
@@ -611,10 +603,8 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                             const authHeaders = await client.getRequestHeaders(audience);
                             if (authHeaders.Authorization) {
                                 headers['Authorization'] = authHeaders.Authorization;
-                                console.log(`[Run] IAM token added for upload`);
                             } else if (client.credentials?.id_token) {
                                 headers['Authorization'] = `Bearer ${client.credentials.id_token}`;
-                                console.log(`[Run] IAM token (from credentials) added for upload`);
                             }
                         } catch (authError: any) {
                             console.error(`[Run] Failed to get IAM token for upload:`, authError.message);
@@ -648,17 +638,56 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                             filename: uploadedFile.filename || file.originalname,
                             mimeType: uploadedFile.mimeType || file.mimetype
                         });
-                        console.log(`[Run] File uploaded successfully: ${uploadedFile.storagePath || uploadedFile.url}`);
                     } else {
-                        console.error(`[Run] Upload succeeded but no file data returned`);
+                        console.error(`[Run] Upload succeeded but no file data returned for ${file.originalname}`);
                     }
                 } catch (uploadError: any) {
-                    console.error(`[Run] Error uploading file ${file.originalname}:`, uploadError.message);
+                    // Enhanced error logging with full context
+                    const errorDetails: any = {
+                        filename: file.originalname,
+                        fileSize: file.size,
+                        mimeType: file.mimetype,
+                        uploadServiceUrl,
+                        workflowId
+                    };
+
+                    // Capture HTTP error details (including 502 Bad Gateway)
+                    if (uploadError.response) {
+                        errorDetails.statusCode = uploadError.response.status;
+                        errorDetails.statusText = uploadError.response.statusText;
+                        errorDetails.responseData = uploadError.response.data;
+                    }
+
+                    // Capture network/timeout errors
+                    if (uploadError.code) {
+                        errorDetails.errorCode = uploadError.code;
+                    }
+
+                    console.error(`[Run] File upload failed:`, errorDetails);
+
+                    // Return informative error to user
+                    const statusCode = uploadError.response?.status;
+                    let errorMessage = `Failed to upload file: ${file.originalname}`;
+
+                    if (statusCode === 502) {
+                        errorMessage += ' - Upload service is temporarily unavailable (502 Bad Gateway)';
+                    } else if (statusCode) {
+                        errorMessage += ` - Upload service returned ${statusCode} error`;
+                    } else if (uploadError.code === 'ECONNREFUSED') {
+                        errorMessage += ' - Upload service is not reachable';
+                    } else if (uploadError.code === 'ETIMEDOUT') {
+                        errorMessage += ' - Upload request timed out';
+                    }
 
                     return res.status(500).json({
                         error: 'Upload failed',
-                        message: `Failed to upload file: ${file.originalname}`,
-                        details: uploadError.message
+                        message: errorMessage,
+                        details: {
+                            filename: file.originalname,
+                            statusCode: statusCode || null,
+                            errorCode: uploadError.code || null,
+                            serviceUrl: uploadServiceUrl
+                        }
                     });
                 }
             }
@@ -709,7 +738,6 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                             console.error(`[Run] Error logging document ${doc.filename}:`, docError);
                             break;
                         }
-                        console.log(`[Run] DB retry ${attempt}/3 for ${doc.filename}...`);
                         await new Promise(r => setTimeout(r, 500 * attempt));
                     }
                 }
@@ -717,7 +745,6 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
 
             // Increment storage usage
             await incrementStorageUsage(userId, totalSize);
-            console.log(`[Run] Logged ${documents.length} documents and updated storage usage`);
         }
 
         res.status(202).json({

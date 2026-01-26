@@ -38,67 +38,46 @@ function isCloudRunUrl(url: string): boolean {
  * Returns null if running locally or if unable to get token
  */
 async function getIdTokenForService(serviceUrl: string): Promise<string | null> {
-    console.log(`[ServiceClient] === IAM Token Request ===`);
-    console.log(`[ServiceClient] Service URL: ${serviceUrl}`);
-
     // Skip for localhost
     if (serviceUrl.includes('localhost') || serviceUrl.includes('127.0.0.1')) {
-        console.log(`[ServiceClient] Skipping IAM token - localhost detected`);
         return null;
     }
 
     // Only get token for Cloud Run URLs
     if (!isCloudRunUrl(serviceUrl)) {
-        console.log(`[ServiceClient] Skipping IAM token - not a Cloud Run URL`);
         return null;
     }
-
-    console.log(`[ServiceClient] Cloud Run URL detected - generating IAM token...`);
 
     try {
         // Extract the base URL (audience) for the ID token
         const url = new URL(serviceUrl);
         const audience = `${url.protocol}//${url.host}`;
-        console.log(`[ServiceClient] Audience: ${audience}`);
 
         // Check cache first
         if (!tokenClientCache.has(audience)) {
-            console.log(`[ServiceClient] Creating new ID token client for ${audience}`);
             const client = await auth.getIdTokenClient(audience);
             tokenClientCache.set(audience, client);
-            console.log(`[ServiceClient] ID token client created and cached`);
-        } else {
-            console.log(`[ServiceClient] Using cached ID token client`);
         }
 
         const client = tokenClientCache.get(audience);
 
         // Pass the URL to getRequestHeaders
         const headers = await client.getRequestHeaders(audience);
-        console.log(`[ServiceClient] Headers received:`, Object.keys(headers));
-
         const token = headers.Authorization?.replace('Bearer ', '') || headers.authorization?.replace('Bearer ', '');
 
         if (token) {
-            console.log(`[ServiceClient] ✅ IAM token generated successfully (length: ${token.length})`);
-            console.log(`[ServiceClient] Token preview: ${token.substring(0, 50)}...`);
-        } else {
-            console.log(`[ServiceClient] ❌ No token in Authorization header`);
-            console.log(`[ServiceClient] Full headers:`, JSON.stringify(headers));
-
-            // Fallback: try to get token from client credentials directly
-            if (client.credentials && client.credentials.id_token) {
-                console.log(`[ServiceClient] Using fallback: client.credentials.id_token`);
-                return client.credentials.id_token;
-            }
+            return token;
         }
 
-        return token || null;
+        // Fallback: try to get token from client credentials directly
+        if (client.credentials && client.credentials.id_token) {
+            return client.credentials.id_token;
+        }
+
+        console.error(`[ServiceClient] Failed to get IAM token for ${serviceUrl} - no token in headers or credentials`);
+        return null;
     } catch (error: any) {
-        console.error(`[ServiceClient] ❌ Failed to get ID token for ${serviceUrl}`);
-        console.error(`[ServiceClient] Error type: ${error.constructor?.name}`);
-        console.error(`[ServiceClient] Error message: ${error.message}`);
-        console.error(`[ServiceClient] Error stack:`, error.stack);
+        console.error(`[ServiceClient] Failed to get IAM token for ${serviceUrl}:`, error.message);
         return null;
     }
 }
@@ -168,8 +147,6 @@ export async function callServiceWithUrl(
     const startTime = Date.now();
 
     try {
-        console.log(`[ServiceClient] Calling service at ${serviceUrl}`);
-
         // Get IAM token for Cloud Run services
         const idToken = await getIdTokenForService(serviceUrl);
 
@@ -184,7 +161,6 @@ export async function callServiceWithUrl(
         // Add Authorization header if we have an ID token
         if (idToken) {
             headers['Authorization'] = `Bearer ${idToken}`;
-            console.log(`[ServiceClient] Using IAM token for Cloud Run service`);
         }
 
         const response = await axios.post<ServiceResponse>(
@@ -197,7 +173,6 @@ export async function callServiceWithUrl(
         );
 
         const processingTime = Date.now() - startTime;
-        console.log(`[ServiceClient] Service at ${serviceUrl} completed in ${processingTime}ms`);
 
         return {
             ...response.data,
@@ -213,21 +188,34 @@ export async function callServiceWithUrl(
 
         if (error instanceof AxiosError) {
             if (error.response) {
-                console.error(`[ServiceClient] Service error response:`, error.response.status);
+                const statusCode = error.response.status;
+                console.error(`[ServiceClient] Service returned ${statusCode} from ${serviceUrl}`, {
+                    nodeId: request.nodeId,
+                    executionId: request.executionId,
+                    errorData: error.response.data
+                });
+
                 return {
                     success: false,
                     data: null,
                     metadata: { processingTime, serviceVersion: 'unknown', serviceUrl },
                     error: {
-                        code: `SERVICE_ERROR_${error.response.status}`,
+                        code: `SERVICE_ERROR_${statusCode}`,
                         message: error.response.data?.error?.message || error.message,
-                        details: error.response.data
+                        details: {
+                            statusCode,
+                            data: error.response.data,
+                            url: serviceUrl
+                        }
                     }
                 };
             }
 
             if (error.code === 'ECONNREFUSED') {
-                console.error(`[ServiceClient] Service unavailable at ${serviceUrl}`);
+                console.error(`[ServiceClient] Service unavailable at ${serviceUrl}`, {
+                    nodeId: request.nodeId,
+                    executionId: request.executionId
+                });
                 return {
                     success: false,
                     data: null,
@@ -241,7 +229,11 @@ export async function callServiceWithUrl(
             }
 
             if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
-                console.error(`[ServiceClient] Service timeout at ${serviceUrl}`);
+                console.error(`[ServiceClient] Service timeout at ${serviceUrl}`, {
+                    nodeId: request.nodeId,
+                    executionId: request.executionId,
+                    timeout
+                });
                 return {
                     success: false,
                     data: null,
@@ -249,12 +241,18 @@ export async function callServiceWithUrl(
                     error: {
                         code: 'SERVICE_TIMEOUT',
                         message: `Service timed out after ${timeout}ms`,
-                        details: { timeout }
+                        details: { timeout, url: serviceUrl }
                     }
                 };
             }
         }
 
+        // Log unexpected errors with full context
+        console.error(`[ServiceClient] Unexpected error calling ${serviceUrl}:`, {
+            nodeId: request.nodeId,
+            executionId: request.executionId,
+            error: error instanceof Error ? error.message : String(error)
+        });
         throw error;
     }
 }

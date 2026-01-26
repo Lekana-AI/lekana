@@ -88,10 +88,6 @@ export const checkApiKey: RequestHandler = async (
             }
         });
 
-        if (apiKeyRecord) {
-            console.log(`[API Key] Workflow definition updated at: ${apiKeyRecord.publishedWorkflow.updatedAt}`);
-        }
-
         if (!apiKeyRecord) {
             res.status(401).json({
                 error: 'Unauthorized',

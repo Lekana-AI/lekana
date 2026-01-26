@@ -48,15 +48,13 @@ async function getUploadServiceUrl(): Promise<string> {
 // Get IAM token for Cloud Run authentication
 async function getIamToken(targetUrl: string): Promise<string | null> {
     if (!targetUrl.includes('.run.app')) {
-        console.log('[Document] Skipping IAM token - not a Cloud Run URL');
         return null;
     }
     try {
         // Extract base URL for audience (remove path)
         const url = new URL(targetUrl);
-        const audience = `${url.protocol}//${url.host}`; // e.g., https://lekana-ai-upload-PROJECT_NUMBER.europe-west1.run.app
+        const audience = `${url.protocol}//${url.host}`;
 
-        console.log(`[Document] Generating IAM token for audience: ${audience}`);
         const auth = new GoogleAuth();
         const client = await auth.getIdTokenClient(audience);
 
@@ -66,18 +64,16 @@ async function getIamToken(targetUrl: string): Promise<string | null> {
         const token = authHeader?.replace('Bearer ', '') || null;
 
         if (token) {
-            console.log(`[Document] IAM token generated successfully (length: ${token.length})`);
-        } else {
-            console.log('[Document] IAM token was empty');
-            console.log('[Document] Headers received:', JSON.stringify(headers));
-
-            // Fallback: try to get token from client credentials directly
-            if ((client as any).credentials?.id_token) {
-                console.log('[Document] Using fallback: client.credentials.id_token');
-                return (client as any).credentials.id_token;
-            }
+            return token;
         }
-        return token;
+
+        // Fallback: try to get token from client credentials directly
+        if ((client as any).credentials?.id_token) {
+            return (client as any).credentials.id_token;
+        }
+
+        console.error('[Document] Failed to get IAM token - no token in headers or credentials');
+        return null;
     } catch (err) {
         console.error('[Document] Error getting IAM token:', err);
         return null;
@@ -189,7 +185,6 @@ export const getSignedUrl = async (req: Request, res: Response) => {
 
         // Call Upload service to generate signed URL
         const uploadServiceUrl = await getUploadServiceUrl();
-        console.log(`[Document] Requesting signed URL from ${uploadServiceUrl}`);
 
         const headers: Record<string, string> = {
             'Content-Type': 'application/json'
