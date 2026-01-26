@@ -473,6 +473,58 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
             });
         }
 
+        // Extract Upload node config from workflow definition
+        const workflowDef = apiKeyInfo.publishedWorkflow.definition as any;
+        const uploadNode = workflowDef.nodes?.find((n: any) =>
+            n.action?.name?.toLowerCase().includes('upload')
+        );
+        const uploadConfig = uploadNode?.config || {};
+
+        // Validate files against Upload node config
+        if (files && files.length > 0) {
+            for (const file of files) {
+                // Check bulkUpload setting
+                if (uploadConfig.bulkUpload === false) {
+                    const isZip = file.mimetype === 'application/zip' ||
+                        file.mimetype === 'application/x-zip-compressed' ||
+                        file.originalname.toLowerCase().endsWith('.zip');
+                    if (isZip) {
+                        return res.status(400).json({
+                            error: 'Bulk upload not allowed',
+                            message: 'Bulk uploads (zip files) are not allowed for this workflow'
+                        });
+                    }
+                }
+
+                // Check maxFileSizeMB setting
+                const maxBytes = (uploadConfig.maxFileSizeMB || 50) * 1024 * 1024;
+                if (file.size > maxBytes) {
+                    return res.status(400).json({
+                        error: 'File too large',
+                        message: `File "${file.originalname}" exceeds the maximum size of ${uploadConfig.maxFileSizeMB || 50}MB`
+                    });
+                }
+
+                // Check allowedFileTypes setting
+                if (uploadConfig.allowedFileTypes && uploadConfig.allowedFileTypes.length > 0) {
+                    const allowed = uploadConfig.allowedFileTypes;
+                    const isPdf = file.mimetype === 'application/pdf';
+                    const isImage = file.mimetype.startsWith('image/');
+
+                    const isAllowed =
+                        (allowed.includes('pdf') && isPdf) ||
+                        (allowed.includes('images') && isImage);
+
+                    if (!isAllowed) {
+                        return res.status(400).json({
+                            error: 'File type not allowed',
+                            message: `File "${file.originalname}" has type "${file.mimetype}" which is not allowed. Allowed types: ${allowed.join(', ')}`
+                        });
+                    }
+                }
+            }
+        }
+
         console.log(`[Run] Running workflow with files: ${apiKeyInfo.publishedWorkflow.name} (${workflowId})`);
         console.log(`[Run] Files received: ${files?.length || 0}`);
 
