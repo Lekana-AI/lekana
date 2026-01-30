@@ -52,7 +52,8 @@ export async function* streamWorkflowGeneration(
 }
 
 function getSystemInstruction(actions: any[]): string {
-  const actionDocs = actions.map(a => ({
+  const activeActions = actions.filter(a => a.isActive !== false);
+  const actionDocs = activeActions.map(a => ({
     name: a.name,
     description: a.description,
     configSchema: a.configSchema,

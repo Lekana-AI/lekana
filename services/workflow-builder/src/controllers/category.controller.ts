@@ -64,7 +64,8 @@ export const getCategoriesWithActions = async (req: Request, res: Response) => {
                     select: {
                         id: true,
                         name: true,
-                        icon: true
+                        icon: true,
+                        isActive: true
                     },
                     orderBy: {
                         name: 'asc'
@@ -82,7 +83,8 @@ export const getCategoriesWithActions = async (req: Request, res: Response) => {
             actions: cat.actions.map(action => ({
                 id: action.id,
                 label: action.name,
-                icon: action.icon
+                icon: action.icon,
+                isActive: action.isActive
             }))
         }));
 

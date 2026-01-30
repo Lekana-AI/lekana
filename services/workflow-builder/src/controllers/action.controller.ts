@@ -114,7 +114,7 @@ export const getActionsByCategory = async (req: Request, res: Response) => {
  */
 export const createAction = async (req: Request, res: Response) => {
     try {
-        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta, isActive } = req.body;
 
         // Validate required fields
         if (!name || !categoryId || !outputType || !configSchema) {
@@ -150,7 +150,8 @@ export const createAction = async (req: Request, res: Response) => {
                 inputType: inputType || null,
                 outputType,
                 configSchema,
-                configMeta: configMeta || null
+                configMeta: configMeta || null,
+                isActive: isActive !== undefined ? isActive : true
             },
             include: {
                 category: {
@@ -176,7 +177,7 @@ export const createAction = async (req: Request, res: Response) => {
 export const updateAction = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta, isActive } = req.body;
 
         // Check if action exists
         const existingAction = await prisma.action.findUnique({
@@ -219,7 +220,8 @@ export const updateAction = async (req: Request, res: Response) => {
                 ...(inputType !== undefined && { inputType }),
                 ...(outputType && { outputType }),
                 ...(configSchema && { configSchema }),
-                ...(configMeta !== undefined && { configMeta })
+                ...(configMeta !== undefined && { configMeta }),
+                ...(isActive !== undefined && { isActive })
             },
             include: {
                 category: {
