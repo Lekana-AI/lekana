@@ -21,6 +21,7 @@
 	import { toast } from '$lib/toast.svelte';
 	import LoadingOverlay from './LoadingOverlay.svelte';
 	import SupportModal from './SupportModal.svelte';
+	import BetaAnnouncementModal from './BetaAnnouncementModal.svelte';
 
 	let {
 		userName,
@@ -48,6 +49,19 @@
 	let showSupportModal = $state(false);
 	let loadingTitle = $state('Creating Workflow');
 	let loadingMessage = $state('Sit back. We are getting your workspace ready...');
+	let showBetaModal = $state(false);
+
+	function getCookie(name: string) {
+		const value = `; ${document.cookie}`;
+		const parts = value.split(`; ${name}=`);
+		if (parts.length === 2) return parts.pop()?.split(';').shift();
+	}
+
+	function setCookie(name: string, value: string, days: number) {
+		const date = new Date();
+		date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+		document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+	}
 
 	interface UsageData {
 		storage: {
@@ -68,6 +82,13 @@
 	onMount(() => {
 		loadWorkflows();
 		loadUsage();
+
+		// Check for beta announcement cookie
+		if (!getCookie('lekana_beta_seen')) {
+			setTimeout(() => {
+				showBetaModal = true;
+			}, 1000);
+		}
 	});
 
 	async function loadUsage() {
@@ -225,7 +246,7 @@
 			</div>
 		</button>
 		{#if workflowsLoading}
-			<section class="flex h-full w-full flex-col gap-3 px-1">
+			<section class="flex h-full w-full {panelCollapsed ? '' : 'min-w-52'} flex-col gap-3 px-1">
 				<div class="flex items-center gap-2 p-1">
 					<div class="h-6 w-6 animate-pulse rounded-md bg-white/5"></div>
 					<div
@@ -241,7 +262,7 @@
 				{/if}
 			</section>
 		{:else if workflows.length > 0}
-			<section class="flex h-full w-full flex-col gap-3 px-1">
+			<section class="flex h-full w-full {panelCollapsed ? '' : 'min-w-52'} flex-col gap-3 px-1">
 				<!-- New Workflow button -->
 				<button
 					aria-label="Collapse workflows"
@@ -276,7 +297,7 @@
 					<!-- Workflows list -->
 					<nav
 						onscroll={() => (openMenuId = null)}
-						class="flex max-h-[calc(100vh-250px)] w-full flex-col gap-1 overflow-y-auto pr-1 select-none"
+						class="dark-scroll flex max-h-[calc(100vh-300px)] w-full flex-col gap-1 overflow-y-auto pr-1 pb-4 select-none"
 						aria-label="Workflow list"
 					>
 						{#each workflows as workflow (workflow.id)}
@@ -291,7 +312,7 @@
 									}}
 									class="group relative flex w-full items-center justify-between gap-2 rounded-lg p-3 text-xs focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:outline-none
 						{activeWorkflow === workflow.id
-										? 'bg-green-700 font-semibold text-white'
+										? 'bg-white/10 font-medium text-green-400'
 										: 'font-normal text-white/70 hover:bg-white/5'}"
 								>
 									<p class="truncate">{workflow.name}</p>
@@ -307,13 +328,10 @@
 											menuWorkflow = workflow;
 											openMenuId = openMenuId === workflow.id ? null : workflow.id;
 										}}
-										class="absolute right-1 z-20 items-center justify-center rounded-md p-2 transition-colors duration-300 {openMenuId ===
+										class="absolute right-1 z-20 items-center justify-center rounded-md bg-zinc-800 p-2 text-white transition-colors duration-300 hover:bg-zinc-900 {openMenuId ===
 										workflow.id
 											? 'flex'
-											: 'hidden group-hover:flex'} 
-				{activeWorkflow === workflow.id
-											? 'bg-zinc-800 hover:bg-zinc-900'
-											: 'bg-zinc-800 hover:bg-zinc-900'}"
+											: 'hidden group-hover:flex'} "
 									>
 										<EllipsisVertical class="h-4 w-4" />
 									</button>
@@ -455,4 +473,25 @@
 	/>
 {/if}
 
+{#if showBetaModal}
+	<BetaAnnouncementModal
+		onClose={() => {
+			showBetaModal = false;
+			setCookie('lekana_beta_seen', 'true', 7);
+		}}
+		onFeedback={() => {
+			showBetaModal = false;
+			setCookie('lekana_beta_seen', 'true', 7);
+			showSupportModal = true;
+		}}
+	/>
+{/if}
+
 <LoadingOverlay show={isActionLoading} title={loadingTitle} message={loadingMessage} />
+
+<style>
+	.dark-scroll {
+		scrollbar-width: thin;
+		scrollbar-color: gray transparent;
+	}
+</style>

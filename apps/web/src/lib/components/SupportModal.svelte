@@ -8,11 +8,13 @@
 		ChevronDown,
 		ChevronRight,
 		Play,
-		Shield
+		Shield,
+		ExternalLink
 	} from 'lucide-svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
+	import { PUBLIC_YOUTUBE_TUTORIAL_URL } from '$env/static/public';
 
 	let { onClose, workflows = [], activeWorkflowId = '' } = $props();
 
@@ -133,7 +135,7 @@
 								<iframe
 									width="100%"
 									height="100%"
-									src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+									src={PUBLIC_YOUTUBE_TUTORIAL_URL}
 									title="YouTube video player"
 									frameborder="0"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -280,21 +282,31 @@
 					{/if}
 				</div>
 			</div>
-			<div class="mt-6 px-2  flex items-center border-t border-white/5 pt-4">
+			<div class="mt-6 flex items-center justify-between border-t border-white/5 px-2 pt-4">
+				<div class="flex items-center gap-2">
+					<a
+						href="/privacy"
+						target="_blank"
+						class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
+					>
+						Privacy
+					</a>
+					<span class="mx-1 text-zinc-500"></span>
+					<a
+						href="/terms"
+						target="_blank"
+						class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
+					>
+						Terms
+					</a>
+				</div>
 				<a
-					href="/privacy"
+					href="/"
 					target="_blank"
 					class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
 				>
-					Privacy
-				</a>
-				<span class="mx-2 text-zinc-500"></span>
-				<a
-					href="/terms"
-					target="_blank"
-					class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-400"
-				>
-					Terms
+					lekana.dev
+					<ExternalLink class="h-4 w-4" />
 				</a>
 			</div>
 		</div>
