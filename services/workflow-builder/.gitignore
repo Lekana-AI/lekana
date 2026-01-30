@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Prisma
+generated/
+
 # Production build
 dist/
 build/
