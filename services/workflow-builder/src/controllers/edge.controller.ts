@@ -11,6 +11,14 @@ export const addEdge = async (req: Request, res: Response) => {
             return res.status(400).json({ error: 'sourceNodeId and targetNodeId are required' });
         }
 
+        // Prevent self-loops - a node cannot connect to itself
+        if (sourceNodeId === targetNodeId) {
+            return res.status(400).json({
+                error: 'Self-loop not allowed',
+                message: 'A node cannot connect to itself'
+            });
+        }
+
         // Fetch both nodes with their actions to validate type compatibility
         const sourceNode = await prisma.workflowNode.findFirst({
             where: {
@@ -40,14 +48,38 @@ export const addEdge = async (req: Request, res: Response) => {
         const sourceOutputType = sourceNode.action.outputType;
         const targetInputType = targetNode.action.inputType;
 
+        // Check if source is a terminal node (no output)
+        if (sourceOutputType === null) {
+            return res.status(400).json({
+                error: 'Terminal node cannot have outgoing connections',
+                message: `"${sourceNode.action.name}" is a terminal node and cannot connect to other nodes`,
+                sourceNode: {
+                    id: sourceNode.id,
+                    action: sourceNode.action.name,
+                    outputType: sourceOutputType
+                }
+            });
+        }
+
+        // Parse comma-separated input types (e.g., "file,document")
+        const acceptedInputTypes = targetInputType?.split(',').map((t: string) => t.trim()) || [];
+
+        // Check type compatibility
         // Allow connection if:
-        // 1. Target accepts 'any' input type
-        // 2. Target has no input requirement (null)
-        // 3. Source output matches target input exactly
-        if (targetInputType !== null && targetInputType !== 'any' && sourceOutputType !== targetInputType) {
+        // 1. Target has no input requirement (null)
+        // 2. Target accepts 'any' input type
+        // 3. Source outputs 'any' (passthrough nodes)
+        // 4. Source output matches one of target's accepted input types
+        const isCompatible =
+            targetInputType === null ||
+            targetInputType === 'any' ||
+            sourceOutputType === 'any' ||
+            acceptedInputTypes.includes(sourceOutputType);
+
+        if (!isCompatible) {
             return res.status(400).json({
                 error: 'Incompatible node types',
-                message: `Cannot connect: source outputs "${sourceOutputType}" but target expects "${targetInputType}"`,
+                message: `Cannot connect: "${sourceNode.action.name}" outputs "${sourceOutputType}" but "${targetNode.action.name}" expects "${targetInputType}"`,
                 sourceNode: {
                     id: sourceNode.id,
                     action: sourceNode.action.name,
@@ -60,6 +92,7 @@ export const addEdge = async (req: Request, res: Response) => {
                 }
             });
         }
+
 
         const edge = await prisma.workflowEdge.create({
             data: {
