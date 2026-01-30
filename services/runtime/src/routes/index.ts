@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { checkJwt, handleAuthError, extractUserInfo } from '../middleware/auth.middleware';
+import { checkJwt, handleAuthError, extractUserInfo, requireWorkflowAccess } from '../middleware/auth.middleware';
 import { checkApiKey } from '../middleware/apikey.middleware';
 import * as executionController from '../controllers/execution.controller';
 import * as workflowController from '../controllers/workflow.controller';
@@ -37,17 +37,16 @@ router.post('/workflows/:workflowId/run', checkApiKey, workflowController.runWor
 router.post('/workflows/:workflowId/run-with-files', upload.array('files'), checkApiKey, workflowController.runWorkflowWithFiles);
 
 // ========================================
+// Workflow-Specific Execution Monitoring (JWT auth + workflow access)
+// ========================================
+router.get('/workflows/:workflowId/executions', jwtAuth, requireWorkflowAccess, executionController.getWorkflowExecutions);
+
+// ========================================
 // Execution Status & Logs (JWT auth)
 // ========================================
-router.get('/executions',
-    //jwtAuth, 
-    executionController.getExecutions);
-router.get('/executions/:id',
-    //jwtAuth, 
-    executionController.getExecution);
-router.get('/executions/:id/logs',
-    //jwtAuth,
-    executionController.getExecutionLogs);
+router.get('/executions', jwtAuth, executionController.getExecutions);
+router.get('/executions/:id', jwtAuth, executionController.getExecution);
+router.get('/executions/:id/logs', jwtAuth, executionController.getExecutionLogs);
 
 // ========================================
 // Human Review / Validator Endpoints (JWT auth)
