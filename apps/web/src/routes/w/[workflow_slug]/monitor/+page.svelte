@@ -105,7 +105,7 @@
 		const id = selectedExecutionId;
 			selectedExecutionId = null;
 		try {
-			const res = await fetch('/rime/executions?limit=50&offset=0');
+			const res = await fetch(`/rime/workflows/${workflow.id}/executions?limit=50&offset=0`);
 			const data = await res.json();
 			executions = data;
 			if (id) {
