@@ -77,18 +77,40 @@ export const getCategoriesWithActions = async (req: Request, res: Response) => {
             }
         });
 
-        // Transform to the requested format
-        const result = categories.map(cat => ({
-            category: cat.name,
-            actions: cat.actions.map(action => ({
+        const inactiveActions: any[] = [];
+
+        // Transform to the requested format, filtering out inactive actions into a separate list
+        const categoryData = categories.map(cat => {
+            const activeActions = cat.actions.filter(a => a.isActive);
+            const currentInactive = cat.actions.filter(a => !a.isActive);
+
+            inactiveActions.push(...currentInactive.map(action => ({
                 id: action.id,
                 label: action.name,
                 icon: action.icon,
-                isActive: action.isActive
-            }))
-        }));
+                isActive: false
+            })));
 
-        res.json(result);
+            return {
+                category: cat.name,
+                actions: activeActions.map(action => ({
+                    id: action.id,
+                    label: action.name,
+                    icon: action.icon,
+                    isActive: true
+                }))
+            };
+        }).filter(cat => cat.actions.length > 0); // Only keep categories with active actions
+
+        // Add "Coming Soon" category if there are inactive actions
+        if (inactiveActions.length > 0) {
+            categoryData.push({
+                category: 'Coming Soon',
+                actions: inactiveActions
+            });
+        }
+
+        res.json(categoryData);
     } catch (error) {
         console.error('Error fetching categories with actions:', error);
         res.status(500).json({ error: 'Internal server error' });
