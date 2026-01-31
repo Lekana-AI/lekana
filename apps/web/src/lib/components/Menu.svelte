@@ -263,25 +263,48 @@
 
 									{#each section.actions as item}
 										{@const Icon = (icons as any)[item.icon]}
-										<button
-											onclick={() => onAction?.(item.id)}
-											type="button"
-											class="group inline-flex w-full items-center justify-start gap-4 rounded-lg border bg-white/5 px-3 py-2 pr-5 backdrop-blur transition"
-										>
-											<span
-												class="flex items-center justify-center rounded-md bg-green-950/40 p-2 transition-colors group-hover:bg-green-950/80"
+										<div class="relative w-full">
+											<button
+												onclick={() => {
+													if (item.isActive !== false) {
+														onAction?.(item.id);
+													}
+												}}
+												type="button"
+												disabled={item.isActive === false}
+												class="group inline-flex w-full items-center justify-start gap-4 rounded-lg border {item.isActive ===
+													false
+														? 'bg-white/1'
+														: 'bg-white/5'} px-3 py-2 pr-5 backdrop-blur transition disabled:cursor-not-allowed"
 											>
-												<!-- <item.icon class="h-3 w-3 text-white" /> -->
-												<Icon class="h-5 w-5 text-green-400" />
-												<!-- <svelte:component this={icons[item.icon]} class="h-3 w-3 text-white" /> -->
-											</span>
-											<span class="truncate text-xs leading-5 font-semibold text-zinc-300">
-												{item.label}
-											</span>
-											<Plus
-												class="ml-auto h-4 w-4 text-white/50 transition-colors group-hover:text-white"
-											/>
-										</button>
+												<span
+													class="flex items-center justify-center rounded-md {item.isActive ===
+													false
+														? 'bg-green-950/20'
+														: 'bg-green-950/40'} p-2 transition-colors {item.isActive !== false
+														? 'group-hover:bg-green-950/80'
+														: ''}"
+												>
+													<Icon
+														class="h-5 w-5 {item.isActive === false
+															? 'text-green-800'
+															: 'text-green-400'}"
+													/>
+												</span>
+												<span
+													class="truncate text-xs leading-5 font-semibold {item.isActive === false
+														? 'text-zinc-400'
+														: 'text-zinc-300'}"
+												>
+													{item.label}
+												</span>
+												{#if item.isActive !== false}
+													<Plus
+														class="ml-auto h-4 w-4 text-white/50 transition-colors group-hover:text-white"
+													/>
+												{/if}
+											</button>
+										</div>
 									{/each}
 								</section>
 							{/if}
