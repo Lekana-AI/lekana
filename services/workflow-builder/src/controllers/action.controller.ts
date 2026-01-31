@@ -36,8 +36,24 @@ export const getAllActions = async (req: Request, res: Response) => {
             }
         });
 
-        // Transform actions to include computed uiSchema
-        const transformedActions = actions.map(transformAction);
+        // Transform actions to include computed uiSchema, masking inactive ones
+        const transformedActions = actions.map(action => {
+            if (!action.isActive) {
+                return {
+                    id: action.id,
+                    name: action.name,
+                    icon: action.icon,
+                    isActive: false,
+                    categoryId: 'coming-soon',
+                    category: {
+                        id: 'coming-soon',
+                        name: 'Coming Soon',
+                        description: 'Exciting new actions being built for you'
+                    }
+                };
+            }
+            return transformAction(action);
+        });
 
         res.json(transformedActions);
     } catch (error) {
@@ -66,7 +82,7 @@ export const getAction = async (req: Request, res: Response) => {
             }
         });
 
-        if (!action) {
+        if (!action || !action.isActive) {
             return res.status(404).json({ error: 'Action not found' });
         }
 
@@ -100,7 +116,19 @@ export const getActionsByCategory = async (req: Request, res: Response) => {
             }
         });
 
-        const transformedActions = actions.map(transformAction);
+        const transformedActions = actions.map(action => {
+            if (!action.isActive) {
+                return {
+                    id: action.id,
+                    name: action.name,
+                    icon: action.icon,
+                    isActive: false,
+                    categoryId: action.categoryId,
+                    category: action.category
+                };
+            }
+            return transformAction(action);
+        });
 
         res.json(transformedActions);
     } catch (error) {
@@ -114,7 +142,7 @@ export const getActionsByCategory = async (req: Request, res: Response) => {
  */
 export const createAction = async (req: Request, res: Response) => {
     try {
-        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta, isActive } = req.body;
 
         // Validate required fields
         if (!name || !categoryId || !outputType || !configSchema) {
@@ -150,7 +178,8 @@ export const createAction = async (req: Request, res: Response) => {
                 inputType: inputType || null,
                 outputType,
                 configSchema,
-                configMeta: configMeta || null
+                configMeta: configMeta || null,
+                isActive: isActive !== undefined ? isActive : true
             },
             include: {
                 category: {
@@ -176,7 +205,7 @@ export const createAction = async (req: Request, res: Response) => {
 export const updateAction = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta } = req.body;
+        const { name, description, icon, categoryId, inputType, outputType, configSchema, configMeta, isActive } = req.body;
 
         // Check if action exists
         const existingAction = await prisma.action.findUnique({
@@ -219,7 +248,8 @@ export const updateAction = async (req: Request, res: Response) => {
                 ...(inputType !== undefined && { inputType }),
                 ...(outputType && { outputType }),
                 ...(configSchema && { configSchema }),
-                ...(configMeta !== undefined && { configMeta })
+                ...(configMeta !== undefined && { configMeta }),
+                ...(isActive !== undefined && { isActive })
             },
             include: {
                 category: {

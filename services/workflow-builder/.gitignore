@@ -33,8 +33,5 @@ logs/
 *.sw?
 .DS_Store
 
-# Optional: Ignore generated prisma client if it was customized to be outside node_modules
-# generated/
-
 # Coverage directory used by tools like istanbul
 coverage/

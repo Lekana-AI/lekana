@@ -87,6 +87,7 @@ model Action {
   outputType    String
   icon          String
   serviceUrl    String?
+  isActive      Boolean        @default(true)
   category      ActionCategory @relation(fields: [categoryId], references: [id])
   workflowNodes WorkflowNode[]
 
