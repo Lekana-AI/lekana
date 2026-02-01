@@ -103,12 +103,12 @@ app.post(
       console.log(`  - customPrompts: ${JSON.stringify(customPrompts)}`);
 
       console.log(
-        `[OCR] Processing request - Execution: ${executionId}, Node: ${nodeId}`
+        `[OCR] Processing request - Execution: ${executionId}, Node: ${nodeId}`,
       );
       console.log(
         `[OCR] Config: extractFields=${
           targetFields?.length || 0
-        }, processorType=${processorType || "auto"}`
+        }, processorType=${processorType || "auto"}`,
       );
 
       if (!documents.length) {
@@ -120,9 +120,45 @@ app.post(
       for (const doc of documents) {
         console.log(`[OCR] Processing document: ${doc.filename}`);
 
+        // Detect mimeType from filename if not provided or if incorrectly set
+        let mimeType = doc.mimeType;
+        const filename = doc.filename || doc.url || "";
+        const ext = filename.toLowerCase().split(".").pop();
+
+        // Map of common extensions to mimeTypes
+        const mimeMap = {
+          pdf: "application/pdf",
+          png: "image/png",
+          jpg: "image/jpeg",
+          jpeg: "image/jpeg",
+          tiff: "image/tiff",
+          tif: "image/tiff",
+          gif: "image/gif",
+          bmp: "image/bmp",
+          webp: "image/webp",
+        };
+
+        // If mimeType is missing or is wrong (e.g., PDF for a PNG file), detect from extension
+        if (
+          !mimeType ||
+          (mimeType === "application/pdf" &&
+            ext &&
+            ext !== "pdf" &&
+            mimeMap[ext])
+        ) {
+          const detectedMime = mimeMap[ext];
+          if (detectedMime) {
+            console.log(
+              `[OCR] Detected mimeType from extension: ${ext} -> ${detectedMime}`,
+            );
+            mimeType = detectedMime;
+          } else {
+            mimeType = "application/pdf"; // Default fallback
+          }
+        }
+
         // Fetch the document
         const fileBuffer = await geminiService.fetchFileBuffer(doc.url);
-        const mimeType = doc.mimeType || "application/pdf";
 
         // STEP 1: Document AI Processing
         let rawOcrData;
@@ -134,11 +170,11 @@ app.post(
 
         if (useFormParser) {
           console.log(
-            "[OCR] Step 1: Using Form Parser (extractFields provided)"
+            "[OCR] Step 1: Using Form Parser (extractFields provided)",
           );
           rawOcrData = await documentAiService.processForm(
             fileBuffer,
-            mimeType
+            mimeType,
           );
         } else {
           console.log("[OCR] Step 1: Using Enterprise OCR (no extractFields)");
@@ -148,7 +184,7 @@ app.post(
         console.log(
           `[OCR] Document AI completed. Text length: ${
             rawOcrData.text?.length || 0
-          }`
+          }`,
         );
 
         // STEP 2: Gemini Refinement
@@ -231,7 +267,7 @@ app.post(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
@@ -258,7 +294,7 @@ app.post(
 
       if (!action) {
         throw new Error(
-          "Action is required (train, deploy, list-versions, set-default)"
+          "Action is required (train, deploy, list-versions, set-default)",
         );
       }
 
@@ -268,26 +304,26 @@ app.post(
         case "train":
           if (!processorId || !versionName) {
             throw new Error(
-              "processorId and versionName are required for training"
+              "processorId and versionName are required for training",
             );
           }
           result = await documentAiService.trainProcessorVersion(
             processorId,
             versionName,
             trainDataUri,
-            testDataUri
+            testDataUri,
           );
           break;
 
         case "deploy":
           if (!processorId || !versionId) {
             throw new Error(
-              "processorId and versionId are required for deployment"
+              "processorId and versionId are required for deployment",
             );
           }
           result = await documentAiService.deployProcessorVersion(
             processorId,
-            versionId
+            versionId,
           );
           break;
 
@@ -304,7 +340,7 @@ app.post(
           }
           result = await documentAiService.setDefaultVersion(
             processorId,
-            versionId
+            versionId,
           );
           break;
 
@@ -340,7 +376,7 @@ app.post(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
@@ -382,7 +418,7 @@ app.get(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
@@ -393,12 +429,12 @@ app.listen(PORT, () => {
   console.log(
     `Clerk Domain: ${
       process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev"
-    }`
+    }`,
   );
   console.log(
-    `Document AI Project: ${process.env.DOCUMENT_AI_PROJECT_ID || "NOT SET"}`
+    `Document AI Project: ${process.env.DOCUMENT_AI_PROJECT_ID || "NOT SET"}`,
   );
   console.log(
-    `Gemini API: ${process.env.GEMINI_API_KEY ? "Configured" : "NOT SET"}`
+    `Gemini API: ${process.env.GEMINI_API_KEY ? "Configured" : "NOT SET"}`,
   );
 });
