@@ -91,6 +91,8 @@
 			total,
 			completed,
 			failed: total - completed,
+			// Note: If execution objects in the list don't have a 'success' boolean,
+			// we stick to COMPLETED for this overview, but individual nodes show failures.
 			successRate: Math.round((completed / total) * 100),
 			avgDuration: (avgDuration / 1000).toFixed(2)
 		};
@@ -103,13 +105,13 @@
 	async function loadExecutions() {
 		loading = true;
 		const id = selectedExecutionId;
-			selectedExecutionId = null;
+		selectedExecutionId = null;
 		try {
 			const res = await fetch(`/rime/workflows/${workflow.id}/executions?limit=50&offset=0`);
 			const data = await res.json();
 			executions = data;
 			if (id) {
-				selectExecution(id)
+				selectExecution(id);
 			}
 		} catch (e) {
 			console.error('Failed to fetch executions:', e);
@@ -305,11 +307,11 @@
 						<div
 							class="sticky top-0 z-10 flex items-center justify-between bg-zinc-950/80 px-4 py-3"
 						>
-						<div class="flex items-center gap-2">
-							<Workflow class="h-3.5 w-3.5 text-zinc-500" />
-							<h3 class="rounded-lg text-xs font-bold tracking-widest text-zinc-500 uppercase">
-								Execution Log
-							</h3>
+							<div class="flex items-center gap-2">
+								<Workflow class="h-3.5 w-3.5 text-zinc-500" />
+								<h3 class="rounded-lg text-xs font-bold tracking-widest text-zinc-500 uppercase">
+									Execution Log
+								</h3>
 							</div>
 							<button
 								onclick={() => {
@@ -352,7 +354,11 @@
 												<div
 													class="h-1.5 w-1.5 rounded-full {execution.status === 'COMPLETED'
 														? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
-														: 'bg-red-500'}"
+														: execution.status === 'RUNNING'
+															? 'animate-pulse bg-blue-400'
+															: execution.status === 'FAILED'
+																? 'bg-red-500'
+																: 'bg-zinc-500'}"
 												></div>
 												<span
 													class="font-mono text-xs font-bold {selectedExecutionId === execution.id
@@ -564,10 +570,24 @@
 													<div class="flex flex-col items-center">
 														<div
 															class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/40 text-xs font-bold transition-colors {step.status ===
-															'COMPLETED'
+																'COMPLETED' &&
+															step.success !== false &&
+															!step.error &&
+															step.output?.success !== false &&
+															!step.output?.error
 																? 'text-green-400 group-hover:text-green-300'
-																: 'text-red-400'} {selectedStepId === step.id
-																? 'border-green-500/50'
+																: step.status === 'SKIPPED' || step.status === 'PENDING'
+																	? 'text-zinc-500'
+																	: 'text-red-400'} {selectedStepId === step.id
+																? step.status === 'COMPLETED' &&
+																	step.success !== false &&
+																	!step.error &&
+																	step.output?.success !== false &&
+																	!step.output?.error
+																	? 'border-green-500/50'
+																	: step.status === 'SKIPPED' || step.status === 'PENDING'
+																		? 'border-white/20'
+																		: 'border-red-500/50'
 																: ''}"
 														>
 															{step.executionOrder + 1}
@@ -585,8 +605,12 @@
 															>
 																{step.actionName}
 															</span>
-															{#if step.status !== 'COMPLETED'}
+															{#if (step.status === 'COMPLETED' && (step.success === false || step.error || step.output?.success === false || step.output?.error)) || step.status === 'FAILED'}
 																<CircleAlert class="h-3 w-3 text-red-500" />
+															{:else if step.status === 'SKIPPED' || step.status === 'PENDING'}
+																<Clock class="h-3 w-3 text-zinc-600" />
+															{:else if step.status === 'RUNNING'}
+																<RefreshCcw class="h-3 w-3 animate-spin text-blue-400" />
 															{/if}
 														</div>
 														<div class="mt-0.5 flex items-center gap-2">
@@ -670,9 +694,17 @@
 													<div class="mb-1 flex items-center gap-2">
 														<span
 															class="rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase {step.status ===
-															'COMPLETED'
+																'COMPLETED' &&
+															step.success !== false &&
+															!step.error &&
+															step.output?.success !== false &&
+															!step.output?.error
 																? 'bg-green-500/10 text-green-400'
-																: 'bg-red-500/10 text-red-400'}"
+																: step.status === 'SKIPPED' || step.status === 'PENDING'
+																	? 'bg-zinc-500/10 text-zinc-500'
+																	: step.status === 'RUNNING'
+																		? 'bg-blue-500/10 text-blue-400'
+																		: 'bg-red-500/10 text-red-400'}"
 														>
 															{step.status}
 														</span>
