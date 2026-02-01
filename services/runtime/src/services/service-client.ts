@@ -13,6 +13,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { GoogleAuth } from 'google-auth-library';
+import { logService, logDebug, isLogEnabled } from './logger';
 
 // ============================================
 // Default Configuration
@@ -40,6 +41,7 @@ function isCloudRunUrl(url: string): boolean {
 async function getIdTokenForService(serviceUrl: string): Promise<string | null> {
     // Skip for localhost
     if (serviceUrl.includes('localhost') || serviceUrl.includes('127.0.0.1')) {
+        logDebug('Skipping IAM token for localhost', { serviceUrl });
         return null;
     }
 
@@ -52,6 +54,8 @@ async function getIdTokenForService(serviceUrl: string): Promise<string | null> 
         // Extract the base URL (audience) for the ID token
         const url = new URL(serviceUrl);
         const audience = `${url.protocol}//${url.host}`;
+
+        logDebug('Getting IAM token for Cloud Run', { serviceUrl, audience });
 
         // Check cache first
         if (!tokenClientCache.has(audience)) {
@@ -66,11 +70,13 @@ async function getIdTokenForService(serviceUrl: string): Promise<string | null> 
         const token = headers.Authorization?.replace('Bearer ', '') || headers.authorization?.replace('Bearer ', '');
 
         if (token) {
+            logDebug('IAM token obtained successfully', { serviceUrl, tokenLength: token.length });
             return token;
         }
 
         // Fallback: try to get token from client credentials directly
         if (client.credentials && client.credentials.id_token) {
+            logDebug('IAM token obtained from credentials', { serviceUrl });
             return client.credentials.id_token;
         }
 
@@ -146,6 +152,21 @@ export async function callServiceWithUrl(
 ): Promise<ServiceResponse> {
     const startTime = Date.now();
 
+    logService('Calling external service', {
+        serviceUrl,
+        nodeId: request.nodeId,
+        executionId: request.executionId,
+        workflowId: request.workflowId
+    });
+
+    if (isLogEnabled()) {
+        logDebug('Service request payload', {
+            config: request.config,
+            inputData: request.input?.data,
+            documentCount: request.input?.documents?.length || 0
+        });
+    }
+
     try {
         // Get IAM token for Cloud Run services
         const idToken = await getIdTokenForService(serviceUrl);
@@ -174,6 +195,21 @@ export async function callServiceWithUrl(
 
         const processingTime = Date.now() - startTime;
 
+        logService('Service response received', {
+            serviceUrl,
+            success: response.data.success,
+            processingTime: `${processingTime}ms`,
+            hasRequireHumanReview: !!response.data.requiresHumanReview
+        });
+
+        if (isLogEnabled() && response.data.success) {
+            logDebug('Service response data', {
+                dataKeys: response.data.data ? Object.keys(response.data.data) : [],
+                documentCount: response.data.documents?.length || 0,
+                metadata: response.data.metadata
+            });
+        }
+
         return {
             ...response.data,
             metadata: {
@@ -189,6 +225,13 @@ export async function callServiceWithUrl(
         if (error instanceof AxiosError) {
             if (error.response) {
                 const statusCode = error.response.status;
+                logService('Service error response', {
+                    serviceUrl,
+                    statusCode,
+                    nodeId: request.nodeId,
+                    executionId: request.executionId,
+                    processingTime: `${processingTime}ms`
+                });
                 console.error(`[ServiceClient] Service returned ${statusCode} from ${serviceUrl}`, {
                     nodeId: request.nodeId,
                     executionId: request.executionId,

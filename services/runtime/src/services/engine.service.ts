@@ -7,6 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import { callService, callServiceWithUrl, ServiceRequest, ServiceResponse } from './service-client';
 import { getActionDetails } from './action-lookup.service';
 import { incrementTokenUsage } from './usage.service';
+import { logWorkflow, logExecution, logNodeExecution, logSeparator, logDebug, isLogEnabled } from './logger';
 
 const prisma = new PrismaClient();
 
@@ -222,6 +223,30 @@ async function log(
  * Main execution function - runs the entire workflow
  */
 export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
+    // Log workflow configuration when LOG_NEED is enabled
+    logSeparator('WORKFLOW EXECUTION START');
+    logWorkflow('Starting workflow execution', {
+        workflowId: workflow.id,
+        workflowName: workflow.name,
+        userId: workflow.userId,
+        nodeCount: workflow.nodes.length,
+        edgeCount: workflow.edges.length
+    });
+
+    if (isLogEnabled()) {
+        logWorkflow('Workflow Configuration - Nodes', workflow.nodes.map(n => ({
+            id: n.id,
+            actionName: n.action.name,
+            stepName: n.config?.stepName,
+            serviceUrl: n.action.serviceUrl,
+            config: n.config
+        })));
+        logWorkflow('Workflow Configuration - Edges', workflow.edges.map(e => ({
+            source: e.sourceNodeId,
+            target: e.targetNodeId
+        })));
+    }
+
     // Create workflow execution record
     const execution = await prisma.workflowExecution.create({
         data: {
@@ -231,6 +256,8 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
             status: 'PENDING'
         }
     });
+
+    logExecution('Created execution record', { executionId: execution.id });
 
     const context: ExecutionContext = {
         workflowExecutionId: execution.id,
@@ -248,8 +275,14 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
             throw new Error('Workflow contains a cycle and cannot be executed');
         }
 
-        // Create node map for quick lookup
+        // Log execution order
         const nodeMap = new Map(workflow.nodes.map(n => [n.id, n]));
+        logExecution('Execution order determined', orderedNodeIds.map((id, index) => {
+            const node = nodeMap.get(id);
+            return `${index + 1}. ${node?.config?.stepName || node?.action.name} (${id})`;
+        }));
+
+        // Node map already created above for logging
 
         // Update execution status to running
         await prisma.workflowExecution.update({
@@ -280,6 +313,9 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
             const nodeId = orderedNodeIds[i];
             const node = nodeMap.get(nodeId)!;
 
+            logSeparator(`NODE ${i + 1}/${orderedNodeIds.length}`);
+            logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'STARTING', { config: node.config });
+
             await log(execution.id, 'INFO', `Executing node: ${node.config?.stepName || node.action.name}`);
 
             // Update node status to running
@@ -293,11 +329,13 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
 
             // Get input from previous nodes
             const input = getNodeInput(nodeId, workflow.edges, context);
+            logDebug('Node input data', input);
 
             // Check if previous node returned skipped flag - propagate skip to downstream nodes
             const isSkipped = input?.data?.skipped === true || input?.metadata?.skipped === true;
 
             if (isSkipped) {
+                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input });
                 await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (upstream returned skipped)`);
 
                 // Store skipped output for downstream nodes (propagate the skip)
@@ -329,17 +367,23 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
                 // Execute the action via external microservice
                 const output = await executeAction(node, input, context, { id: workflow.id, userId: workflow.userId });
 
-                // DEBUG: Trace token tracking
-                console.error(`[Engine] ====== TOKEN TRACKING DEBUG ======`);
-                console.error(`[Engine] Action: ${node.action.name}`);
-                console.error(`[Engine] output.success: ${output.success}`);
-                console.error(`[Engine] output.metadata: ${JSON.stringify(output.metadata)}`);
+                // Log output when LOG_NEED is enabled (replaces debug console.error)
+                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'COMPLETED', {
+                    input,
+                    output: output.success ? output.data : output.error
+                });
+                logDebug('Token tracking', {
+                    action: node.action.name,
+                    success: output.success,
+                    metadata: output.metadata,
+                    tokensUsed: output.metadata?.tokensUsed
+                });
 
                 // Track token usage if returned by the service (e.g., OCR/Gemini)
                 const tokensUsed = output.metadata?.tokensUsed;
-                console.error(`[Engine] tokensUsed: ${tokensUsed}`);
                 if (tokensUsed && tokensUsed > 0) {
                     await incrementTokenUsage(workflow.userId, tokensUsed);
+                    logDebug('Token usage incremented', { userId: workflow.userId, tokensUsed });
                 }
 
                 // Store output for downstream nodes
@@ -388,6 +432,8 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
         });
 
         await log(execution.id, 'INFO', 'Workflow execution completed successfully');
+        logSeparator('WORKFLOW EXECUTION COMPLETE');
+        logExecution('Workflow completed successfully', { executionId: execution.id, workflowName: workflow.name });
 
         return execution.id;
 
@@ -414,6 +460,17 @@ export async function executeWorkflowWithInput(
     publishedWorkflowId: string,
     inputData: { input?: any; documents?: any[] }
 ): Promise<string> {
+    // Log workflow configuration when LOG_NEED is enabled
+    logSeparator('WORKFLOW EXECUTION START (API Key)');
+    logWorkflow('Starting published workflow execution', {
+        workflowId: workflowDefinition.id,
+        workflowName: workflowDefinition.name,
+        userId,
+        publishedWorkflowId,
+        documentCount: inputData.documents?.length || 0
+    });
+    logDebug('Input data received', inputData);
+
     // Create workflow execution record linked to published workflow
     const execution = await prisma.workflowExecution.create({
         data: {
@@ -425,6 +482,8 @@ export async function executeWorkflowWithInput(
             status: 'PENDING'
         }
     });
+
+    logExecution('Created execution record', { executionId: execution.id });
 
     const context: ExecutionContext = {
         workflowExecutionId: execution.id,
@@ -447,8 +506,11 @@ export async function executeWorkflowWithInput(
             throw new Error('Workflow contains a cycle and cannot be executed');
         }
 
-        // Debug: Log the execution order
         const nodeMap = new Map(nodes.map(n => [n.id, n]));
+        logExecution('Execution order determined', orderedNodeIds.map((id, index) => {
+            const node = nodeMap.get(id);
+            return `${index + 1}. ${node?.config?.stepName || node?.action.name} (${id})`;
+        }));
 
         await prisma.workflowExecution.update({
             where: { id: execution.id },
@@ -478,6 +540,9 @@ export async function executeWorkflowWithInput(
             const nodeId = orderedNodeIds[i];
             const node = nodeMap.get(nodeId)!;
 
+            logSeparator(`NODE ${i + 1}/${orderedNodeIds.length}`);
+            logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'STARTING', { config: node.config });
+
             await log(execution.id, 'INFO', `Executing node: ${node.config?.stepName || node.action.name}`);
 
             await prisma.nodeExecution.updateMany({
@@ -490,14 +555,27 @@ export async function executeWorkflowWithInput(
             if (nodeInput === null && i === 0) {
                 nodeInput = inputData; // First node gets the initial input
             }
+            logDebug('Node input data', nodeInput);
 
             try {
                 const output = await executeAction(node, nodeInput, context, { id: workflowDefinition.id, userId });
+
+                // Log output when LOG_NEED is enabled
+                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'COMPLETED', {
+                    input: nodeInput,
+                    output: output.success ? output.data : output.error
+                });
+                logDebug('Token tracking', {
+                    action: node.action.name,
+                    success: output.success,
+                    tokensUsed: output.metadata?.tokensUsed
+                });
 
                 // Track token usage if returned by the service (e.g., OCR/Gemini)
                 const tokensUsed = output.metadata?.tokensUsed;
                 if (tokensUsed && tokensUsed > 0) {
                     await incrementTokenUsage(userId, tokensUsed);
+                    logDebug('Token usage incremented', { userId, tokensUsed });
                 }
 
                 context.nodeOutputs.set(nodeId, output);
