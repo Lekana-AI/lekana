@@ -62,7 +62,7 @@ async function tableExists(client, tableName) {
       SELECT FROM information_schema.tables 
       WHERE table_name = $1
     )`,
-    [tableName]
+    [tableName],
   );
   return result.rows[0].exists;
 }
@@ -87,7 +87,7 @@ async function getExistingColumns(client, tableName) {
     `SELECT column_name 
      FROM information_schema.columns 
      WHERE table_name = $1`,
-    [tableName]
+    [tableName],
   );
   return new Set(result.rows.map((row) => row.column_name.toLowerCase()));
 }
@@ -121,7 +121,7 @@ async function addMissingColumns(client, tableName, schema, existingColumns) {
       columnsToAdd.length
     } missing column(s) to "${tableName}": ${columnsToAdd
       .map((c) => c.name)
-      .join(", ")}`
+      .join(", ")}`,
   );
 
   for (const col of columnsToAdd) {
@@ -142,10 +142,10 @@ async function ensureMetadataColumns(
   client,
   tableName,
   existingColumns,
-  includeMetadata
+  includeMetadata,
 ) {
   console.log(
-    `[Schema] ensureMetadataColumns called, includeMetadata=${includeMetadata}`
+    `[Schema] ensureMetadataColumns called, includeMetadata=${includeMetadata}`,
   );
   const metadataColumns = [];
 
@@ -184,7 +184,7 @@ async function ensureMetadataColumns(
       metadataColumns.length
     } missing metadata column(s) to "${tableName}": ${metadataColumns
       .map((c) => c.name)
-      .join(", ")}`
+      .join(", ")}`,
   );
 
   for (const col of metadataColumns) {
@@ -202,7 +202,7 @@ async function ensureTable(client, tableName, schema, includeMetadata = true) {
     // Auto-add missing columns
     const existingColumns = await getExistingColumns(client, tableName);
     console.log(
-      `[Schema] Existing columns: ${[...existingColumns].join(", ")}`
+      `[Schema] Existing columns: ${[...existingColumns].join(", ")}`,
     );
 
     try {
@@ -216,7 +216,7 @@ async function ensureTable(client, tableName, schema, includeMetadata = true) {
         client,
         tableName,
         existingColumns,
-        includeMetadata
+        includeMetadata,
       );
     } catch (error) {
       console.error(`[Schema] Error adding metadata columns: ${error.message}`);
@@ -250,7 +250,7 @@ async function ensureTable(client, tableName, schema, includeMetadata = true) {
   columns.push(`"_extra_data" JSONB`);
 
   const createQuery = `CREATE TABLE "${tableName}" (\n  ${columns.join(
-    ",\n  "
+    ",\n  ",
   )}\n)`;
 
   console.log(`[Schema] Creating table "${tableName}"`);
@@ -284,4 +284,5 @@ module.exports = {
   tableExists,
   ensureTable,
   sanitizeColumnName,
+  getExistingColumns,
 };

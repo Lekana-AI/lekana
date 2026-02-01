@@ -15,6 +15,7 @@ const {
 const databaseService = require("./services/database.service");
 const schemaService = require("./services/schema.service");
 const exportService = require("./services/export.service");
+const geminiService = require("./services/gemini.service");
 
 const app = express();
 const PORT = process.env.PORT || 4005;
@@ -84,9 +85,13 @@ app.post(
         includeMetadata = true,
         unmappedFieldStrategy = "store_as_json", // "store_as_json", "ignore", "error"
         onConflict = "skip", // "skip", "update", "error"
-        flattenFieldsMode = false, // NEW: Auto-extract .value from OCR fields
-        includeExtractionMetadata = false, // NEW: Store confidence/corrected data
+        flattenFieldsMode = false, // Auto-extract .value from OCR fields
+        includeExtractionMetadata = false, // Store confidence/corrected data
+        useSmartMapping = true, // Use Gemini to map fields to existing columns
       } = config;
+
+      // Track Gemini token usage
+      let geminiTokensUsed = null;
 
       console.log("=".repeat(60));
       console.log(`[DB-Export] Processing request`);
@@ -211,8 +216,47 @@ app.post(
           }
         }
 
+        // Smart field mapping: use Gemini to match incoming fields to existing columns
+        let mappedRecords = records;
+        let fieldMappingApplied = null;
+
+        if (useSmartMapping && records.length > 0) {
+          // Get existing columns from the table
+          const existingColumns = await schemaService.getExistingColumns(
+            client,
+            tableName,
+          );
+          const existingColumnsArray = [...existingColumns];
+
+          if (existingColumnsArray.length > 0) {
+            // Get incoming field names from first record
+            const incomingFields = Object.keys(records[0]).filter(
+              (f) => !f.startsWith("_"),
+            );
+
+            // Use Gemini to map fields to columns
+            const mappingResult = await geminiService.mapFieldsToColumns(
+              incomingFields,
+              existingColumnsArray,
+            );
+
+            if (mappingResult.tokensUsed) {
+              geminiTokensUsed = mappingResult.tokensUsed;
+            }
+
+            if (Object.keys(mappingResult.mapping).length > 0) {
+              mappedRecords = geminiService.applyFieldMapping(
+                records,
+                mappingResult.mapping,
+              );
+              fieldMappingApplied = mappingResult.mapping;
+              console.log(`[DB-Export] Applied smart field mapping`);
+            }
+          }
+        }
+
         // Add metadata to records if enabled
-        const enrichedRecords = records.map((record) => {
+        const enrichedRecords = mappedRecords.map((record) => {
           if (includeMetadata) {
             return {
               ...record,
@@ -246,12 +290,15 @@ app.post(
             recordsInserted: insertResult.inserted,
             recordsSkipped: insertResult.skipped,
             schema: inferredSchema,
+            fieldMappingApplied,
           },
           metadata: {
             processingTime,
             serviceVersion: SERVICE_VERSION,
             mode,
             databaseConnected: true,
+            tokensUsed: geminiTokensUsed ? geminiTokensUsed.totalTokens : 0,
+            smartMappingUsed: !!fieldMappingApplied,
           },
         });
       } finally {
