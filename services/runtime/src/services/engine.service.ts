@@ -333,28 +333,42 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
 
             // Check if previous node returned skipped flag - propagate skip to downstream nodes
             // ServiceResponse can have skipped in data, metadata, or directly on the response
-            const isSkipped =
+            // Also skip if upstream router returned 0 matches (empty documents array)
+            const hasSkippedFlag =
                 input?.data?.skipped === true ||
                 input?.metadata?.skipped === true ||
                 input?.skipped === true;
 
+            // Check if upstream was a router that matched 0 documents (should skip downstream)
+            const isEmptyRouterOutput =
+                input?.data?.matchedCount === 0 &&
+                Array.isArray(input?.documents) &&
+                input.documents.length === 0;
+
+            const isSkipped = hasSkippedFlag || isEmptyRouterOutput;
+
             logDebug('Skip check', {
                 nodeId,
                 nodeName: node.config?.stepName || node.action.name,
-                inputDataSkipped: input?.data?.skipped,
-                inputMetadataSkipped: input?.metadata?.skipped,
-                inputSkipped: input?.skipped,
+                hasSkippedFlag,
+                isEmptyRouterOutput,
+                matchedCount: input?.data?.matchedCount,
+                documentCount: input?.documents?.length,
                 isSkipped
             });
 
             if (isSkipped) {
+                const skipReason = isEmptyRouterOutput
+                    ? 'Router matched 0 documents'
+                    : 'Upstream node returned skipped';
+
                 logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input });
-                await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (upstream returned skipped)`);
+                await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (${skipReason})`);
 
                 // Store skipped output for downstream nodes (propagate the skip)
                 const skippedOutput = {
                     success: true,
-                    data: { skipped: true, reason: 'Upstream node returned skipped' },
+                    data: { skipped: true, reason: skipReason },
                     metadata: { skipped: true }
                 };
                 context.nodeOutputs.set(nodeId, skippedOutput);
