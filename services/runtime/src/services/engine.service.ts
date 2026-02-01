@@ -584,6 +584,65 @@ export async function executeWorkflowWithInput(
             }
             logDebug('Node input data', nodeInput);
 
+            // Check if previous node returned skipped flag - propagate skip to downstream nodes
+            // ServiceResponse can have skipped in data, metadata, or directly on the response
+            // Also skip if upstream router returned 0 matches (empty documents array)
+            const hasSkippedFlag =
+                nodeInput?.data?.skipped === true ||
+                nodeInput?.metadata?.skipped === true ||
+                nodeInput?.skipped === true;
+
+            // Check if upstream was a router that matched 0 documents (should skip downstream)
+            const isEmptyRouterOutput =
+                nodeInput?.data?.matchedCount === 0 &&
+                Array.isArray(nodeInput?.documents) &&
+                nodeInput.documents.length === 0;
+
+            const isSkipped = hasSkippedFlag || isEmptyRouterOutput;
+
+            logDebug('Skip check', {
+                nodeId,
+                nodeName: node.config?.stepName || node.action.name,
+                hasSkippedFlag,
+                isEmptyRouterOutput,
+                matchedCount: nodeInput?.data?.matchedCount,
+                documentCount: nodeInput?.documents?.length,
+                isSkipped
+            });
+
+            if (isSkipped) {
+                const skipReason = isEmptyRouterOutput
+                    ? 'Router matched 0 documents'
+                    : 'Upstream node returned skipped';
+
+                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input: nodeInput });
+                await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (${skipReason})`);
+
+                // Store skipped output for downstream nodes (propagate the skip)
+                const skippedOutput = {
+                    success: true,
+                    data: { skipped: true, reason: skipReason },
+                    metadata: { skipped: true }
+                };
+                context.nodeOutputs.set(nodeId, skippedOutput);
+
+                // Update node as skipped
+                await prisma.nodeExecution.updateMany({
+                    where: {
+                        workflowExecutionId: execution.id,
+                        nodeId: node.id
+                    },
+                    data: {
+                        status: 'SKIPPED',
+                        output: skippedOutput as any,
+                        input: nodeInput,
+                        completedAt: new Date()
+                    }
+                });
+
+                continue; // Skip to next node
+            }
+
             try {
                 const output = await executeAction(node, nodeInput, context, { id: workflowDefinition.id, userId });
 
