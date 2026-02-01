@@ -199,10 +199,10 @@ async function refineExtraction({
     const usageMetadata = response.usageMetadata;
     const tokensUsed = usageMetadata
       ? {
-        promptTokens: usageMetadata.promptTokenCount || 0,
-        completionTokens: usageMetadata.candidatesTokenCount || 0,
-        totalTokens: usageMetadata.totalTokenCount || 0,
-      }
+          promptTokens: usageMetadata.promptTokenCount || 0,
+          completionTokens: usageMetadata.candidatesTokenCount || 0,
+          totalTokens: usageMetadata.totalTokenCount || 0,
+        }
       : null;
 
     if (tokensUsed) {
@@ -237,9 +237,9 @@ async function refineExtraction({
 }
 
 /**
- * Fetch file from URL and return buffer and detected mime type
+ * Fetch file from URL and return as buffer
  * @param {string} url - File URL
- * @returns {Object} { buffer, mimeType }
+ * @returns {Buffer} File buffer
  */
 async function fetchFileBuffer(url) {
   console.log(`[Gemini] Fetching file from ${url}...`);
@@ -247,14 +247,7 @@ async function fetchFileBuffer(url) {
     responseType: "arraybuffer",
     timeout: 30000,
   });
-
-  const mimeType = response.headers["content-type"];
-  console.log(`[Gemini] Detected mime type: ${mimeType}`);
-
-  return {
-    buffer: Buffer.from(response.data),
-    mimeType: mimeType || "application/pdf",
-  };
+  return Buffer.from(response.data);
 }
 
 /**

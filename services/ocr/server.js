@@ -106,7 +106,8 @@ app.post(
         `[OCR] Processing request - Execution: ${executionId}, Node: ${nodeId}`
       );
       console.log(
-        `[OCR] Config: extractFields=${targetFields?.length || 0
+        `[OCR] Config: extractFields=${
+          targetFields?.length || 0
         }, processorType=${processorType || "auto"}`
       );
 
@@ -120,19 +121,8 @@ app.post(
         console.log(`[OCR] Processing document: ${doc.filename}`);
 
         // Fetch the document
-        const { buffer: fileBuffer, mimeType: detectedMimeType } =
-          await geminiService.fetchFileBuffer(doc.url);
-        const mimeType = doc.mimeType || detectedMimeType || "application/pdf";
-
-        // Validate mime type for Document AI
-        if (!documentAiService.isSupportedMimeType(mimeType)) {
-          const supported = documentAiService
-            .getSupportedMimeTypes()
-            .join(", ");
-          throw new Error(
-            `Unsupported file format: ${mimeType}. Supported formats are: ${supported}`
-          );
-        }
+        const fileBuffer = await geminiService.fetchFileBuffer(doc.url);
+        const mimeType = doc.mimeType || "application/pdf";
 
         // STEP 1: Document AI Processing
         let rawOcrData;
@@ -156,7 +146,8 @@ app.post(
         }
 
         console.log(
-          `[OCR] Document AI completed. Text length: ${rawOcrData.text?.length || 0
+          `[OCR] Document AI completed. Text length: ${
+            rawOcrData.text?.length || 0
           }`
         );
 
@@ -400,7 +391,8 @@ app.get(
 app.listen(PORT, () => {
   console.log(`OCR service running on port ${PORT}`);
   console.log(
-    `Clerk Domain: ${process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev"
+    `Clerk Domain: ${
+      process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev"
     }`
   );
   console.log(

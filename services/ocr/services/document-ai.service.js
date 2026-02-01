@@ -288,34 +288,6 @@ async function checkOperationStatus(operationName) {
   };
 }
 
-// Supported Mime Types for Document AI
-const SUPPORTED_MIME_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/tiff",
-  "image/webp",
-  "image/bmp",
-  "image/gif",
-];
-
-/**
- * Check if the provided mime type is supported by Document AI
- * @param {string} mimeType - The mime type to check
- * @returns {boolean}
- */
-function isSupportedMimeType(mimeType) {
-  return SUPPORTED_MIME_TYPES.includes(mimeType?.toLowerCase());
-}
-
-/**
- * Get the list of supported mime types
- * @returns {string[]}
- */
-function getSupportedMimeTypes() {
-  return SUPPORTED_MIME_TYPES;
-}
-
 /**
  * Helper: Extract text from layout using text anchors
  */
@@ -339,6 +311,4 @@ module.exports = {
   listProcessorVersions,
   setDefaultVersion,
   checkOperationStatus,
-  isSupportedMimeType,
-  getSupportedMimeTypes,
 };
