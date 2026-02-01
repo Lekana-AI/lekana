@@ -31,12 +31,14 @@
 	let success = $state(false);
 	let showError = $state(false);
 	let error = $state<string | null>(null);
+	let feedbackProgress = $state(100);
 
 	// File Handling
 	function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target.files) {
 			files = [...files, ...Array.from(target.files)];
+			target.value = '';
 		}
 	}
 
@@ -75,22 +77,38 @@
 			// Clear fields on success
 			files = [];
 			success = true;
-
-			// Reset success state after a delay
-			setTimeout(() => {
-				success = false;
-			}, 3000);
 		} catch (e: any) {
 			error = e.message || 'Something went wrong';
 			showError = true;
-			toast.error(`Failed to run workflow: ${error}. Please try again in a moment.`);
 
-			// Reset error state after a delay
-			setTimeout(() => {
-				showError = false;
-			}, 3000);
+			// Reset error state after a delay with progress
+			let duration = 5000;
+			let elapsed = 0;
+			let interval = setInterval(() => {
+				elapsed += 100;
+				feedbackProgress = 100 - (elapsed / duration) * 100;
+				if (elapsed >= duration) {
+					clearInterval(interval);
+					showError = false;
+					error = null;
+					feedbackProgress = 100;
+				}
+			}, 100);
 		} finally {
 			loading = false;
+			if (success) {
+				let duration = 3000;
+				let elapsed = 0;
+				let interval = setInterval(() => {
+					elapsed += 100;
+					feedbackProgress = 100 - (elapsed / duration) * 100;
+					if (elapsed >= duration) {
+						clearInterval(interval);
+						success = false;
+						feedbackProgress = 100;
+					}
+				}, 100);
+			}
 		}
 	}
 </script>
@@ -104,12 +122,12 @@
 >
 	<!-- HEADER -->
 	<header
-		class="fixed top-0 z-50 flex w-full max-w-3xl items-center justify-between border-b border-zinc-900/50 bg-zinc-950/50 px-4 md:px-0 py-4 backdrop-blur-md"
+		class="fixed top-0 z-50 flex w-full max-w-3xl items-center justify-between border-b border-zinc-900/50 bg-zinc-950/50 px-4 py-4 backdrop-blur-md md:px-0"
 	>
-		<div class="flex items-center gap-2.5">
+		<a href="/dashboard" class="flex items-center gap-2.5">
 			<img src="/logo.svg" alt="Lekana Logo" class="h-6 w-6" />
 			<span class="text-lg font-bold tracking-tight text-white/90">Lekana</span>
-		</div>
+		</a>
 		<SignedIn>
 			<UserButton />
 		</SignedIn>
@@ -199,10 +217,21 @@
 
 			<!-- Inputs Section Removed (Message) -->
 
-			<div class="flex justify-end md:col-span-2">
+			<div class="flex items-center justify-end gap-4 md:col-span-2">
+				{#if showError && error}
+					<div
+						class="flex items-center gap-2 text-sm font-medium text-red-500"
+						in:fly={{ x: 10, duration: 300 }}
+						out:fade
+					>
+						<CircleAlert class="h-4 w-4" />
+						<span>{error}</span>
+					</div>
+				{/if}
+
 				<button
 					onclick={runWorkflow}
-					disabled={loading || files.length === 0}
+					disabled={loading || files.length === 0 || apiKey.trim() === ''}
 					class="group relative flex items-center justify-center gap-2 overflow-hidden rounded-xl px-8 py-3 font-semibold text-white shadow-xl transition-all active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500 {success
 						? 'bg-green-600'
 						: showError
@@ -225,6 +254,13 @@
 					{:else}
 						<Upload class="h-4 w-4 transition-transform group-hover:scale-110" />
 						<span>Upload</span>
+					{/if}
+
+					{#if success || showError}
+						<div
+							class="absolute bottom-0 left-0 h-0.5 bg-white transition-all duration-100"
+							style="width: {feedbackProgress}%"
+						></div>
 					{/if}
 				</button>
 			</div>
