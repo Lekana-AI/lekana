@@ -92,6 +92,27 @@
 		});
 	}
 
+	$effect(() => {
+		fields.forEach((field) => {
+			if (!isVisible(field)) {
+				const emptyValue =
+					field.defaultValue ??
+					(['array', 'keyValue', 'checkbox-group'].includes(field.type)
+						? []
+						: field.type === 'checkbox'
+							? false
+							: field.type === 'number'
+								? null
+								: '');
+
+				// Only update if current value is different to avoid unnecessary reactive loops
+				if (JSON.stringify(field.value) !== JSON.stringify(emptyValue)) {
+					field.value = emptyValue;
+				}
+			}
+		});
+	});
+
 	let isValid = $derived(
 		fields.every((field) => {
 			if (!isVisible(field) || !field.required) return true;
