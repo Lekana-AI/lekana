@@ -107,8 +107,18 @@ app.post(
       if (Array.isArray(fieldMapping)) {
         normalizedFieldMapping = {};
         for (const item of fieldMapping) {
+          // Skip empty strings or invalid items in the array
+          if (!item || item === "" || typeof item !== "object") {
+            continue;
+          }
+
           const columnName = item.key || item.columnName;
           let fieldPath = item.value || item.fieldPath || columnName;
+
+          // Skip if we don't have valid columnName or fieldPath
+          if (!columnName || !fieldPath) {
+            continue;
+          }
 
           // If flattenFieldsMode is false and path doesn't include 'fields.',
           // auto-prepend the path to extract from OCR result structure
@@ -116,27 +126,25 @@ app.post(
             fieldPath = `fields.${fieldPath}.value`;
           }
 
-          if (columnName) {
-            normalizedFieldMapping[columnName] = fieldPath;
-          }
+          normalizedFieldMapping[columnName] = fieldPath;
         }
         console.log(`[DB-Export] Converted fieldMapping from array to object:`);
         console.log(`  - Original: ${JSON.stringify(fieldMapping)}`);
         console.log(
-          `  - Normalized: ${JSON.stringify(normalizedFieldMapping)}`
+          `  - Normalized: ${JSON.stringify(normalizedFieldMapping)}`,
         );
       }
 
       console.log(
-        `  - includeExtractionMetadata: ${includeExtractionMetadata}`
+        `  - includeExtractionMetadata: ${includeExtractionMetadata}`,
       );
       console.log(
-        `  - fieldMapping: ${JSON.stringify(normalizedFieldMapping)}`
+        `  - fieldMapping: ${JSON.stringify(normalizedFieldMapping)}`,
       );
       console.log(
         `  - databaseUrl: ${
           databaseUrl ? databaseUrl.replace(/:[^:@]+@/, ":****@") : "NOT SET"
-        }`
+        }`,
       );
       console.log("-".repeat(60));
 
@@ -152,7 +160,7 @@ app.post(
       const inputData = input.data || input;
       console.log(`[DB-Export] INPUT DATA:`);
       console.log(
-        JSON.stringify(inputData, null, 2).split("\n").slice(0, 30).join("\n")
+        JSON.stringify(inputData, null, 2).split("\n").slice(0, 30).join("\n"),
       );
       if (JSON.stringify(inputData).length > 2000) {
         console.log("  ... (truncated)");
@@ -172,12 +180,12 @@ app.post(
           inputData,
           normalizedFieldMapping,
           unmappedFieldStrategy,
-          { flattenFieldsMode, includeExtractionMetadata }
+          { flattenFieldsMode, includeExtractionMetadata },
         );
 
         console.log(`[DB-Export] EXTRACTED ${records.length} records`);
         console.log(
-          `[DB-Export] INFERRED SCHEMA: ${JSON.stringify(inferredSchema)}`
+          `[DB-Export] INFERRED SCHEMA: ${JSON.stringify(inferredSchema)}`,
         );
         if (records.length > 0) {
           console.log(`[DB-Export] SAMPLE RECORD:`);
@@ -191,14 +199,14 @@ app.post(
             client,
             tableName,
             inferredSchema,
-            includeMetadata
+            includeMetadata,
           );
         } else {
           // Validate that table exists
           const exists = await schemaService.tableExists(client, tableName);
           if (!exists) {
             throw new Error(
-              `Table "${tableName}" does not exist. Use mode="auto" to create it.`
+              `Table "${tableName}" does not exist. Use mode="auto" to create it.`,
             );
           }
         }
@@ -221,12 +229,12 @@ app.post(
           client,
           tableName,
           enrichedRecords,
-          onConflict
+          onConflict,
         );
 
         const processingTime = Date.now() - startTime;
         console.log(
-          `[DB-Export] Completed in ${processingTime}ms - ${insertResult.inserted} rows inserted`
+          `[DB-Export] Completed in ${processingTime}ms - ${insertResult.inserted} rows inserted`,
         );
 
         // Build ServiceResponse
@@ -268,7 +276,7 @@ app.post(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
