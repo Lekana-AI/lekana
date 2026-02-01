@@ -332,7 +332,20 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
             logDebug('Node input data', input);
 
             // Check if previous node returned skipped flag - propagate skip to downstream nodes
-            const isSkipped = input?.data?.skipped === true || input?.metadata?.skipped === true;
+            // ServiceResponse can have skipped in data, metadata, or directly on the response
+            const isSkipped =
+                input?.data?.skipped === true ||
+                input?.metadata?.skipped === true ||
+                input?.skipped === true;
+
+            logDebug('Skip check', {
+                nodeId,
+                nodeName: node.config?.stepName || node.action.name,
+                inputDataSkipped: input?.data?.skipped,
+                inputMetadataSkipped: input?.metadata?.skipped,
+                inputSkipped: input?.skipped,
+                isSkipped
+            });
 
             if (isSkipped) {
                 logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input });
