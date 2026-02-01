@@ -55,7 +55,7 @@ app.post("/api/v1/process", async (req, res) => {
 
     console.log("=".repeat(60));
     console.log(
-      `[Router] Processing - Execution: ${executionId}, Node: ${nodeId}`
+      `[Router] Processing - Execution: ${executionId}, Node: ${nodeId}`,
     );
     console.log(`[Router] Config:`);
     console.log(`  - routeByField: ${routeByField}`);
@@ -100,7 +100,7 @@ app.post("/api/v1/process", async (req, res) => {
     }
 
     console.log(
-      `[Router] Source type: ${sourceType}, Items to filter: ${itemsToFilter.length}`
+      `[Router] Source type: ${sourceType}, Items to filter: ${itemsToFilter.length}`,
     );
 
     // Filter items based on conditions
@@ -108,14 +108,14 @@ app.post("/api/v1/process", async (req, res) => {
       itemsToFilter,
       routeByField,
       operator,
-      routeValue
+      routeValue,
     );
     console.log(`[Router] Matched items: ${matchedItems.length}`);
 
     // Check if we should skip (no matches and skipIfEmpty is true)
     if (matchedItems.length === 0 && skipIfEmpty) {
       console.log(
-        `[Router] No matches and skipIfEmpty=true, marking as skipped`
+        `[Router] No matches and skipIfEmpty=true, marking as skipped`,
       );
       const processingTime = Date.now() - startTime;
 
@@ -260,7 +260,7 @@ function buildOutput(matchedItems, input, outputMode, sourceType) {
           .map((item) => ({
             url: item.documentUrl || item.url,
             filename: item.filename,
-            mimeType: item.mimeType || "application/pdf",
+            mimeType: item.mimeType,
           }))
           .filter((doc) => doc.url), // Only include items with URLs
       };
@@ -270,7 +270,7 @@ function buildOutput(matchedItems, input, outputMode, sourceType) {
       const documents = matchedItems.map((item) => ({
         url: item.documentUrl || item.url,
         filename: item.filename,
-        mimeType: item.mimeType || "application/pdf",
+        mimeType: item.mimeType,
         // Include all item data for DB Export
         ...item,
       }));
@@ -292,7 +292,7 @@ function buildOutput(matchedItems, input, outputMode, sourceType) {
 
     default:
       console.warn(
-        `[Router] Unknown outputMode: ${outputMode}, defaulting to documents_only`
+        `[Router] Unknown outputMode: ${outputMode}, defaulting to documents_only`,
       );
       return {
         data: {},
@@ -300,7 +300,7 @@ function buildOutput(matchedItems, input, outputMode, sourceType) {
           .map((item) => ({
             url: item.documentUrl || item.url,
             filename: item.filename,
-            mimeType: item.mimeType || "application/pdf",
+            mimeType: item.mimeType,
           }))
           .filter((doc) => doc.url),
       };
