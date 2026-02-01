@@ -75,7 +75,7 @@
 	onclick={onClose}
 >
 	<div
-		class="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
+		class="relative max-h-4/5 w-full max-w-2xl overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
 		onclick={(e) => e.stopPropagation()}
 	>
 		<!-- Header Gradient -->

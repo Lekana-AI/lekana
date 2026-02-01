@@ -155,7 +155,7 @@
 					<div
 						class="relative flex flex-col {files.length > 0
 							? ''
-							: 'md:col-span-2'} min-h-80 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/50 p-10 transition-colors hover:border-green-500/50 hover:bg-zinc-900/80"
+							: 'md:col-span-2'} min-h-72 items-center justify-center rounded-2xl border-2 border-dashed border-zinc-800 bg-zinc-900/50 p-10 transition-colors hover:border-green-500/50 hover:bg-zinc-900/80"
 					>
 						<input
 							type="file"
@@ -170,7 +170,7 @@
 					</div>
 
 					{#if files.length > 0}
-						<div class="mt-4 max-h-80 space-y-2 overflow-y-auto pr-2">
+						<div class="mt-4 max-h-72 space-y-2 overflow-y-auto pr-2">
 							{#each files as file, i}
 								<div
 									class="flex items-center justify-between rounded-xl bg-zinc-900 p-4 transition-all hover:bg-zinc-800/80"

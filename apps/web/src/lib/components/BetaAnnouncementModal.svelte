@@ -17,7 +17,7 @@
 	transition:fade={{ duration: 200 }}
 >
 	<div
-		class="relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
+		class="relative max-h-4/5 w-full max-w-xl overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
 		onclick={(e) => e.stopPropagation()}
 		transition:scale={{ duration: 300, easing: backOut, start: 0.95 }}
 	>
@@ -25,14 +25,18 @@
 			<!-- Close Button -->
 			<button
 				onclick={onClose}
-				class="absolute top-4 right-4 z-10 p-1 text-zinc-400  transition-colors hover:text-white"
+				class="absolute top-4 right-4 z-10 p-1 text-zinc-400 transition-colors hover:text-white"
 			>
 				<X class="h-5 w-5" />
 			</button>
 
 			<!-- Image Placeholder -->
 			<div class="flex h-64 w-full items-center justify-center bg-zinc-950">
-				<img src="/beta.png" alt="Beta" class="h-full w-full object-contain hover:opacity-70 transition-opacity duration-300" />
+				<img
+					src="/beta.png"
+					alt="Beta"
+					class="h-full w-full object-contain transition-opacity duration-300 hover:opacity-70"
+				/>
 			</div>
 
 			<div class="p-8 pt-6">

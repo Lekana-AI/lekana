@@ -301,7 +301,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 	onclick={(e) => e.stopPropagation()}
-	class="absolute top-full right-0 z-100 mt-2 flex w-[500px] flex-col rounded-2xl border border-white/10 bg-zinc-900 p-5 shadow-2xl ring-1 ring-black/50"
+	class="absolute top-full right-0 z-100 mt-2 flex max-h-[80vh] w-[500px] flex-col overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900 p-5 shadow-2xl ring-1 ring-black/50"
 >
 	<div class="flex flex-col gap-4">
 		<style>
@@ -500,7 +500,7 @@
 									{/each}
 								</div>
 							{:else}
-								<div class="space-y-2">
+								<div class="dark-scroll max-h-[300px] space-y-2 overflow-y-auto pr-1">
 									{#each activeKeys as key}
 										<div
 											class="group flex flex-col gap-0 rounded-xl border border-white/5 bg-white/2 transition-colors hover:border-white/10"
