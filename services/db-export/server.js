@@ -197,30 +197,19 @@ app.post(
           console.log(JSON.stringify(records[0], null, 2));
         }
 
-        // Handle table creation/validation based on mode
-        if (mode === "auto") {
-          // Auto-create table if it doesn't exist
-          await schemaService.ensureTable(
-            client,
-            tableName,
-            inferredSchema,
-            includeMetadata,
-          );
-        } else {
-          // Validate that table exists
-          const exists = await schemaService.tableExists(client, tableName);
-          if (!exists) {
-            throw new Error(
-              `Table "${tableName}" does not exist. Use mode="auto" to create it.`,
-            );
-          }
-        }
-
-        // Smart field mapping: use Gemini to match incoming fields to existing columns
+        // Smart field mapping: MUST happen BEFORE table creation/update
+        // so we don't add new columns when fields can be mapped to existing ones
         let mappedRecords = records;
         let fieldMappingApplied = null;
+        let finalSchema = inferredSchema;
 
-        if (useSmartMapping && records.length > 0) {
+        // Check if table exists first
+        const tableAlreadyExists = await schemaService.tableExists(
+          client,
+          tableName,
+        );
+
+        if (useSmartMapping && records.length > 0 && tableAlreadyExists) {
           // Get existing columns from the table
           const existingColumns = await schemaService.getExistingColumns(
             client,
@@ -234,6 +223,13 @@ app.post(
               (f) => !f.startsWith("_"),
             );
 
+            console.log(
+              `[DB-Export] Smart mapping: incoming fields = ${incomingFields.join(", ")}`,
+            );
+            console.log(
+              `[DB-Export] Smart mapping: existing columns = ${existingColumnsArray.join(", ")}`,
+            );
+
             // Use Gemini to map fields to columns
             const mappingResult = await geminiService.mapFieldsToColumns(
               incomingFields,
@@ -242,6 +238,9 @@ app.post(
 
             if (mappingResult.tokensUsed) {
               geminiTokensUsed = mappingResult.tokensUsed;
+              console.log(
+                `[DB-Export] Gemini tokens used: ${geminiTokensUsed.totalTokens}`,
+              );
             }
 
             if (Object.keys(mappingResult.mapping).length > 0) {
@@ -251,7 +250,33 @@ app.post(
               );
               fieldMappingApplied = mappingResult.mapping;
               console.log(`[DB-Export] Applied smart field mapping`);
+
+              // Re-infer schema from mapped records (to avoid creating new columns)
+              finalSchema = schemaService.inferSchemaFromRecord(
+                mappedRecords[0],
+              );
+              console.log(
+                `[DB-Export] MAPPED SCHEMA: ${JSON.stringify(finalSchema)}`,
+              );
             }
+          }
+        }
+
+        // Handle table creation/validation based on mode (AFTER mapping)
+        if (mode === "auto") {
+          // Auto-create table if it doesn't exist, or add missing columns
+          await schemaService.ensureTable(
+            client,
+            tableName,
+            finalSchema,
+            includeMetadata,
+          );
+        } else {
+          // Validate that table exists
+          if (!tableAlreadyExists) {
+            throw new Error(
+              `Table "${tableName}" does not exist. Use mode="auto" to create it.`,
+            );
           }
         }
 

@@ -4,11 +4,20 @@
  */
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
+// Check for API key at startup
+if (!process.env.GEMINI_API_KEY) {
+  console.warn(
+    "[Gemini] WARNING: GEMINI_API_KEY not set - smart field mapping will be disabled",
+  );
+}
+
 // Initialize Gemini client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
-});
+const genAI = process.env.GEMINI_API_KEY
+  ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  : null;
+const model = genAI
+  ? genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+  : null;
 
 /**
  * Map incoming field names to existing database columns using Gemini
@@ -17,6 +26,19 @@ const model = genAI.getGenerativeModel({
  * @returns {Promise<{mapping: Record<string, string|null>, tokensUsed: object}>}
  */
 async function mapFieldsToColumns(incomingFields, existingColumns) {
+  // Check if Gemini is available
+  if (!model) {
+    console.log(
+      "[Gemini] Gemini not initialized (missing API key), skipping smart mapping",
+    );
+    return {
+      mapping: {},
+      tokensUsed: null,
+      skipped: true,
+      error: "GEMINI_API_KEY not configured",
+    };
+  }
+
   // Filter out internal columns (starting with _)
   const userColumns = existingColumns.filter((col) => !col.startsWith("_"));
 
