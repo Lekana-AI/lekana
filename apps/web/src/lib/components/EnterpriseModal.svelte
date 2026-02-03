@@ -31,11 +31,14 @@
 			if (!response.ok) {
 				throw new Error('Failed to submit email');
 			}
-
+			const data = await response.json();
 			submitted = true;
-			toast.success('Inquiry sent successfully!');
+			toast.success(data.message || 'Email submitted successfully.');
+			if (!data.error) {
+				throw new Error('Failed to submit email');
+			}
 		} catch (error) {
-			toast.error('Something went wrong. Please try again.');
+			toast.error(error || 'Something went wrong. Please try again.');
 		} finally {
 			isSubmitting = false;
 		}
