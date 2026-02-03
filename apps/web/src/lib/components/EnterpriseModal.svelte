@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { X, Mail, ArrowRight, CircleCheck, Loader2 } from 'lucide-svelte';
+	import { X, Mail, ArrowRight, PartyPopper, Loader2 } from 'lucide-svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
@@ -19,12 +19,26 @@
 
 		isSubmitting = true;
 
-		// Simulate API call
-		await new Promise((resolve) => setTimeout(resolve, 1500));
+		try {
+			const response = await fetch('/enterprise/api/users/email', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ email })
+			});
 
-		isSubmitting = false;
-		submitted = true;
-		toast.success('Inquiry sent successfully!');
+			if (!response.ok) {
+				throw new Error('Failed to submit email');
+			}
+
+			submitted = true;
+			toast.success('Inquiry sent successfully!');
+		} catch (error) {
+			toast.error('Something went wrong. Please try again.');
+		} finally {
+			isSubmitting = false;
+		}
 	}
 </script>
 
@@ -63,7 +77,7 @@
 					</div>
 					<h2 class="text-2xl font-bold text-white">Enter your email to get started</h2>
 					<p class="mt-2 text-sm text-zinc-400">
-						Provide your business email and await our personalized response with further steps.
+						Provide your business email to connect you with our team.
 					</p>
 
 					<form onsubmit={handleSubmit} class="mt-8 w-full space-y-4">
@@ -101,12 +115,12 @@
 					<div
 						class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10 text-green-500"
 					>
-						<CircleCheck class="h-10 w-10" />
+						<PartyPopper class="h-10 w-10" />
 					</div>
 					<h3 class="text-2xl font-bold text-white">Check your Inbox!</h3>
 					<p class="mt-2 text-sm text-zinc-400">
-						We've sent a personalised link to <span class="text-white">{email}</span> to collect further
-						details about your business.
+						We've sent an email to <span class="text-white">{email}</span> <br /> You can now connect
+						with our team and discuss your vision.
 					</p>
 					<button
 						onclick={onClose}
