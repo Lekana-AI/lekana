@@ -32,11 +32,11 @@
 				throw new Error('Failed to submit email');
 			}
 			const data = await response.json();
-			submitted = true;
-			toast.success(data.message || 'Email submitted successfully.');
-			if (!data.error) {
+			if (data.error) {
 				throw new Error('Failed to submit email');
 			}
+			submitted = true;
+			toast.success(data.message || 'Email submitted successfully.');
 		} catch (error) {
 			toast.error(error || 'Something went wrong. Please try again.');
 		} finally {
