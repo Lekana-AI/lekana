@@ -20,6 +20,52 @@ async function canAccessWorkflow(userId: string, workflowId: string): Promise<bo
 }
 
 /**
+ * Sanitize execution output to remove Cloud Run URLs
+ * Recursively walks through objects/arrays and redacts *.run.app URLs
+ */
+function sanitizeExecutionOutput(data: any): any {
+    if (data === null || data === undefined) {
+        return data;
+    }
+
+    // Handle arrays
+    if (Array.isArray(data)) {
+        return data.map(item => sanitizeExecutionOutput(item));
+    }
+
+    // Handle objects
+    if (typeof data === 'object') {
+        const sanitized: any = {};
+        for (const [key, value] of Object.entries(data)) {
+            // Redact serviceUrl fields completely
+            if (key === 'serviceUrl' && typeof value === 'string' && value.includes('.run.app')) {
+                sanitized[key] = '[REDACTED]';
+            }
+            // Recursively sanitize nested objects
+            else if (typeof value === 'object') {
+                sanitized[key] = sanitizeExecutionOutput(value);
+            }
+            // Redact Cloud Run URLs in string values
+            else if (typeof value === 'string' && value.includes('.run.app')) {
+                // Replace the full URL with [REDACTED]
+                sanitized[key] = value.replace(/https?:\/\/[a-z0-9-]+\.run\.app[^\s]*/gi, '[REDACTED]');
+            }
+            else {
+                sanitized[key] = value;
+            }
+        }
+        return sanitized;
+    }
+
+    // Redact Cloud Run URLs in string primitives
+    if (typeof data === 'string' && data.includes('.run.app')) {
+        return data.replace(/https?:\/\/[a-z0-9-]+\.run\.app[^\s]*/gi, '[REDACTED]');
+    }
+
+    return data;
+}
+
+/**
  * GET /api/v1/executions
  * List user's workflow executions (filtered by user's owned workflows)
  */
@@ -189,7 +235,10 @@ export const getExecution = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Execution not found' });
         }
 
-        res.json(execution);
+        // Sanitize output to remove Cloud Run URLs before sending to client
+        const sanitizedExecution = sanitizeExecutionOutput(execution);
+
+        res.json(sanitizedExecution);
 
     } catch (error: any) {
         console.error('Error fetching execution:', error);
@@ -236,7 +285,10 @@ export const getExecutionLogs = async (req: Request, res: Response) => {
             }
         });
 
-        res.json(logs);
+        // Sanitize logs to remove Cloud Run URLs before sending to client
+        const sanitizedLogs = sanitizeExecutionOutput(logs);
+
+        res.json(sanitizedLogs);
 
     } catch (error: any) {
         console.error('Error fetching logs:', error);
