@@ -9,7 +9,7 @@ import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
 import { getActionByName } from '../services/action-lookup.service';
 import { validateWorkflowNodes, formatValidationErrors, validateDatabaseConnections, formatConnectionErrors } from '../services/validation.service';
-import { checkStorageLimit, incrementStorageUsage } from '../services/usage.service';
+import { checkStorageLimit, incrementStorageUsage, checkTokenLimit } from '../services/usage.service';
 
 const prisma = new PrismaClient();
 
@@ -248,6 +248,21 @@ export const runWorkflow = async (req: Request, res: Response) => {
 
         console.log(`Running workflow: ${apiKeyInfo.publishedWorkflow.name} (${workflowId})`);
         console.log(`Input received:`, { hasInput: !!input, hasDocuments: !!documents });
+
+        // Check token limit before execution
+        const tokenCheck = await checkTokenLimit(apiKeyInfo.publishedWorkflow.userId);
+        if (!tokenCheck.canProceed) {
+            console.log(`[Run] Token limit exceeded for user ${apiKeyInfo.publishedWorkflow.userId}`);
+            return res.status(403).json({
+                error: 'Token limit exceeded',
+                message: `You have used ${tokenCheck.used} of your ${tokenCheck.limit} token limit. Cannot process more requests.`,
+                tokens: {
+                    used: tokenCheck.used,
+                    limit: tokenCheck.limit,
+                    remaining: tokenCheck.remaining
+                }
+            });
+        }
 
         // Get the workflow definition
         const workflowDefinition = apiKeyInfo.publishedWorkflow.definition;
@@ -545,6 +560,21 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                     }
                 });
             }
+        }
+
+        // Check token limit before processing
+        const tokenCheck = await checkTokenLimit(userId);
+        if (!tokenCheck.canProceed) {
+            console.log(`[Run] Token limit exceeded for user ${userId}`);
+            return res.status(403).json({
+                error: 'Token limit exceeded',
+                message: `You have used ${tokenCheck.used} of your ${tokenCheck.limit} token limit. Cannot process more documents.`,
+                tokens: {
+                    used: tokenCheck.used,
+                    limit: tokenCheck.limit,
+                    remaining: tokenCheck.remaining
+                }
+            });
         }
 
         // Parse JSON input from form data

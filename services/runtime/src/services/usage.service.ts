@@ -108,6 +108,63 @@ export async function incrementTokenUsage(userId: string, tokens: number): Promi
 }
 
 /**
+ * Check if a user has token quota available for execution
+ * Returns { canProceed, used, limit, remaining }
+ */
+export async function checkTokenLimit(userId: string): Promise<{
+    canProceed: boolean;
+    used: number;
+    limit: number | null;
+    remaining: number | null;
+}> {
+    if (!workflowDb) {
+        console.warn('[UsageService] No workflow DB connection - skipping token check');
+        return { canProceed: true, used: 0, limit: null, remaining: null };
+    }
+
+    try {
+        // Get or create user usage record
+        let usage = await workflowDb.$queryRaw<UserUsage[]>`
+            SELECT "userId", "storageLimit", "storageUsed", "tokenLimit", "tokensUsed"
+            FROM "UserUsage"
+            WHERE "userId" = ${userId}
+        `;
+
+        if (usage.length === 0) {
+            // Create usage record with defaults
+            await workflowDb.$executeRaw`
+                INSERT INTO "UserUsage" ("userId", "storageLimit", "storageUsed", "tokenLimit", "tokensUsed", "createdAt", "updatedAt")
+                VALUES (${userId}, 1073741824, 0, NULL, 0, NOW(), NOW())
+            `;
+            usage = [{
+                userId,
+                storageLimit: BigInt(1073741824), // 1GB default
+                storageUsed: BigInt(0),
+                tokenLimit: null,
+                tokensUsed: 0
+            }];
+        }
+
+        const { tokenLimit, tokensUsed } = usage[0];
+
+        // If tokenLimit is null, user has unlimited tokens
+        if (tokenLimit === null) {
+            return { canProceed: true, used: tokensUsed, limit: null, remaining: null };
+        }
+
+        const remaining = tokenLimit - tokensUsed;
+        const canProceed = tokensUsed < tokenLimit;
+
+        return { canProceed, used: tokensUsed, limit: tokenLimit, remaining };
+
+    } catch (error) {
+        console.error('[UsageService] Error checking token limit:', error);
+        // Fail open - allow operation if DB check fails
+        return { canProceed: true, used: 0, limit: null, remaining: null };
+    }
+}
+
+/**
  * Get user's current usage stats
  */
 export async function getUserUsage(userId: string): Promise<{
