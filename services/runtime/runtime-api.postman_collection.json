@@ -5,16 +5,46 @@
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"variable": [
-		{"key": "base_url", "value": "http://localhost:3002/api/v1", "type": "string"},
-		{"key": "workflow_id", "value": "", "type": "string"},
-		{"key": "execution_id", "value": "", "type": "string"},
-		{"key": "api_key", "value": "", "type": "string"},
-		{"key": "key_id", "value": "", "type": "string"},
-		{"key": "jwt_token", "value": "", "type": "string"}
+		{
+			"key": "base_url",
+			"value": "http://localhost:3002/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "workflow_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "execution_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "key_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
 	],
 	"auth": {
 		"type": "bearer",
-		"bearer": [{"key": "token", "value": "{{jwt_token}}", "type": "string"}]
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
 	},
 	"item": [
 		{
@@ -44,12 +74,25 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"workflowId\": \"{{workflow_id}}\"\n}"
 						},
-						"url": {"raw": "{{base_url}}/publish", "host": ["{{base_url}}"], "path": ["publish"]},
+						"url": {
+							"raw": "{{base_url}}/publish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"publish"
+							]
+						},
 						"description": "Publish a workflow by ID. Fetches workflow from workflow-builder using JWT passthrough."
 					}
 				},
@@ -57,16 +100,45 @@
 					"name": "Get Published Workflow",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "List API Keys",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/keys", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "keys"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys"
+							]
+						}
 					}
 				},
 				{
@@ -92,20 +164,51 @@
 					],
 					"request": {
 						"method": "POST",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"name\": \"New API Key\",\n    \"expiresAt\": null\n}"
 						},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/keys", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "keys"]}
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys"
+							]
+						}
 					}
 				},
 				{
 					"name": "Revoke API Key",
 					"request": {
 						"method": "DELETE",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/keys/{{key_id}}", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "keys", "{{key_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys/{{key_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys",
+								"{{key_id}}"
+							]
+						}
 					}
 				}
 			]
@@ -113,7 +216,9 @@
 		{
 			"name": "Execution (API Key Auth)",
 			"description": "Run workflows - requires X-API-Key header",
-			"auth": {"type": "noauth"},
+			"auth": {
+				"type": "noauth"
+			},
 			"item": [
 				{
 					"name": "Run Workflow",
@@ -136,14 +241,30 @@
 					"request": {
 						"method": "POST",
 						"header": [
-							{"key": "Content-Type", "value": "application/json"},
-							{"key": "X-API-Key", "value": "{{api_key}}"}
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
 						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n    \"input\": {},\n    \"documents\": [\n        {\n            \"url\": \"https://example.com/document.pdf\",\n            \"filename\": \"document.pdf\",\n            \"mimeType\": \"application/pdf\"\n        }\n    ]\n}"
 						},
-						"url": {"raw": "{{base_url}}/workflows/{{workflow_id}}/run", "host": ["{{base_url}}"], "path": ["workflows", "{{workflow_id}}", "run"]},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/run",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"run"
+							]
+						},
 						"description": "Run a published workflow with input data. Requires X-API-Key header."
 					}
 				}
@@ -157,14 +278,29 @@
 					"name": "Get All Executions",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/executions?limit=20&offset=0",
-							"host": ["{{base_url}}"],
-							"path": ["executions"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions"
+							],
 							"query": [
-								{"key": "limit", "value": "20"},
-								{"key": "offset", "value": "0"}
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
 							]
 						}
 					}
@@ -173,16 +309,45 @@
 					"name": "Get Execution by ID",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/executions/{{execution_id}}", "host": ["{{base_url}}"], "path": ["executions", "{{execution_id}}"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/executions/{{execution_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions",
+								"{{execution_id}}"
+							]
+						}
 					}
 				},
 				{
 					"name": "Get Execution Logs",
 					"request": {
 						"method": "GET",
-						"header": [{"key": "Content-Type", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/executions/{{execution_id}}/logs", "host": ["{{base_url}}"], "path": ["executions", "{{execution_id}}", "logs"]}
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/executions/{{execution_id}}/logs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions",
+								"{{execution_id}}",
+								"logs"
+							]
+						}
 					}
 				}
 			]
