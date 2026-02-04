@@ -8,6 +8,7 @@ import { callService, callServiceWithUrl, ServiceRequest, ServiceResponse } from
 import { getActionDetails } from './action-lookup.service';
 import { incrementTokenUsage } from './usage.service';
 import { logWorkflow, logExecution, logNodeExecution, logSeparator, logDebug, isLogEnabled } from './logger';
+import { emitExecutionStarted, emitExecutionUpdated, emitNodeStarted, emitNodeCompleted, emitNodeFailed, emitNodeSkipped } from './sse.service';
 
 const prisma = new PrismaClient();
 
@@ -480,6 +481,7 @@ export async function executeWorkflow(workflow: WorkflowData): Promise<string> {
 /**
  * Execute a published workflow with external input data
  * Used when running via API key authentication
+ * Returns immediately after creating execution record - workflow runs in background
  */
 export async function executeWorkflowWithInput(
     workflowDefinition: any,
@@ -512,206 +514,284 @@ export async function executeWorkflowWithInput(
 
     logExecution('Created execution record', { executionId: execution.id });
 
-    const context: ExecutionContext = {
-        workflowExecutionId: execution.id,
-        nodeOutputs: new Map()
-    };
+    // Run the actual workflow execution in the background
+    // This allows the API to return immediately with the execution ID
+    setImmediate(async () => {
+        const context: ExecutionContext = {
+            workflowExecutionId: execution.id,
+            nodeOutputs: new Map()
+        };
 
-    // Store initial input for first node(s)
-    context.nodeOutputs.set('__initial_input__', inputData);
+        // Store initial input for first node(s)
+        context.nodeOutputs.set('__initial_input__', inputData);
 
-    try {
-        await log(execution.id, 'INFO', `Starting workflow execution: ${workflowDefinition.name}`);
-        await log(execution.id, 'DEBUG', 'Input data received', undefined, inputData);
+        try {
+            await log(execution.id, 'INFO', `Starting workflow execution: ${workflowDefinition.name}`);
+            await log(execution.id, 'DEBUG', 'Input data received', undefined, inputData);
 
-        const nodes = workflowDefinition.nodes as WorkflowNode[];
-        const edges = workflowDefinition.edges as WorkflowEdge[];
+            const nodes = workflowDefinition.nodes as WorkflowNode[];
+            const edges = workflowDefinition.edges as WorkflowEdge[];
 
-        const orderedNodeIds = topologicalSort(nodes, edges);
+            const orderedNodeIds = topologicalSort(nodes, edges);
 
-        if (!orderedNodeIds) {
-            throw new Error('Workflow contains a cycle and cannot be executed');
-        }
+            if (!orderedNodeIds) {
+                throw new Error('Workflow contains a cycle and cannot be executed');
+            }
 
-        const nodeMap = new Map(nodes.map(n => [n.id, n]));
-        logExecution('Execution order determined', orderedNodeIds.map((id, index) => {
-            const node = nodeMap.get(id);
-            return `${index + 1}. ${node?.config?.stepName || node?.action.name} (${id})`;
-        }));
+            const nodeMap = new Map(nodes.map(n => [n.id, n]));
+            logExecution('Execution order determined', orderedNodeIds.map((id, index) => {
+                const node = nodeMap.get(id);
+                return `${index + 1}. ${node?.config?.stepName || node?.action.name} (${id})`;
+            }));
 
-        await prisma.workflowExecution.update({
-            where: { id: execution.id },
-            data: { status: 'RUNNING', startedAt: new Date() }
-        });
+            const startedAt = new Date();
+            await prisma.workflowExecution.update({
+                where: { id: execution.id },
+                data: { status: 'RUNNING', startedAt }
+            });
 
-        // Create node execution records
-        for (let i = 0; i < orderedNodeIds.length; i++) {
-            const nodeId = orderedNodeIds[i];
-            const node = nodeMap.get(nodeId)!;
+            // Emit SSE event: execution started
+            emitExecutionStarted(workflowDefinition.id, {
+                id: execution.id,
+                workflowName: workflowDefinition.name,
+                status: 'RUNNING',
+                startedAt
+            });
 
-            await prisma.nodeExecution.create({
-                data: {
-                    workflowExecutionId: execution.id,
+            // Create node execution records
+            for (let i = 0; i < orderedNodeIds.length; i++) {
+                const nodeId = orderedNodeIds[i];
+                const node = nodeMap.get(nodeId)!;
+
+                await prisma.nodeExecution.create({
+                    data: {
+                        workflowExecutionId: execution.id,
+                        nodeId: node.id,
+                        actionName: node.action.name,
+                        stepName: node.config?.stepName || node.action.name,
+                        executionOrder: i,
+                        status: 'PENDING',
+                        config: node.config
+                    }
+                });
+            }
+
+            // Execute nodes in order
+            for (let i = 0; i < orderedNodeIds.length; i++) {
+                const nodeId = orderedNodeIds[i];
+                const node = nodeMap.get(nodeId)!;
+
+                logSeparator(`NODE ${i + 1}/${orderedNodeIds.length}`);
+                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'STARTING', { config: node.config });
+
+                await log(execution.id, 'INFO', `Executing node: ${node.config?.stepName || node.action.name}`);
+
+                const nodeStartedAt = new Date();
+                await prisma.nodeExecution.updateMany({
+                    where: { workflowExecutionId: execution.id, nodeId: node.id },
+                    data: { status: 'RUNNING', startedAt: nodeStartedAt }
+                });
+
+                // Emit SSE event: node started
+                emitNodeStarted(workflowDefinition.id, {
+                    executionId: execution.id,
                     nodeId: node.id,
                     actionName: node.action.name,
                     stepName: node.config?.stepName || node.action.name,
                     executionOrder: i,
-                    status: 'PENDING',
-                    config: node.config
+                    startedAt: nodeStartedAt
+                });
+
+                // Get input - use initial input for start nodes (no incoming edges)
+                let nodeInput = getNodeInput(nodeId, edges, context);
+                if (nodeInput === null && i === 0) {
+                    nodeInput = inputData; // First node gets the initial input
                 }
-            });
-        }
+                logDebug('Node input data', nodeInput);
 
-        // Execute nodes in order
-        for (let i = 0; i < orderedNodeIds.length; i++) {
-            const nodeId = orderedNodeIds[i];
-            const node = nodeMap.get(nodeId)!;
+                // Check if previous node returned skipped flag - propagate skip to downstream nodes
+                // ServiceResponse can have skipped in data, metadata, or directly on the response
+                // Also skip if upstream router returned 0 matches (empty documents array)
+                const hasSkippedFlag =
+                    nodeInput?.data?.skipped === true ||
+                    nodeInput?.metadata?.skipped === true ||
+                    nodeInput?.skipped === true;
 
-            logSeparator(`NODE ${i + 1}/${orderedNodeIds.length}`);
-            logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'STARTING', { config: node.config });
+                // Check if upstream was a router that matched 0 documents (should skip downstream)
+                const isEmptyRouterOutput =
+                    nodeInput?.data?.matchedCount === 0 &&
+                    Array.isArray(nodeInput?.documents) &&
+                    nodeInput.documents.length === 0;
 
-            await log(execution.id, 'INFO', `Executing node: ${node.config?.stepName || node.action.name}`);
+                const isSkipped = hasSkippedFlag || isEmptyRouterOutput;
 
-            await prisma.nodeExecution.updateMany({
-                where: { workflowExecutionId: execution.id, nodeId: node.id },
-                data: { status: 'RUNNING', startedAt: new Date() }
-            });
+                logDebug('Skip check', {
+                    nodeId,
+                    nodeName: node.config?.stepName || node.action.name,
+                    hasSkippedFlag,
+                    isEmptyRouterOutput,
+                    matchedCount: nodeInput?.data?.matchedCount,
+                    documentCount: nodeInput?.documents?.length,
+                    isSkipped
+                });
 
-            // Get input - use initial input for start nodes (no incoming edges)
-            let nodeInput = getNodeInput(nodeId, edges, context);
-            if (nodeInput === null && i === 0) {
-                nodeInput = inputData; // First node gets the initial input
-            }
-            logDebug('Node input data', nodeInput);
+                if (isSkipped) {
+                    const skipReason = isEmptyRouterOutput
+                        ? 'Router matched 0 documents'
+                        : 'Upstream node returned skipped';
 
-            // Check if previous node returned skipped flag - propagate skip to downstream nodes
-            // ServiceResponse can have skipped in data, metadata, or directly on the response
-            // Also skip if upstream router returned 0 matches (empty documents array)
-            const hasSkippedFlag =
-                nodeInput?.data?.skipped === true ||
-                nodeInput?.metadata?.skipped === true ||
-                nodeInput?.skipped === true;
+                    logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input: nodeInput });
+                    await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (${skipReason})`);
 
-            // Check if upstream was a router that matched 0 documents (should skip downstream)
-            const isEmptyRouterOutput =
-                nodeInput?.data?.matchedCount === 0 &&
-                Array.isArray(nodeInput?.documents) &&
-                nodeInput.documents.length === 0;
+                    // Store skipped output for downstream nodes (propagate the skip)
+                    const skippedOutput = {
+                        success: true,
+                        data: { skipped: true, reason: skipReason },
+                        metadata: { skipped: true }
+                    };
+                    context.nodeOutputs.set(nodeId, skippedOutput);
 
-            const isSkipped = hasSkippedFlag || isEmptyRouterOutput;
+                    // Update node as skipped
+                    const skipCompletedAt = new Date();
+                    await prisma.nodeExecution.updateMany({
+                        where: {
+                            workflowExecutionId: execution.id,
+                            nodeId: node.id
+                        },
+                        data: {
+                            status: 'SKIPPED',
+                            output: skippedOutput as any,
+                            input: nodeInput,
+                            completedAt: skipCompletedAt
+                        }
+                    });
 
-            logDebug('Skip check', {
-                nodeId,
-                nodeName: node.config?.stepName || node.action.name,
-                hasSkippedFlag,
-                isEmptyRouterOutput,
-                matchedCount: nodeInput?.data?.matchedCount,
-                documentCount: nodeInput?.documents?.length,
-                isSkipped
-            });
+                    // Emit SSE event: node skipped
+                    emitNodeSkipped(workflowDefinition.id, {
+                        executionId: execution.id,
+                        nodeId: node.id,
+                        actionName: node.action.name,
+                        stepName: node.config?.stepName || node.action.name,
+                        reason: skipReason
+                    });
 
-            if (isSkipped) {
-                const skipReason = isEmptyRouterOutput
-                    ? 'Router matched 0 documents'
-                    : 'Upstream node returned skipped';
+                    continue; // Skip to next node
+                }
 
-                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'SKIPPED', { input: nodeInput });
-                await log(execution.id, 'INFO', `Skipping node: ${node.config?.stepName || node.action.name} (${skipReason})`);
+                try {
+                    const output = await executeAction(node, nodeInput, context, { id: workflowDefinition.id, userId });
 
-                // Store skipped output for downstream nodes (propagate the skip)
-                const skippedOutput = {
-                    success: true,
-                    data: { skipped: true, reason: skipReason },
-                    metadata: { skipped: true }
-                };
-                context.nodeOutputs.set(nodeId, skippedOutput);
-
-                // Update node as skipped
-                await prisma.nodeExecution.updateMany({
-                    where: {
-                        workflowExecutionId: execution.id,
-                        nodeId: node.id
-                    },
-                    data: {
-                        status: 'SKIPPED',
-                        output: skippedOutput as any,
+                    // Log output when LOG_NEED is enabled
+                    logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'COMPLETED', {
                         input: nodeInput,
-                        completedAt: new Date()
+                        output: output.success ? output.data : output.error
+                    });
+                    logDebug('Token tracking', {
+                        action: node.action.name,
+                        success: output.success,
+                        tokensUsed: output.metadata?.tokensUsed
+                    });
+
+                    // Track token usage if returned by the service (e.g., OCR/Gemini)
+                    const tokensUsed = output.metadata?.tokensUsed;
+                    if (tokensUsed && tokensUsed > 0) {
+                        await incrementTokenUsage(userId, tokensUsed);
+                        logDebug('Token usage incremented', { userId, tokensUsed });
                     }
-                });
 
-                continue; // Skip to next node
-            }
+                    context.nodeOutputs.set(nodeId, output);
 
-            try {
-                const output = await executeAction(node, nodeInput, context, { id: workflowDefinition.id, userId });
+                    const nodeCompletedAt = new Date();
+                    await prisma.nodeExecution.updateMany({
+                        where: { workflowExecutionId: execution.id, nodeId: node.id },
+                        data: {
+                            status: 'COMPLETED',
+                            output: output as any,
+                            input: nodeInput,
+                            completedAt: nodeCompletedAt
+                        }
+                    });
 
-                // Log output when LOG_NEED is enabled
-                logNodeExecution(nodeId, node.config?.stepName || node.action.name, 'COMPLETED', {
-                    input: nodeInput,
-                    output: output.success ? output.data : output.error
-                });
-                logDebug('Token tracking', {
-                    action: node.action.name,
-                    success: output.success,
-                    tokensUsed: output.metadata?.tokensUsed
-                });
-
-                // Track token usage if returned by the service (e.g., OCR/Gemini)
-                const tokensUsed = output.metadata?.tokensUsed;
-                if (tokensUsed && tokensUsed > 0) {
-                    await incrementTokenUsage(userId, tokensUsed);
-                    logDebug('Token usage incremented', { userId, tokensUsed });
-                }
-
-                context.nodeOutputs.set(nodeId, output);
-
-                await prisma.nodeExecution.updateMany({
-                    where: { workflowExecutionId: execution.id, nodeId: node.id },
-                    data: {
+                    // Emit SSE event: node completed
+                    emitNodeCompleted(workflowDefinition.id, {
+                        executionId: execution.id,
+                        nodeId: node.id,
+                        actionName: node.action.name,
+                        stepName: node.config?.stepName || node.action.name,
                         status: 'COMPLETED',
-                        output: output as any,
                         input: nodeInput,
-                        completedAt: new Date()
-                    }
-                });
+                        output: output.success ? output.data : output.error,
+                        completedAt: nodeCompletedAt
+                    });
 
-                await log(execution.id, 'INFO', `Node completed: ${node.config?.stepName || node.action.name}`);
+                    await log(execution.id, 'INFO', `Node completed: ${node.config?.stepName || node.action.name}`);
 
-            } catch (nodeError: any) {
-                await prisma.nodeExecution.updateMany({
-                    where: { workflowExecutionId: execution.id, nodeId: node.id },
-                    data: {
-                        status: 'FAILED',
+                } catch (nodeError: any) {
+                    const nodeFailedAt = new Date();
+                    await prisma.nodeExecution.updateMany({
+                        where: { workflowExecutionId: execution.id, nodeId: node.id },
+                        data: {
+                            status: 'FAILED',
+                            error: nodeError.message,
+                            input: nodeInput,
+                            completedAt: nodeFailedAt
+                        }
+                    });
+
+                    // Emit SSE event: node failed
+                    emitNodeFailed(workflowDefinition.id, {
+                        executionId: execution.id,
+                        nodeId: node.id,
+                        actionName: node.action.name,
+                        stepName: node.config?.stepName || node.action.name,
                         error: nodeError.message,
-                        input: nodeInput,
-                        completedAt: new Date()
-                    }
-                });
+                        completedAt: nodeFailedAt
+                    });
 
-                await log(execution.id, 'ERROR', `Node failed: ${nodeError.message}`, undefined, { nodeId });
-                throw nodeError;
+                    await log(execution.id, 'ERROR', `Node failed: ${nodeError.message}`, undefined, { nodeId });
+                    throw nodeError;
+                }
             }
+
+            const completedAt = new Date();
+            await prisma.workflowExecution.update({
+                where: { id: execution.id },
+                data: { status: 'COMPLETED', completedAt }
+            });
+
+            // Emit SSE event: execution completed
+            emitExecutionUpdated(workflowDefinition.id, {
+                id: execution.id,
+                status: 'COMPLETED',
+                completedAt
+            });
+
+            await log(execution.id, 'INFO', 'Workflow execution completed successfully');
+            logSeparator('WORKFLOW EXECUTION COMPLETE');
+            logExecution('Workflow completed successfully', { executionId: execution.id, workflowName: workflowDefinition.name });
+
+        } catch (error: any) {
+            const failedAt = new Date();
+            await prisma.workflowExecution.update({
+                where: { id: execution.id },
+                data: { status: 'FAILED', completedAt: failedAt }
+            });
+
+            // Emit SSE event: execution failed
+            emitExecutionUpdated(workflowDefinition.id, {
+                id: execution.id,
+                status: 'FAILED',
+                completedAt: failedAt
+            });
+
+            await log(execution.id, 'ERROR', `Workflow execution failed: ${error.message}`);
+            logSeparator('WORKFLOW EXECUTION FAILED');
+            logExecution('Workflow failed', { executionId: execution.id, error: error.message });
         }
+    });
 
-        await prisma.workflowExecution.update({
-            where: { id: execution.id },
-            data: { status: 'COMPLETED', completedAt: new Date() }
-        });
-
-        await log(execution.id, 'INFO', 'Workflow execution completed successfully');
-
-        return execution.id;
-
-    } catch (error: any) {
-        await prisma.workflowExecution.update({
-            where: { id: execution.id },
-            data: { status: 'FAILED', completedAt: new Date() }
-        });
-
-        await log(execution.id, 'ERROR', `Workflow execution failed: ${error.message}`);
-
-        throw error;
-    }
+    // Return execution ID immediately - workflow runs in background
+    return execution.id;
 }
+
 

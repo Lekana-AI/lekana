@@ -6,6 +6,7 @@ import * as executionController from '../controllers/execution.controller';
 import * as workflowController from '../controllers/workflow.controller';
 import reviewRoutes from './review.routes';
 import documentRoutes from './document.routes';
+import sseRoutes from '../controllers/sse.controller';
 
 const router = Router();
 
@@ -42,6 +43,11 @@ router.post('/workflows/:workflowId/run-with-files', upload.array('files'), chec
 router.get('/workflows/:workflowId/executions', jwtAuth, requireWorkflowAccess, executionController.getWorkflowExecutions);
 
 // ========================================
+// SSE Real-Time Events (JWT auth)
+// ========================================
+router.use('/', jwtAuth, sseRoutes);
+
+// ========================================
 // Execution Status & Logs (JWT auth)
 // ========================================
 router.get('/executions', jwtAuth, executionController.getExecutions);
@@ -63,4 +69,5 @@ router.use('/documents', jwtAuth, documentRoutes);
 // See src/services/service-client.ts for the service registry.
 
 export default router;
+
 
