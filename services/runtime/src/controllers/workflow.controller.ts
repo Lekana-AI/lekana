@@ -4,6 +4,12 @@
  */
 
 import { Request, Response } from 'express';
+// Add BigInt serialization support for JSON.stringify
+// This prevents "Do not know how to serialize a BigInt" errors
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 import { PrismaClient, Prisma } from '@prisma/client';
 import { generateApiKey } from '../middleware/apikey.middleware';
 import { executeWorkflowWithInput } from '../services/engine.service';
