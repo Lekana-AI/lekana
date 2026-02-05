@@ -32,6 +32,7 @@
 		Workflow
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
+	import JsonViewer from '$lib/components/JsonViewer.svelte';
 
 	let executions = $state<any[]>([]);
 	let loading = $state(true);
@@ -98,9 +99,183 @@
 		};
 	});
 
+	// SSE connection for real-time updates
+	let eventSource: EventSource | null = null;
+
 	onMount(async () => {
 		await Promise.all([loadExecutions(), loadDocuments()]);
+
+		// Connect to SSE for real-time updates
+		connectSSE();
 	});
+
+	import { onDestroy } from 'svelte';
+
+	onDestroy(() => {
+		// Clean up SSE connection
+		if (eventSource) {
+			eventSource.close();
+			eventSource = null;
+		}
+	});
+
+	function connectSSE() {
+		if (!workflow.id || eventSource) return;
+
+		const sseUrl = `/rime/workflows/${workflow.id}/events`;
+		console.log('[Monitor] Connecting to SSE:', sseUrl);
+
+		eventSource = new EventSource(sseUrl);
+
+		eventSource.onopen = () => {
+			console.log('[Monitor] SSE connected');
+		};
+
+		eventSource.onerror = (err) => {
+			console.error('[Monitor] SSE error:', err);
+			// Reconnect after 5 seconds if disconnected
+			setTimeout(() => {
+				if (eventSource?.readyState === EventSource.CLOSED) {
+					eventSource = null;
+					connectSSE();
+				}
+			}, 5000);
+		};
+
+		// Handle execution events
+		eventSource.addEventListener('execution:started', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Execution started:', data);
+			handleExecutionStarted(data);
+		});
+
+		eventSource.addEventListener('execution:updated', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Execution updated:', data);
+			handleExecutionUpdated(data);
+		});
+
+		// Handle node events
+		eventSource.addEventListener('node:started', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Node started:', data);
+			handleNodeUpdate(data, 'RUNNING');
+		});
+
+		eventSource.addEventListener('node:completed', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Node completed:', data);
+			handleNodeUpdate(data, 'COMPLETED');
+		});
+
+		eventSource.addEventListener('node:failed', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Node failed:', data);
+			handleNodeUpdate(data, 'FAILED');
+		});
+
+		eventSource.addEventListener('node:skipped', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Node skipped:', data);
+			handleNodeUpdate(data, 'SKIPPED');
+		});
+	}
+
+	function handleExecutionStarted(data: any) {
+		// Add new execution to the beginning of the list
+		const newExecution = {
+			id: data.id,
+			workflowId: workflow.id,
+			workflowName: data.workflowName,
+			status: data.status,
+			startedAt: data.startedAt,
+			completedAt: null
+		};
+		executions = [newExecution, ...executions];
+
+		// Initialize execution details for the new execution
+		executionDetails[data.id] = { nodeExecutions: [] };
+	}
+
+	function handleExecutionUpdated(data: any) {
+		// Update existing execution in the list
+		executions = executions.map((e) => {
+			if (e.id === data.id) {
+				return { ...e, status: data.status, completedAt: data.completedAt };
+			}
+			return e;
+		});
+	}
+
+	function handleNodeUpdate(data: any, status: string) {
+		const {
+			executionId,
+			nodeId,
+			actionName,
+			stepName,
+			executionOrder,
+			input,
+			output,
+			error,
+			completedAt,
+			reason,
+			startedAt
+		} = data;
+
+		// Ensure we have details for this execution
+		if (!executionDetails[executionId]) {
+			executionDetails[executionId] = { nodeExecutions: [] };
+		}
+
+		const details = executionDetails[executionId];
+		const existingIndex = details.nodeExecutions?.findIndex((n: any) => n.nodeId === nodeId);
+		const existingNode = existingIndex >= 0 ? details.nodeExecutions[existingIndex] : null;
+
+		// Determine startedAt - use from event if provided, else existing, else now
+		const nodeStartedAt = startedAt || existingNode?.startedAt || new Date().toISOString();
+
+		// Determine completedAt - only set for completed/failed/skipped statuses
+		const nodeCompletedAt =
+			status === 'COMPLETED' || status === 'FAILED' || status === 'SKIPPED'
+				? completedAt || new Date().toISOString()
+				: existingNode?.completedAt;
+
+		const nodeData = {
+			id: nodeId,
+			nodeId,
+			actionName,
+			stepName,
+			executionOrder,
+			status,
+			input: input || existingNode?.input,
+			output: output ? { data: output, success: status === 'COMPLETED' } : existingNode?.output,
+			error: error || reason || existingNode?.error,
+			startedAt: nodeStartedAt,
+			completedAt: nodeCompletedAt
+		};
+
+		if (existingIndex >= 0) {
+			// Update existing node - merge with existing data
+			details.nodeExecutions[existingIndex] = { ...existingNode, ...nodeData };
+		} else {
+			// Add new node
+			details.nodeExecutions = [...(details.nodeExecutions || []), nodeData];
+			// Sort by execution order
+			details.nodeExecutions.sort((a: any, b: any) => a.executionOrder - b.executionOrder);
+		}
+
+		// Trigger reactivity
+		executionDetails = { ...executionDetails };
+
+		// Auto-select first step if this is the currently selected execution
+		if (
+			selectedExecutionId === executionId &&
+			!selectedStepId &&
+			details.nodeExecutions?.length > 0
+		) {
+			selectedStepId = details.nodeExecutions[0].id;
+		}
+	}
 
 	async function loadExecutions() {
 		loading = true;
@@ -194,7 +369,7 @@
 </svelte:head>
 
 {#snippet CollapsibleJson(data: any)}
-	<details class="group">
+	<details class="group" open>
 		<summary
 			class="flex cursor-pointer list-none items-center gap-2 py-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300"
 		>
@@ -202,12 +377,7 @@
 			<span>{Object.keys(data || {}).length} fields</span>
 		</summary>
 		<div class="mt-2 overflow-hidden rounded-xl border border-white/5 bg-black/20 p-4">
-			<pre
-				class="dark-scroll overflow-x-auto font-mono text-xs leading-relaxed text-zinc-400">{JSON.stringify(
-					data,
-					null,
-					2
-				)}</pre>
+			<JsonViewer {data} isRoot={true} />
 		</div>
 	</details>
 {/snippet}
@@ -559,7 +729,7 @@
 												</div>
 											{/each}
 										{:else}
-											{#each selectedExecutionSteps as step}
+											{#each selectedExecutionSteps as step, index}
 												<button
 													onclick={() => selectStep(step.id)}
 													class="group flex w-full items-start gap-3 rounded-xl border p-3 transition-all {selectedStepId ===
@@ -590,9 +760,9 @@
 																		: 'border-red-500/50'
 																: ''}"
 														>
-															{step.executionOrder + 1}
+															{(step.executionOrder ?? index) + 1}
 														</div>
-														{#if step.executionOrder < selectedExecutionSteps.length - 1}
+														{#if (step.executionOrder ?? index) < selectedExecutionSteps.length - 1}
 															<div class="my-1 w-px flex-1 bg-white/10"></div>
 														{/if}
 													</div>
@@ -616,11 +786,17 @@
 														<div class="mt-0.5 flex items-center gap-2">
 															<Clock class="h-3 w-3 text-zinc-600" />
 															<span class="text-xs text-zinc-600">
-																{(
-																	(new Date(step.completedAt).getTime() -
-																		new Date(step.startedAt).getTime()) /
-																	1000
-																).toFixed(2)}s
+																{#if step.startedAt && step.completedAt}
+																	{(
+																		(new Date(step.completedAt).getTime() -
+																			new Date(step.startedAt).getTime()) /
+																		1000
+																	).toFixed(2)}s
+																{:else if step.status === 'RUNNING'}
+																	...
+																{:else}
+																	0.00s
+																{/if}
 															</span>
 														</div>
 													</div>
@@ -708,7 +884,8 @@
 														>
 															{step.status}
 														</span>
-														<span class="text-xs text-zinc-600">Step {step.executionOrder + 1}</span
+														<span class="text-xs text-zinc-600"
+															>Step {(step.executionOrder ?? 0) + 1}</span
 														>
 													</div>
 													<h1 class="text-3xl font-bold tracking-tight text-white">
@@ -716,18 +893,26 @@
 													</h1>
 													<p class="mt-1 text-sm text-zinc-500">{step.stepName}</p>
 												</div>
-												<div class="flex flex-col items-end gap-1">
-													<span class="text-[10px] font-bold text-zinc-600 uppercase"
-														>Time Taken</span
-													>
-													<span class="font-mono text-2xl font-bold text-white">
-														{(
-															(new Date(step.completedAt).getTime() -
-																new Date(step.startedAt).getTime()) /
-															1000
-														).toFixed(2)}s
-													</span>
-												</div>
+												{#if new Date(step.completedAt).getTime() && new Date(step.startedAt).getTime()}
+													<div class="flex flex-col items-end gap-1">
+														<span class="text-[10px] font-bold text-zinc-600 uppercase"
+															>Time Taken</span
+														>
+														<span class="font-mono text-2xl font-bold text-white">
+															{#if step.startedAt && step.completedAt}
+																{(
+																	(new Date(step.completedAt).getTime() -
+																		new Date(step.startedAt).getTime()) /
+																	1000
+																).toFixed(2)}s
+															{:else if step.status === 'RUNNING'}
+																...
+															{:else}
+																0.00s
+															{/if}
+														</span>
+													</div>
+												{/if}
 											</div>
 
 											<div class="grid grid-cols-1 gap-4">
@@ -757,7 +942,7 @@
 											</div>
 
 											<!-- Errors section if any -->
-											{#if step.status !== 'COMPLETED' || step.error}
+											{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED') || step.error}
 												<div class="space-y-3">
 													<h3
 														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"

@@ -127,7 +127,7 @@
 			text: 'Total plan liabilities at beginning of year: 4000',
 			highlightWord: '4000',
 			x: [66, 77],
-			y: [93, 85]
+			y: [85, 93]
 		},
 		{
 			title: 'Plan Liabilities End',
@@ -268,11 +268,9 @@
 	});
 </script>
 
-<section
-	class="flex w-full flex-col items-center md:items-end justify-center gap-4 py-10"
->
+<section class="flex w-full flex-col items-center justify-center gap-4 py-10 md:items-end">
 	<!-- Image + green highlight -->
-	<div class=" rounded-xl bg-black p-3 py-6 shadow-lg md:p-6 md:py-8 w-full max-w-xs md:max-w-sm">
+	<div class=" w-full max-w-xs rounded-xl bg-black p-3 py-6 shadow-lg md:max-w-sm md:p-6 md:py-8">
 		<div
 			role="main"
 			class="relative inline-block w-full overflow-hidden rounded-lg shadow-md"
@@ -329,14 +327,14 @@
 	</div>
 	<!-- Result Box -->
 	<div
-		class="mt-1 flex w-full items-start justify-start gap-5 rounded-xl bg-neutral-950 p-6 px-8 shadow-lg md:mt-0 max-w-sm"
+		class="mt-1 flex w-full max-w-sm items-start justify-start gap-5 rounded-xl bg-neutral-950 p-6 px-8 shadow-lg md:mt-0"
 	>
 		<div class="min-w-0 {!displayedText ? 'animate-pulse' : ''}">
 			<h3 class="mb-2 text-left text-sm font-semibold md:text-lg">
 				{activeRegion ? activeRegion.title : 'Reading document…'}
 			</h3>
 
-			<p class="text-left truncate text-xs text-gray-300 md:py-2">
+			<p class="truncate text-left text-xs text-gray-300 md:py-2">
 				{#if displayedText && activeRegion}
 					{#each displayedText.split(' ') as word, i (i)}
 						<span

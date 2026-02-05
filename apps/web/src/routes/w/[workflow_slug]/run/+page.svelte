@@ -33,11 +33,62 @@
 	let error = $state<string | null>(null);
 	let feedbackProgress = $state(100);
 
+	// Supported file types for Google Document AI
+	const SUPPORTED_MIME_TYPES = new Set([
+		'application/pdf',
+		'image/jpeg',
+		'image/png',
+		'image/gif',
+		'image/tiff',
+		'image/bmp',
+		'image/webp'
+	]);
+
+	const SUPPORTED_EXTENSIONS = new Set([
+		'pdf',
+		'jpg',
+		'jpeg',
+		'png',
+		'gif',
+		'tif',
+		'tiff',
+		'bmp',
+		'webp'
+	]);
+
+	function isFileSupported(file: File): boolean {
+		// Check MIME type first
+		if (SUPPORTED_MIME_TYPES.has(file.type)) return true;
+
+		// Fallback to extension check (in case MIME type is missing)
+		const ext = file.name.split('.').pop()?.toLowerCase();
+		return ext ? SUPPORTED_EXTENSIONS.has(ext) : false;
+	}
+
 	// File Handling
 	function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
 		if (target.files) {
-			files = [...files, ...Array.from(target.files)];
+			const newFiles = Array.from(target.files);
+			const validFiles: File[] = [];
+			const invalidFiles: string[] = [];
+
+			for (const file of newFiles) {
+				if (isFileSupported(file)) {
+					validFiles.push(file);
+				} else {
+					invalidFiles.push(file.name);
+				}
+			}
+
+			if (invalidFiles.length > 0) {
+				const unsupportedNames = invalidFiles.join(', ');
+				toast.error(
+					`Unsupported file type: ${unsupportedNames}. Supported types: PDF, JPEG, PNG, GIF, TIFF, BMP, WebP`
+				);
+			}
+
+			files = [...files, ...validFiles];
 			target.value = '';
 		}
 	}
