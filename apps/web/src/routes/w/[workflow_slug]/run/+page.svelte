@@ -33,7 +33,7 @@
 	let error = $state<string | null>(null);
 	let feedbackProgress = $state(100);
 
-	// Supported file types for Google Document AI
+	// Supported file types for Google Document AI + ZIP for bulk uploads
 	const SUPPORTED_MIME_TYPES = new Set([
 		'application/pdf',
 		'image/jpeg',
@@ -41,7 +41,9 @@
 		'image/gif',
 		'image/tiff',
 		'image/bmp',
-		'image/webp'
+		'image/webp',
+		'application/zip',
+		'application/x-zip-compressed'
 	]);
 
 	const SUPPORTED_EXTENSIONS = new Set([
@@ -53,7 +55,8 @@
 		'tif',
 		'tiff',
 		'bmp',
-		'webp'
+		'webp',
+		'zip'
 	]);
 
 	function isFileSupported(file: File): boolean {
@@ -122,7 +125,13 @@
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));
-				throw new Error(errorData.message || 'Failed to run workflow');
+				// Check for error message in multiple possible locations
+				const errorMessage =
+					errorData.message ||
+					errorData.error?.message ||
+					errorData.error ||
+					`Request failed with status ${response.status}`;
+				throw new Error(errorMessage);
 			}
 
 			// Clear fields on success
