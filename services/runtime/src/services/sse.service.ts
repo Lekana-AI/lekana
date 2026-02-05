@@ -139,3 +139,13 @@ export function emitNodeSkipped(workflowId: string, nodeData: {
 }): void {
     sendWorkflowEvent(workflowId, 'node:skipped', nodeData);
 }
+
+/**
+ * Emit documents skipped event (for bulk upload with invalid files)
+ */
+export function emitDocumentsSkipped(workflowId: string, data: {
+    executionId: string;
+    skippedFiles: { filename: string; reason: string }[];
+}): void {
+    sendWorkflowEvent(workflowId, 'documents:skipped', data);
+}

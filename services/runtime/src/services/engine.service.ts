@@ -8,7 +8,7 @@ import { callService, callServiceWithUrl, ServiceRequest, ServiceResponse } from
 import { getActionDetails } from './action-lookup.service';
 import { incrementTokenUsage } from './usage.service';
 import { logWorkflow, logExecution, logNodeExecution, logSeparator, logDebug, isLogEnabled } from './logger';
-import { emitExecutionStarted, emitExecutionUpdated, emitNodeStarted, emitNodeCompleted, emitNodeFailed, emitNodeSkipped } from './sse.service';
+import { emitExecutionStarted, emitExecutionUpdated, emitNodeStarted, emitNodeCompleted, emitNodeFailed, emitNodeSkipped, emitDocumentsSkipped } from './sse.service';
 
 const prisma = new PrismaClient();
 
@@ -487,7 +487,7 @@ export async function executeWorkflowWithInput(
     workflowDefinition: any,
     userId: string,
     publishedWorkflowId: string,
-    inputData: { input?: any; documents?: any[] }
+    inputData: { input?: any; documents?: any[]; skippedFiles?: { filename: string; reason: string }[] }
 ): Promise<string> {
     // Log workflow configuration when LOG_NEED is enabled
     logSeparator('WORKFLOW EXECUTION START (API Key)');
@@ -496,7 +496,8 @@ export async function executeWorkflowWithInput(
         workflowName: workflowDefinition.name,
         userId,
         publishedWorkflowId,
-        documentCount: inputData.documents?.length || 0
+        documentCount: inputData.documents?.length || 0,
+        skippedCount: inputData.skippedFiles?.length || 0
     });
     logDebug('Input data received', inputData);
 
@@ -557,6 +558,14 @@ export async function executeWorkflowWithInput(
                 status: 'RUNNING',
                 startedAt
             });
+
+            // Emit SSE event: documents skipped (if any files were skipped during upload)
+            if (inputData.skippedFiles && inputData.skippedFiles.length > 0) {
+                emitDocumentsSkipped(workflowDefinition.id, {
+                    executionId: execution.id,
+                    skippedFiles: inputData.skippedFiles
+                });
+            }
 
             // Create node execution records
             for (let i = 0; i < orderedNodeIds.length; i++) {

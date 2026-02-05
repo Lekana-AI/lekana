@@ -531,15 +531,20 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                     const allowed = uploadConfig.allowedFileTypes;
                     const isPdf = file.mimetype === 'application/pdf';
                     const isImage = file.mimetype.startsWith('image/');
+                    const isZip = file.mimetype === 'application/zip' ||
+                        file.mimetype === 'application/x-zip-compressed' ||
+                        file.originalname.toLowerCase().endsWith('.zip');
 
+                    // Allow ZIPs if bulkUpload is enabled, otherwise check allowedFileTypes
                     const isAllowed =
+                        (uploadConfig.bulkUpload && isZip) ||
                         (allowed.includes('pdf') && isPdf) ||
                         (allowed.includes('images') && isImage);
 
                     if (!isAllowed) {
                         return res.status(400).json({
                             error: 'File type not allowed',
-                            message: `File "${file.originalname}" has type "${file.mimetype}" which is not allowed. Allowed types: ${allowed.join(', ')}`
+                            message: `File "${file.originalname}" has type "${file.mimetype}" which is not allowed. Allowed types: ${allowed.join(', ')}${uploadConfig.bulkUpload ? ', zip' : ''}`
                         });
                     }
                 }
@@ -595,6 +600,7 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
 
         // Upload files to Upload service and collect URLs
         const documents: { url: string; storagePath?: string; filename: string; mimeType: string }[] = [];
+        let skippedFiles: { filename: string; reason: string }[] = [];
 
         if (files && files.length > 0) {
             // Get Upload service URL from workflow-builder database
@@ -611,149 +617,169 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                 console.error(`[Run] Error looking up Upload action:`, err);
             }
 
-            for (const file of files) {
-                try {
-                    // Create form data for upload service using form-data package
-                    const FormData = require('form-data');
-                    const axios = require('axios');
-                    const { GoogleAuth } = require('google-auth-library');
+            try {
+                // Create form data for upload service using form-data package
+                const FormData = require('form-data');
+                const axios = require('axios');
+                const { GoogleAuth } = require('google-auth-library');
 
-                    const formData = new FormData();
+                const formData = new FormData();
+
+                // Add all files to the form data
+                for (const file of files) {
                     formData.append('files', file.buffer, {
                         filename: file.originalname,
                         contentType: file.mimetype
                     });
+                }
 
-                    // Get headers including form-data headers
-                    const headers: Record<string, string> = {
-                        ...formData.getHeaders()
-                    };
+                // Add upload config from workflow's upload node
+                formData.append('config', JSON.stringify(uploadConfig));
 
-                    // Add IAM token for Cloud Run URLs
-                    if (uploadServiceUrl.includes('.run.app')) {
-                        try {
-                            const auth = new GoogleAuth();
-                            const url = new URL(uploadServiceUrl);
-                            const audience = `${url.protocol}//${url.host}`;
-                            const client = await auth.getIdTokenClient(audience);
-                            const authHeaders = await client.getRequestHeaders(audience);
-                            if (authHeaders.Authorization) {
-                                headers['Authorization'] = authHeaders.Authorization;
-                            } else if (client.credentials?.id_token) {
-                                headers['Authorization'] = `Bearer ${client.credentials.id_token}`;
-                            }
-                        } catch (authError: any) {
-                            console.error(`[Run] Failed to get IAM token for upload:`, authError.message);
+                // Get headers including form-data headers
+                const headers: Record<string, string> = {
+                    ...formData.getHeaders()
+                };
+
+                // Add IAM token for Cloud Run URLs
+                if (uploadServiceUrl.includes('.run.app')) {
+                    try {
+                        const auth = new GoogleAuth();
+                        const url = new URL(uploadServiceUrl);
+                        const audience = `${url.protocol}//${url.host}`;
+                        const client = await auth.getIdTokenClient(audience);
+                        const authHeaders = await client.getRequestHeaders(audience);
+                        if (authHeaders.Authorization) {
+                            headers['Authorization'] = authHeaders.Authorization;
+                        } else if (client.credentials?.id_token) {
+                            headers['Authorization'] = `Bearer ${client.credentials.id_token}`;
                         }
+                    } catch (authError: any) {
+                        console.error(`[Run] Failed to get IAM token for upload:`, authError.message);
                     }
+                }
 
-                    // Use axios instead of fetch - it properly handles form-data streams
-                    const uploadResponse = await axios.post(
-                        `${uploadServiceUrl}/api/v1/upload`,
-                        formData,
-                        {
-                            headers,
-                            maxContentLength: Infinity,
-                            maxBodyLength: Infinity
-                        }
-                    );
-
-                    const uploadResult = uploadResponse.data as {
-                        success: boolean;
-                        documents?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }>;
-                        data?: { uploadedFiles?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }> };
-                    };
-
-                    // Get the first uploaded file from documents array or data.uploadedFiles
-                    const uploadedFile = uploadResult.documents?.[0] || uploadResult.data?.uploadedFiles?.[0];
-
-                    if (uploadResult.success && uploadedFile) {
-                        documents.push({
-                            url: uploadedFile.url,
-                            storagePath: uploadedFile.storagePath,
-                            filename: uploadedFile.filename || file.originalname,
-                            mimeType: uploadedFile.mimeType || file.mimetype
-                        });
-                    } else {
-                        console.error(`[Run] Upload succeeded but no file data returned for ${file.originalname}`);
+                // Use axios to send all files in one batch request
+                console.log(`[Run] Uploading ${files.length} file(s) to upload service`);
+                const uploadResponse = await axios.post(
+                    `${uploadServiceUrl}/api/v1/upload`,
+                    formData,
+                    {
+                        headers,
+                        maxContentLength: Infinity,
+                        maxBodyLength: Infinity
                     }
-                } catch (uploadError: any) {
-                    // Enhanced error logging with full context
-                    const errorDetails: any = {
-                        filename: file.originalname,
-                        fileSize: file.size,
-                        mimeType: file.mimetype,
-                        uploadServiceUrl,
-                        workflowId
-                    };
+                );
 
-                    // Capture HTTP error details (including 502 Bad Gateway)
-                    if (uploadError.response) {
-                        errorDetails.statusCode = uploadError.response.status;
-                        errorDetails.statusText = uploadError.response.statusText;
-                        errorDetails.responseData = uploadError.response.data;
-                    }
+                const uploadResult = uploadResponse.data as {
+                    success: boolean;
+                    uploadedFiles?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }>;
+                    skippedFiles?: Array<{ filename: string; reason: string }>;
+                    data?: { uploadedFiles?: Array<{ url: string; storagePath?: string; filename: string; mimeType: string }> };
+                };
 
-                    // Capture network/timeout errors
-                    if (uploadError.code) {
-                        errorDetails.errorCode = uploadError.code;
-                    }
-
-                    console.error(`[Run] File upload failed:`, errorDetails);
-
-                    // Return informative error to user
-                    const statusCode = uploadError.response?.status;
-                    let errorMessage = `Failed to upload file: ${file.originalname}`;
-
-                    if (statusCode === 502) {
-                        errorMessage += ' - Upload service is temporarily unavailable (502 Bad Gateway)';
-                    } else if (statusCode) {
-                        errorMessage += ` - Upload service returned ${statusCode} error`;
-                    } else if (uploadError.code === 'ECONNREFUSED') {
-                        errorMessage += ' - Upload service is not reachable';
-                    } else if (uploadError.code === 'ETIMEDOUT') {
-                        errorMessage += ' - Upload request timed out';
-                    }
-
-                    return res.status(500).json({
-                        error: 'Upload failed',
-                        message: errorMessage,
-                        details: {
-                            filename: file.originalname,
-                            statusCode: statusCode || null,
-                            errorCode: uploadError.code || null,
-                            serviceUrl: uploadServiceUrl
-                        }
+                // Collect uploaded files
+                const uploadedFiles = uploadResult.uploadedFiles || uploadResult.data?.uploadedFiles || [];
+                for (const uploadedFile of uploadedFiles) {
+                    documents.push({
+                        // Prefer signed URL if available, otherwise use public URL
+                        url: (uploadedFile as any).signedUrl || uploadedFile.url,
+                        storagePath: uploadedFile.storagePath,
+                        filename: uploadedFile.filename,
+                        mimeType: uploadedFile.mimeType
                     });
                 }
+
+                // Collect skipped files for monitor display
+                if (uploadResult.skippedFiles && uploadResult.skippedFiles.length > 0) {
+                    skippedFiles = uploadResult.skippedFiles;
+                    console.log(`[Run] ${skippedFiles.length} file(s) skipped: ${skippedFiles.map(s => s.filename).join(', ')}`);
+                }
+
+                console.log(`[Run] Upload complete: ${documents.length} uploaded, ${skippedFiles.length} skipped`);
+
+            } catch (uploadError: any) {
+                // Enhanced error logging with full context
+                const errorDetails: any = {
+                    fileCount: files.length,
+                    uploadServiceUrl,
+                    workflowId
+                };
+
+                // Capture HTTP error details (including 502 Bad Gateway)
+                if (uploadError.response) {
+                    errorDetails.statusCode = uploadError.response.status;
+                    errorDetails.statusText = uploadError.response.statusText;
+                    errorDetails.responseData = uploadError.response.data;
+                }
+
+                // Capture network/timeout errors
+                if (uploadError.code) {
+                    errorDetails.errorCode = uploadError.code;
+                }
+
+                console.error(`[Run] File upload failed:`, errorDetails);
+
+                // Return informative error to user
+                const statusCode = uploadError.response?.status;
+                let errorMessage = `Failed to upload files`;
+
+                if (statusCode === 400 && uploadError.response?.data?.message) {
+                    // Validation errors from upload service (ZIP not allowed, etc.)
+                    errorMessage = uploadError.response.data.message;
+                } else if (statusCode === 400 && uploadError.response?.data?.error?.message) {
+                    // Check for nested error object (e.g. UPLOAD_ERROR from upload-service)
+                    errorMessage = uploadError.response.data.error.message;
+                } else if (statusCode === 502) {
+                    errorMessage += ' - Upload service is temporarily unavailable (502 Bad Gateway)';
+                } else if (statusCode) {
+                    errorMessage += ` - Upload service returned ${statusCode} error`;
+                } else if (uploadError.code === 'ECONNREFUSED') {
+                    errorMessage += ' - Upload service is not reachable';
+                } else if (uploadError.code === 'ETIMEDOUT') {
+                    errorMessage += ' - Upload request timed out';
+                }
+
+                return res.status(statusCode === 400 ? 400 : 500).json({
+                    error: 'Upload failed',
+                    message: errorMessage,
+                    details: {
+                        statusCode: statusCode || null,
+                        errorCode: uploadError.code || null,
+                        //serviceUrl: uploadServiceUrl
+                    }
+                });
             }
         }
 
         // Get the workflow definition
         const workflowDefinition = apiKeyInfo.publishedWorkflow.definition;
 
-        // Execute the workflow with provided input and uploaded documents
+        // Execute the workflow with provided input, uploaded documents, and skipped files info
         const executionId = await executeWorkflowWithInput(
             workflowDefinition,
             apiKeyInfo.publishedWorkflow.userId,
             apiKeyInfo.publishedWorkflowId,
-            { input, documents }
+            { input, documents, skippedFiles }
         );
 
         // Log documents and update usage after successful execution start
         if (documents.length > 0) {
-            const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+            // Calculate total size from uploaded documents (files array may differ due to ZIP extraction)
+            let totalSize = 0;
 
             // Log each document to the database
-            for (let i = 0; i < documents.length; i++) {
-                const doc = documents[i];
-                const file = files[i];
-
+            for (const doc of documents) {
                 // Skip macOS hidden files
                 if (doc.filename.startsWith('._') || doc.filename.startsWith('.')) {
                     console.log(`[Run] Skipping hidden file: ${doc.filename}`);
                     continue;
                 }
+
+                // Find matching file for size (or estimate from document)
+                const matchingFile = files.find(f => f.originalname === doc.filename);
+                const fileSize = matchingFile?.size || 0;
+                totalSize += fileSize;
 
                 // Retry up to 3 times for transient DB errors
                 for (let attempt = 1; attempt <= 3; attempt++) {
@@ -762,7 +788,7 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                             data: {
                                 userId,
                                 filename: doc.filename,
-                                size: BigInt(file.size),
+                                size: BigInt(fileSize),
                                 mimeType: doc.mimeType,
                                 storagePath: doc.storagePath || doc.url,
                                 workflowExecutionId: executionId
@@ -780,7 +806,9 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
             }
 
             // Increment storage usage
-            await incrementStorageUsage(userId, totalSize);
+            if (totalSize > 0) {
+                await incrementStorageUsage(userId, totalSize);
+            }
         }
 
         res.status(202).json({
@@ -790,7 +818,9 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
             workflowId,
             workflowName: apiKeyInfo.publishedWorkflow.name,
             filesUploaded: documents.length,
+            filesSkipped: skippedFiles.length,
             documents: documents.map(d => ({ filename: d.filename, mimeType: d.mimeType })),
+            skippedFiles: skippedFiles.length > 0 ? skippedFiles : undefined,
             statusEndpoint: `/api/v1/executions/${executionId}`
         });
 

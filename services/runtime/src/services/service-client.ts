@@ -19,7 +19,7 @@ import { logService, logDebug, isLogEnabled } from './logger';
 // Default Configuration
 // ============================================
 
-const DEFAULT_TIMEOUT = 60000;  // 60 seconds
+const DEFAULT_TIMEOUT = 120000;  // 120 seconds (2 minutes)
 
 // GoogleAuth instance for generating ID tokens
 const auth = new GoogleAuth();
