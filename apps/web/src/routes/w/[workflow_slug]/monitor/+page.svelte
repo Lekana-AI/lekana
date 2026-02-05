@@ -32,6 +32,7 @@
 		Workflow
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
+	import JsonViewer from '$lib/components/JsonViewer.svelte';
 
 	let executions = $state<any[]>([]);
 	let loading = $state(true);
@@ -389,7 +390,7 @@
 </svelte:head>
 
 {#snippet CollapsibleJson(data: any)}
-	<details class="group">
+	<details class="group" open>
 		<summary
 			class="flex cursor-pointer list-none items-center gap-2 py-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300"
 		>
@@ -397,12 +398,7 @@
 			<span>{Object.keys(data || {}).length} fields</span>
 		</summary>
 		<div class="mt-2 overflow-hidden rounded-xl border border-white/5 bg-black/20 p-4">
-			<pre
-				class="dark-scroll overflow-x-auto font-mono text-xs leading-relaxed text-zinc-400">{JSON.stringify(
-					data,
-					null,
-					2
-				)}</pre>
+			<JsonViewer {data} isRoot={true} />
 		</div>
 	</details>
 {/snippet}
@@ -946,24 +942,26 @@
 													</h1>
 													<p class="mt-1 text-sm text-zinc-500">{step.stepName}</p>
 												</div>
-												<div class="flex flex-col items-end gap-1">
-													<span class="text-[10px] font-bold text-zinc-600 uppercase"
-														>Time Taken</span
-													>
-													<span class="font-mono text-2xl font-bold text-white">
-														{#if step.startedAt && step.completedAt}
-															{(
-																(new Date(step.completedAt).getTime() -
-																	new Date(step.startedAt).getTime()) /
-																1000
-															).toFixed(2)}s
-														{:else if step.status === 'RUNNING'}
-															...
-														{:else}
-															0.00s
-														{/if}
-													</span>
-												</div>
+												{#if new Date(step.completedAt).getTime() && new Date(step.startedAt).getTime()}
+													<div class="flex flex-col items-end gap-1">
+														<span class="text-[10px] font-bold text-zinc-600 uppercase"
+															>Time Taken</span
+														>
+														<span class="font-mono text-2xl font-bold text-white">
+															{#if step.startedAt && step.completedAt}
+																{(
+																	(new Date(step.completedAt).getTime() -
+																		new Date(step.startedAt).getTime()) /
+																	1000
+																).toFixed(2)}s
+															{:else if step.status === 'RUNNING'}
+																...
+															{:else}
+																0.00s
+															{/if}
+														</span>
+													</div>
+												{/if}
 											</div>
 
 											<div class="grid grid-cols-1 gap-4">
@@ -993,7 +991,7 @@
 											</div>
 
 											<!-- Errors section if any -->
-											{#if step.status !== 'COMPLETED' || step.error}
+											{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED') || step.error}
 												<div class="space-y-3">
 													<h3
 														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"
