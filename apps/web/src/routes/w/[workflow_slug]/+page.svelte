@@ -255,10 +255,6 @@
 				workflow.name = newName;
 				await reloadWorkflow();
 			}}
-			onOpenRoles={() => {
-				showSettingsModal = false;
-				showRoleModal = true;
-			}}
 		/>
 	{/if}
 
@@ -370,7 +366,7 @@
 					{/if}
 				</div>
 			</div>
-			<div class="flex h-full w-full justify-center gap-2">
+			<div class="flex min-h-0 w-full flex-1 justify-center gap-2">
 				<FlowCanvas
 					{nodes}
 					{edges}

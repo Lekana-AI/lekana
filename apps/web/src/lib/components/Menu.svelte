@@ -186,7 +186,7 @@
 	</div>
 	{#if !collapsed}
 		<!-- Main content -->
-		<div class="flex h-full w-full flex-col items-start justify-start gap-3">
+		<div class="flex min-h-0 w-full flex-1 flex-col items-start justify-start gap-3">
 			<!-- Tabs -->
 			<div class="inline-flex w-full items-center justify-start gap-2.5 px-3 pb-1">
 				<button
@@ -234,7 +234,7 @@
 				</div>
 
 				<div
-					class="dark-scroll mb-14 flex h-full w-full flex-col items-start justify-start gap-3 overflow-y-auto rounded-xl px-3"
+					class="dark-scroll mb-3 flex h-full w-full flex-col items-start justify-start gap-3 overflow-y-auto rounded-xl px-3"
 				>
 					{#if actionsLoading}
 						<div class="flex w-full flex-col gap-4">
@@ -272,10 +272,10 @@
 												}}
 												type="button"
 												disabled={item.isActive === false}
-												class="group inline-flex w-full items-center justify-start gap-4 rounded-lg border {item.isActive ===
-													false
-														? 'bg-white/1'
-														: 'bg-white/5'} px-3 py-2 pr-5 backdrop-blur transition disabled:cursor-not-allowed"
+												class="group inline-flex w-full items-center justify-start gap-4 rounded-lg {item.isActive ===
+												false
+													? 'bg-white/1'
+													: 'bg-white/5'} px-3 py-2 pr-5 backdrop-blur transition disabled:cursor-not-allowed"
 											>
 												<span
 													class="flex items-center justify-center rounded-md {item.isActive ===

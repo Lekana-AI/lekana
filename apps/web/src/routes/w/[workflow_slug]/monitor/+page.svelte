@@ -123,12 +123,12 @@
 		if (!workflow.id || eventSource) return;
 
 		const sseUrl = `/rime/workflows/${workflow.id}/events`;
-		console.log('[Monitor] Connecting to SSE:', sseUrl);
+		// console.log('[Monitor] Connecting to SSE:', sseUrl);
 
 		eventSource = new EventSource(sseUrl);
 
 		eventSource.onopen = () => {
-			console.log('[Monitor] SSE connected');
+			// console.log('[Monitor] SSE connected');
 		};
 
 		eventSource.onerror = (err) => {
@@ -145,38 +145,38 @@
 		// Handle execution events
 		eventSource.addEventListener('execution:started', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Execution started:', data);
+			// console.log('[Monitor] Execution started:', data);
 			handleExecutionStarted(data);
 		});
 
 		eventSource.addEventListener('execution:updated', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Execution updated:', data);
+			// console.log('[Monitor] Execution updated:', data);
 			handleExecutionUpdated(data);
 		});
 
 		// Handle node events
 		eventSource.addEventListener('node:started', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Node started:', data);
+			// console.log('[Monitor] Node started:', data);
 			handleNodeUpdate(data, 'RUNNING');
 		});
 
 		eventSource.addEventListener('node:completed', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Node completed:', data);
+			// console.log('[Monitor] Node completed:', data);
 			handleNodeUpdate(data, 'COMPLETED');
 		});
 
 		eventSource.addEventListener('node:failed', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Node failed:', data);
+			// console.log('[Monitor] Node failed:', data);
 			handleNodeUpdate(data, 'FAILED');
 		});
 
 		eventSource.addEventListener('node:skipped', (event) => {
 			const { data } = JSON.parse(event.data);
-			console.log('[Monitor] Node skipped:', data);
+			// console.log('[Monitor] Node skipped:', data);
 			handleNodeUpdate(data, 'SKIPPED');
 		});
 	}
@@ -438,8 +438,7 @@
 						</a>
 					{/if}
 					<a
-						href="/docs"
-						target="_blank"
+						href="/w/{workflow.id}"
 						class="flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-white transition-all duration-300 hover:bg-white/10 active:scale-95"
 					>
 						<CornerRightUp class="h-3.5 w-3.5" />

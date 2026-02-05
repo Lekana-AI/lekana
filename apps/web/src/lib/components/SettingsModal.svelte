@@ -83,7 +83,7 @@
 	class="absolute inset-0 z-100 flex min-h-screen w-screen items-center justify-center overflow-clip bg-black/40 px-4 py-10 backdrop-blur-sm"
 >
 	<div class="z-10 flex h-full flex-col justify-center gap-8">
-		<div class="w-full min-w-2xl rounded-2xl border border-white/5 bg-zinc-900 p-6 shadow-2xl">
+		<div class="w-full min-w-2xl rounded-2xl border border-white/5 bg-zinc-900 p-6 shadow-2xl pb-8">
 			{#if deletePrompt}
 				<!-- Delete Confirmation View -->
 				<div class="space-y-6 max-w-2xl">
@@ -276,14 +276,14 @@
 						</div>
 					</div>
 
-					<div class="flex justify-end pt-2">
+					<!-- <div class="flex justify-end pt-2">
 						<button
 							onclick={onClose}
 							class="rounded-lg border border-white/10 bg-white/5 px-6 py-2 text-xs font-semibold text-white transition-all hover:bg-white/10 active:scale-95"
 						>
 							Done
 						</button>
-					</div>
+					</div> -->
 				</div>
 			{/if}
 		</div>

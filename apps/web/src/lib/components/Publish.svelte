@@ -493,10 +493,24 @@
 
 							{#if isLoadingKeys}
 								<div class="space-y-2">
-									{#each Array(2) as _}
+									{#each Array(3) as _}
 										<div
-											class="h-14 w-full animate-pulse rounded-xl border border-white/5 bg-white/2"
-										></div>
+											class="w-full animate-pulse rounded-xl border border-white/5 bg-white/2 p-4"
+										>
+											<div class="flex items-center justify-between gap-4">
+												<div class="flex flex-col gap-2">
+													<div class="flex items-center gap-2">
+														<div class="h-4 w-4 rounded-full bg-white/10"></div>
+														<div class="h-4 w-24 rounded bg-white/10"></div>
+														<div class="h-4 w-12 rounded bg-white/5"></div>
+													</div>
+													<div class="h-3 w-32 rounded bg-white/5"></div>
+												</div>
+												<div class="flex gap-2">
+													<div class="h-8 w-8 rounded-lg bg-white/5"></div>
+												</div>
+											</div>
+										</div>
 									{/each}
 								</div>
 							{:else}
