@@ -178,6 +178,12 @@
 			console.log('[Monitor] Node skipped:', data);
 			handleNodeUpdate(data, 'SKIPPED');
 		});
+
+		eventSource.addEventListener('documents:skipped', (event) => {
+			const { data } = JSON.parse(event.data);
+			console.log('[Monitor] Documents skipped:', data);
+			handleDocumentsSkipped(data);
+		});
 	}
 
 	function handleExecutionStarted(data: any) {
@@ -204,6 +210,21 @@
 			}
 			return e;
 		});
+	}
+
+	function handleDocumentsSkipped(data: any) {
+		const { executionId, skippedFiles } = data;
+
+		// Ensure we have details for this execution
+		if (!executionDetails[executionId]) {
+			executionDetails[executionId] = { nodeExecutions: [], skippedFiles: [] };
+		}
+
+		// Store skipped files in execution details
+		executionDetails[executionId].skippedFiles = skippedFiles;
+
+		// Trigger reactivity
+		executionDetails = { ...executionDetails };
 	}
 
 	function handleNodeUpdate(data: any, status: string) {
@@ -709,6 +730,34 @@
 									</div>
 								{/if}
 							</div>
+
+							<!-- Skipped Files Warning Section -->
+							{#if details?.skippedFiles?.length > 0}
+								<div class="border-t border-amber-500/20 bg-amber-500/5 px-4 py-3">
+									<div class="mb-2 flex items-center gap-2">
+										<CircleAlert class="h-4 w-4 text-amber-400" />
+										<span class="text-xs font-bold text-amber-400 uppercase">
+											{details.skippedFiles.length} File(s) Skipped
+										</span>
+									</div>
+									<div class="flex flex-wrap gap-2">
+										{#each details.skippedFiles as skipped}
+											<div
+												class="flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-1.5"
+												title={skipped.reason}
+											>
+												<FileText class="h-3.5 w-3.5 text-amber-400" />
+												<span class="max-w-[120px] truncate text-xs text-amber-300"
+													>{skipped.filename}</span
+												>
+											</div>
+										{/each}
+									</div>
+									<p class="mt-2 text-[10px] text-amber-500/70">
+										Hover over files to see skip reason
+									</p>
+								</div>
+							{/if}
 
 							<!-- Details Split: Steps & Step Info -->
 							<div class="flex flex-1 overflow-hidden">
