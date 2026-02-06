@@ -105,6 +105,13 @@ function validateFile(file, config) {
   const allowedTypes =
     config.allowedFileTypes || DEFAULT_CONFIG.allowedFileTypes;
 
+  // Expand "images" keyword to specific extensions
+  let expandedAllowedTypes = [...allowedTypes];
+  if (expandedAllowedTypes.includes("images")) {
+    expandedAllowedTypes = expandedAllowedTypes.filter((t) => t !== "images");
+    expandedAllowedTypes.push("png", "jpg", "jpeg", "tiff");
+  }
+
   // Check file size
   if (file.size > maxSizeBytes) {
     return {
@@ -116,10 +123,10 @@ function validateFile(file, config) {
 
   // Check file extension
   const ext = path.extname(file.filename).toLowerCase().replace(".", "");
-  if (!allowedTypes.includes(ext)) {
+  if (!expandedAllowedTypes.includes(ext)) {
     return {
       valid: false,
-      error: `File type "${ext}" is not allowed. Allowed types: ${allowedTypes.join(
+      error: `File type "${ext}" is not allowed. Allowed types: ${expandedAllowedTypes.join(
         ", "
       )}`,
     };
