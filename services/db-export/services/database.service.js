@@ -59,15 +59,25 @@ async function testConnection(connectionUrl) {
     );
     const row = result.rows[0];
 
+    const currentUser = row.current_user;
+    let warning = null;
+
+    // Check for admin/superuser accounts
+    const adminKeywords = ['postgres', 'admin', 'owner', 'root'];
+    if (adminKeywords.some(keyword => currentUser.toLowerCase().includes(keyword))) {
+      warning = `You are connected as '${currentUser}'. It is recommended to use a service account with limited permissions.`;
+    }
+
     const connectionTime = Date.now() - startTime;
-    console.log(`[Database] Connection test successful in ${connectionTime}ms`);
+    console.log(`[Database] Connection test successfull in ${connectionTime}ms`);
 
     return {
       success: true,
-      message: "Connection successful",
+      message: "Connection successfull",
+      warning,
       details: {
         database: row.current_database,
-        user: row.current_user,
+        user: currentUser,
         version: row.version.split(" ").slice(0, 2).join(" "),
         connectionTimeMs: connectionTime,
       },
@@ -110,7 +120,7 @@ async function query(client, queryText, params = []) {
     console.log(
       "[Database] QUERY:",
       queryText.replace(/\s+/g, " ").substring(0, 200) +
-        (queryText.length > 200 ? "..." : "")
+      (queryText.length > 200 ? "..." : "")
     );
     if (params.length > 0) {
       const truncatedParams = params.map((p) => {

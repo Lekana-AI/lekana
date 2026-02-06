@@ -4,6 +4,8 @@
  */
 const schemaService = require("./schema.service");
 const databaseService = require("./database.service");
+const geminiService = require("./gemini.service");
+const { decrypt } = require("../utils/crypto.utils");
 
 /**
  * Extract records from input data using field mapping
@@ -308,10 +310,243 @@ async function insertRecords(client, tableName, records, onConflict) {
   return { inserted, skipped };
 }
 
+
+/**
+* Process the full export request (previously in server.js)
+* @param {Object} params
+* @param {string} params.executionId
+* @param {string} params.nodeId
+* @param {string} params.workflowId
+* @param {Object} params.input
+* @param {Object} params.config
+* @returns {Promise<Object>} Service response data
+*/
+async function processExportRequest({
+  executionId,
+  nodeId,
+  workflowId,
+  input = {},
+  config = {},
+}) {
+  const startTime = Date.now();
+  const {
+    databaseUrl: rawDatabaseUrl,
+    tableName,
+    mode = "auto", // "auto" or "existing"
+    fieldMapping = {},
+    includeMetadata = true,
+    unmappedFieldStrategy = "store_as_json", // "store_as_json", "ignore", "error"
+    onConflict = "skip", // "skip", "update", "error"
+    flattenFieldsMode = false, // Auto-extract .value from OCR fields
+    includeExtractionMetadata = false, // Store confidence/corrected data
+    useSmartMapping = true, // Use Gemini to map fields to existing columns
+  } = config;
+
+  const databaseUrl = decrypt(rawDatabaseUrl);
+
+  // Track Gemini token usage
+  let geminiTokensUsed = null;
+
+  console.log("=".repeat(60));
+  console.log(`[Export-Service] Processing request`);
+  console.log(`[Export-Service] Execution: ${executionId}`);
+  console.log(`[Export-Service] Node: ${nodeId}`);
+  console.log(`[Export-Service] Workflow: ${workflowId}`);
+  console.log("-".repeat(60));
+  console.log(`[Export-Service] CONFIG:`);
+  console.log(`  - tableName: ${tableName}`);
+  console.log(`  - mode: ${mode}`);
+  console.log(`  - includeMetadata: ${includeMetadata}`);
+  console.log(`  - unmappedFieldStrategy: ${unmappedFieldStrategy}`);
+  console.log(`  - onConflict: ${onConflict}`);
+  console.log(`  - flattenFieldsMode: ${flattenFieldsMode}`);
+
+  // Convert fieldMapping from array format to object format if needed
+  let normalizedFieldMapping = fieldMapping;
+  if (Array.isArray(fieldMapping)) {
+    normalizedFieldMapping = {};
+    for (const item of fieldMapping) {
+      if (!item || item === "" || typeof item !== "object") continue;
+
+      const columnName = item.key || item.columnName;
+      let fieldPath = item.value || item.fieldPath || columnName;
+
+      if (!columnName || !fieldPath) continue;
+
+      if (!flattenFieldsMode && !fieldPath.includes(".")) {
+        fieldPath = `fields.${fieldPath}.value`;
+      }
+
+      normalizedFieldMapping[columnName] = fieldPath;
+    }
+    console.log(`[Export-Service] Converted fieldMapping from array to object`);
+  }
+
+  console.log(`  - includeExtractionMetadata: ${includeExtractionMetadata}`);
+  console.log(
+    `  - databaseUrl: ${databaseUrl ? databaseUrl.replace(/:[^:@]+@/, ":****@") : "NOT SET"
+    }`
+  );
+  console.log("-".repeat(60));
+
+  // Validate required config
+  if (!databaseUrl) throw new Error("databaseUrl is required in config");
+  if (!tableName) throw new Error("tableName is required in config");
+
+  // Get data from input
+  const inputData = input.data || input;
+  console.log(`[Export-Service] INPUT DATA sample available`);
+
+  if (!inputData || Object.keys(inputData).length === 0) {
+    throw new Error("No data provided in input");
+  }
+
+  // Connect to user's database
+  const client = await databaseService.connect(databaseUrl);
+
+  try {
+    // Extract records from input data
+    const { records, inferredSchema } = extractRecords(
+      inputData,
+      normalizedFieldMapping,
+      unmappedFieldStrategy,
+      { flattenFieldsMode, includeExtractionMetadata }
+    );
+
+    console.log(`[Export-Service] EXTRACTED ${records.length} records`);
+    console.log(
+      `[Export-Service] INFERRED SCHEMA: ${JSON.stringify(inferredSchema)}`
+    );
+
+    // Smart field mapping
+    let mappedRecords = records;
+    let fieldMappingApplied = null;
+    let finalSchema = inferredSchema;
+
+    // Check if table exists first
+    const tableAlreadyExists = await schemaService.tableExists(
+      client,
+      tableName
+    );
+
+    if (useSmartMapping && records.length > 0 && tableAlreadyExists) {
+      const existingColumns = await schemaService.getExistingColumns(
+        client,
+        tableName
+      );
+      const existingColumnsArray = [...existingColumns];
+
+      if (existingColumnsArray.length > 0) {
+        const incomingFields = Object.keys(records[0]).filter(
+          (f) => !f.startsWith("_")
+        );
+
+        console.log(
+          `[Export-Service] Smart mapping: incoming fields = ${incomingFields.join(", ")}`
+        );
+        console.log(
+          `[Export-Service] Smart mapping: existing columns = ${existingColumnsArray.join(", ")}`
+        );
+
+        // Use Gemini to map fields to columns
+        const mappingResult = await geminiService.mapFieldsToColumns(
+          incomingFields,
+          existingColumnsArray
+        );
+
+        if (mappingResult.tokensUsed) {
+          geminiTokensUsed = mappingResult.tokensUsed;
+          console.log(
+            `[Export-Service] Gemini tokens used: ${geminiTokensUsed.totalTokens}`
+          );
+        }
+
+        if (Object.keys(mappingResult.mapping).length > 0) {
+          mappedRecords = geminiService.applyFieldMapping(
+            records,
+            mappingResult.mapping
+          );
+          fieldMappingApplied = mappingResult.mapping;
+          console.log(`[Export-Service] Applied smart field mapping`);
+
+          finalSchema = schemaService.inferSchemaFromRecord(mappedRecords[0]);
+          console.log(
+            `[Export-Service] MAPPED SCHEMA: ${JSON.stringify(finalSchema)}`
+          );
+        }
+      }
+    }
+
+    // Handle table creation/validation
+    if (mode === "auto") {
+      await schemaService.ensureTable(
+        client,
+        tableName,
+        finalSchema,
+        includeMetadata
+      );
+    } else {
+      if (!tableAlreadyExists) {
+        throw new Error(
+          `Table "${tableName}" does not exist. Use mode="auto" to create it.`
+        );
+      }
+    }
+
+    // Add metadata
+    const enrichedRecords = mappedRecords.map((record) => {
+      if (includeMetadata) {
+        return {
+          ...record,
+          _execution_id: executionId,
+          _workflow_id: workflowId,
+          _created_at: new Date().toISOString(),
+        };
+      }
+      return record;
+    });
+
+    // Insert records
+    const insertResult = await insertRecords(
+      client,
+      tableName,
+      enrichedRecords,
+      onConflict
+    );
+
+    const processingTime = Date.now() - startTime;
+    console.log(
+      `[Export-Service] Completed in ${processingTime}ms - ${insertResult.inserted} rows inserted`
+    );
+
+    return {
+      success: true,
+      data: {
+        tableName,
+        recordsProcessed: records.length,
+        recordsInserted: insertResult.inserted,
+        recordsSkipped: insertResult.skipped,
+        schema: inferredSchema,
+        fieldMappingApplied,
+      },
+      metadata: {
+        processingTime,
+        mode,
+        databaseConnected: true,
+        tokensUsed: geminiTokensUsed ? geminiTokensUsed.totalTokens : 0,
+        smartMappingUsed: !!fieldMappingApplied,
+      },
+    };
+  } finally {
+    await databaseService.disconnect(client);
+  }
+}
+
 module.exports = {
   extractRecords,
   extractSingleRecord,
   getValueByPath,
   insertRecords,
   flattenOcrFields,
+  processExportRequest,
 };
