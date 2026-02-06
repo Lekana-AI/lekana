@@ -39,12 +39,24 @@ export const testConnection = async (req: Request, res: Response) => {
         );
         const row = result.rows[0];
 
+
+        const currentUser = row.current_user;
+        let warning = null;
+
+        // Check for admin/superuser accounts
+        const adminKeywords = ['postgres', 'admin', 'owner', 'root'];
+        if (adminKeywords.some(keyword => currentUser.toLowerCase().includes(keyword))) {
+            warning = `You are connected as '${currentUser}'. It is recommended to use a service account with limited permissions.`;
+        }
+
+
         const connectionTime = Date.now() - startTime;
-        console.log(`[Database] Connection test successful in ${connectionTime}ms`);
+        console.log(`[Database] Connection test successfull in ${connectionTime}ms`);
 
         res.json({
             success: true,
-            message: 'Connection successful',
+            message: 'Connection successfull',
+            warning,
             details: {
                 database: row.current_database,
                 user: row.current_user,
