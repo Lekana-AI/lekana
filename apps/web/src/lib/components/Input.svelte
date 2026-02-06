@@ -23,7 +23,6 @@
 		extractedFields,
 		upstreamOutputVariables = []
 	} = $props();
-
 	// Test database connection
 	async function testConnection() {
 		if (!fieldData.value) return;
@@ -68,9 +67,9 @@
 
 			let updated = false;
 			const newMapping = [...currentMapping];
-
 			extractedFields.forEach((field) => {
 				const normalizedField = field ? field.toString().trim().toLowerCase() : '';
+
 				if (normalizedField && !currentKeys.has(normalizedField)) {
 					newMapping.push({ key: field, value: '' });
 					updated = true;
@@ -250,10 +249,9 @@
 		</div>
 	</div>
 {:else if fieldData.type === 'dbUrl'}
-	{@const isEditMode = extractedFields !== undefined}
+	{@const isEditMode = fieldData.originalValue !== undefined}
 	{@const hasExistingUrl = isEditMode && fieldData.value && fieldData.value.length > 0}
 	{@const isModified = isEditMode && fieldData.value !== fieldData.originalValue}
-
 	<div class="flex flex-col gap-2 text-sm">
 		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
@@ -295,7 +293,7 @@
 						fieldData.testConnectionStatus = false;
 					}}
 					class="flex w-fit items-center gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-50"
-						>
+				>
 					Edit URL
 				</button>
 			</div>
@@ -348,7 +346,7 @@
 					}}
 					class="w-fit text-xs text-zinc-400 transition-colors hover:text-zinc-200"
 				>
-					Cancel Edit
+					Cancel
 				</button>
 			{/if}
 		{/if}

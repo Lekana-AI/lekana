@@ -45,7 +45,7 @@
 				return {
 					...field,
 					value,
-					originalValue: value, // Store original value for comparison in edit mode
+					originalValue: node?.config?.[field.name], // Only set if it comes from the node config
 					testConnectionStatus: field.testConnection
 						? (node?.config?.testConnection ?? false)
 						: false
@@ -124,7 +124,7 @@
 			if (!isVisible(field) || !field.required) return true;
 
 			// Special handling for dbUrl in edit mode
-			if (field.type === 'dbUrl' && extractedFields !== undefined) {
+			if (field.type === 'dbUrl' && field.originalValue !== undefined) {
 				// In edit mode, dbUrl is optional unless modified
 				const isModified = field.value !== field.originalValue;
 				if (!isModified) return true; // Skip validation if not modified
@@ -164,7 +164,7 @@
 				if (!isVisible(field)) return acc; // Don't submit hidden fields
 
 				// Skip dbUrl in edit mode if not modified
-				if (field.type === 'dbUrl' && extractedFields !== undefined) {
+				if (field.type === 'dbUrl' && field.originalValue !== undefined) {
 					const isModified = field.value !== field.originalValue;
 					if (!isModified) return acc; // Don't include unmodified dbUrl
 				}
@@ -297,7 +297,7 @@
 						</div>
 					</div>
 
-					<div class="space-y-6 py-2 animate-pulse">
+					<div class="animate-pulse space-y-6 py-2">
 						{#each Array(3) as _}
 							<div class="space-y-2">
 								<div class="h-3 w-20 rounded bg-white/5"></div>
@@ -306,7 +306,7 @@
 						{/each}
 					</div>
 
-					<div class="mt-7 flex items-center justify-end pb-6 animate-pulse">
+					<div class="mt-7 flex animate-pulse items-center justify-end pb-6">
 						<div class="h-9 w-40 rounded-md bg-white/5"></div>
 					</div>
 				{/if}
