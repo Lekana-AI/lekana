@@ -191,6 +191,7 @@ export function formatValidationErrors(errors: ValidationError[]): string {
 // ======================================
 
 import { Client } from 'pg';
+import { decrypt } from '../utils/crypto.utils';
 
 export interface ConnectionTestResult {
     nodeId: string;
@@ -205,7 +206,7 @@ export interface ConnectionTestResult {
  */
 async function testDatabaseConnection(databaseUrl: string): Promise<{ success: boolean; message: string; database?: string }> {
     let client: Client | null = null;
-
+    console.log("Database URL: ", databaseUrl);
     try {
         client = new Client({
             connectionString: databaseUrl,
@@ -255,7 +256,8 @@ export async function validateDatabaseConnections(nodes: WorkflowNode[]): Promis
             const nodeName = node.config?.stepName || node.action?.name || 'Unknown';
             console.log(`[Validation] Testing database connection for node: ${nodeName}`);
 
-            const testResult = await testDatabaseConnection(databaseUrl);
+            const decryptedUrl = decrypt(databaseUrl);
+            const testResult = await testDatabaseConnection(decryptedUrl);
 
             results.push({
                 nodeId: node.id,
