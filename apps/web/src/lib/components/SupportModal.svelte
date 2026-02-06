@@ -131,16 +131,34 @@
 
 					{#if activeTab === 'video'}
 						<div class="px-4 pb-4" transition:slide>
-							<div class="aspect-video w-full overflow-hidden rounded-lg bg-black">
-								<iframe
-									width="100%"
-									height="100%"
-									src={PUBLIC_YOUTUBE_TUTORIAL_URL}
-									title="YouTube video player"
-									frameborder="0"
-									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-									allowfullscreen
-								></iframe>
+							<div
+								class="flex aspect-video w-full flex-col items-center justify-center overflow-hidden rounded-lg bg-black text-center"
+							>
+								{#if PUBLIC_YOUTUBE_TUTORIAL_URL && PUBLIC_YOUTUBE_TUTORIAL_URL.startsWith('http')}
+									<iframe
+										width="100%"
+										height="100%"
+										src={PUBLIC_YOUTUBE_TUTORIAL_URL}
+										title="YouTube video player"
+										frameborder="0"
+										allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+										allowfullscreen
+									></iframe>
+								{:else}
+									<div class="flex flex-col items-center gap-3">
+										<div
+											class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 text-zinc-500"
+										>
+											<Play class="h-6 w-6" />
+										</div>
+										<div>
+											<p class="text-sm font-semibold text-white">Video Tutorial Coming Soon</p>
+											<p class="mt-1 text-xs text-zinc-500">
+												We're still preparing the video guide for you.
+											</p>
+										</div>
+									</div>
+								{/if}
 							</div>
 						</div>
 					{/if}

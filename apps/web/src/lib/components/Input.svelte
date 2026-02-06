@@ -306,7 +306,7 @@
 					bind:value={fieldData.value}
 					type={showPassword ? 'text' : 'password'}
 					class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 pr-10 text-white disabled:opacity-70"
-					placeholder={isEditMode ? 'Enter new database URL (optional)' : fieldData.placeholder}
+					placeholder={fieldData.placeholder}
 					required={fieldData.required && !isEditMode}
 					disabled={fieldData.testConnectionStatus}
 					oninput={(e) => {
