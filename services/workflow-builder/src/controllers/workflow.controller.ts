@@ -90,6 +90,17 @@ export const getWorkflow = async (req: Request, res: Response) => {
         // Extract field names
         const extractedFields = workflowFields.map(f => f.fieldName);
 
+        // Mask sensitive fields in node configs - REMOVED for getWorkflow to support Runtime decryption
+        /*
+        if (workflow.nodes) {
+            workflow.nodes.forEach(node => {
+                if (node.config && (node.config as any).databaseUrl) {
+                    (node.config as any).databaseUrl = '[ENCRYPTED]';
+                }
+            });
+        }
+        */
+
         res.json({
             ...workflow,
             extractedFields
@@ -203,6 +214,15 @@ export const updateWorkflow = async (req: Request, res: Response) => {
                 },
             },
         });
+
+        // Mask sensitive fields in node configs
+        if (updatedWorkflow.nodes) {
+            updatedWorkflow.nodes.forEach(node => {
+                if (node.config && (node.config as any).databaseUrl) {
+                    (node.config as any).databaseUrl = '[ENCRYPTED]';
+                }
+            });
+        }
 
         res.json(updatedWorkflow);
     } catch (error) {
@@ -359,6 +379,15 @@ export const duplicateWorkflow = async (req: Request, res: Response) => {
                 edges: true,
             }
         });
+
+        // Mask sensitive fields in node configs
+        if (result && result.nodes) {
+            result.nodes.forEach(node => {
+                if (node.config && (node.config as any).databaseUrl) {
+                    (node.config as any).databaseUrl = '[ENCRYPTED]';
+                }
+            });
+        }
 
         res.status(201).json(result);
     } catch (error) {

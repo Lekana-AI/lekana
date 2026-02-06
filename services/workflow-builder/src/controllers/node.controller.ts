@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 import { validateConfigKeys, mergeConfig } from '../utils/config.utils';
 import { touchWorkflow } from '../utils/workflow.utils';
+import { encrypt, decrypt } from '../utils/crypto.utils';
 
 export const addNode = async (req: Request, res: Response) => {
     try {
@@ -37,6 +38,11 @@ export const addNode = async (req: Request, res: Response) => {
 
         // Merge action defaults with node config (node values override defaults)
         const mergedConfig = mergeConfig(actionConfigSchema, config);
+
+        // Encrypt sensitive fields
+        if (mergedConfig.databaseUrl) {
+            mergedConfig.databaseUrl = encrypt(mergedConfig.databaseUrl);
+        }
 
         const node = await prisma.workflowNode.create({
             data: {
@@ -89,6 +95,13 @@ export const getAllNodes = async (req: Request, res: Response) => {
             }
         });
 
+        // Mask sensitive fields for UI
+        nodes.forEach(node => {
+            if (node.config && (node.config as any).databaseUrl) {
+                (node.config as any).databaseUrl = '[ENCRYPTED]';
+            }
+        });
+
         res.json(nodes);
     } catch (error) {
         console.error('Error fetching nodes:', error);
@@ -126,6 +139,11 @@ export const getNode = async (req: Request, res: Response) => {
 
         if (!node) {
             return res.status(404).json({ error: 'Node not found' });
+        }
+
+        // Mask sensitive fields for UI
+        if (node.config && (node.config as any).databaseUrl) {
+            (node.config as any).databaseUrl = '[ENCRYPTED]';
         }
 
         res.json(node);
@@ -177,6 +195,11 @@ export const updateNode = async (req: Request, res: Response) => {
             ? mergeConfig(existingNode.config as Record<string, any>, config)
             : undefined;
 
+        // Encrypt sensitive fields
+        if (updatedConfig && updatedConfig.databaseUrl) {
+            updatedConfig.databaseUrl = encrypt(updatedConfig.databaseUrl);
+        }
+
         const updatedNode = await prisma.workflowNode.update({
             where: { id: nodeId },
             data: {
@@ -199,6 +222,11 @@ export const updateNode = async (req: Request, res: Response) => {
 
         // Touch workflow to update updatedAt
         await touchWorkflow(workflowId);
+
+        // Mask sensitive fields for UI response
+        if (updatedNode.config && (updatedNode.config as any).databaseUrl) {
+            (updatedNode.config as any).databaseUrl = '[ENCRYPTED]';
+        }
 
         res.json(updatedNode);
     } catch (error) {

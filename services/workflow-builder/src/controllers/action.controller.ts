@@ -3,11 +3,12 @@ import prisma from '../lib/prisma';
 import { generateUiSchema } from '../utils/config.utils';
 
 /**
- * Transform action to include computed uiSchema
+ * Transform action to include computed uiSchema and mask sensitive fields
  */
 function transformAction(action: any) {
+    const { serviceUrl, ...actionWithoutServiceUrl } = action;
     return {
-        ...action,
+        ...actionWithoutServiceUrl,
         uiSchema: generateUiSchema(
             action.configSchema as Record<string, any>,
             action.configMeta as Record<string, any> | undefined
