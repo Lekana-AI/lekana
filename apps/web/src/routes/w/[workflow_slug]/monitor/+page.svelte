@@ -780,12 +780,12 @@
 											{#each selectedExecutionSteps as step, index}
 												<button
 													onclick={() => selectStep(step.id)}
-													class="group flex w-full items-start gap-3 rounded-xl border p-3 transition-all {selectedStepId ===
+													class="group flex min-h-12 w-full items-center justify-center gap-3 rounded-xl border p-3 transition-all {selectedStepId ===
 													step.id
 														? 'border-white/10 bg-white/5 shadow-lg'
 														: 'border-transparent hover:border-white/5 hover:bg-white/2'}"
 												>
-													<div class="flex flex-col items-center">
+													<div class="flex flex-col items-center justify-center">
 														<div
 															class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-black/40 text-xs font-bold transition-colors {step.status ===
 																'COMPLETED' &&
@@ -810,43 +810,24 @@
 														>
 															{(step.executionOrder ?? index) + 1}
 														</div>
-														{#if (step.executionOrder ?? index) < selectedExecutionSteps.length - 1}
-															<div class="my-1 w-px flex-1 bg-white/10"></div>
-														{/if}
 													</div>
-													<div class="min-w-0 flex-1 text-left">
-														<div class="flex items-center justify-between gap-2">
-															<span
-																class="truncate text-xs font-bold {selectedStepId === step.id
-																	? 'text-white'
-																	: 'text-zinc-400 group-hover:text-zinc-200'}"
-															>
-																{step.actionName}
-															</span>
-															{#if (step.status === 'COMPLETED' && (step.success === false || step.error || step.output?.success === false || step.output?.error)) || step.status === 'FAILED'}
-																<CircleAlert class="h-3 w-3 text-red-500" />
-															{:else if step.status === 'SKIPPED' || step.status === 'PENDING'}
-																<Clock class="h-3 w-3 text-zinc-600" />
-															{:else if step.status === 'RUNNING'}
-																<RefreshCcw class="h-3 w-3 animate-spin text-blue-400" />
-															{/if}
-														</div>
-														<div class="mt-0.5 flex items-center gap-2">
+													<div
+														class="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+													>
+														<span
+															class="truncate text-xs font-bold {selectedStepId === step.id
+																? 'text-white'
+																: 'text-zinc-400 group-hover:text-zinc-200'}"
+														>
+															{step.actionName}
+														</span>
+														{#if (step.status === 'COMPLETED' && (step.success === false || step.error || step.output?.success === false || step.output?.error)) || step.status === 'FAILED'}
+															<CircleAlert class="h-3 w-3 text-red-500" />
+														{:else if step.status === 'SKIPPED' || step.status === 'PENDING'}
 															<Clock class="h-3 w-3 text-zinc-600" />
-															<span class="text-xs text-zinc-600">
-																{#if step.startedAt && step.completedAt}
-																	{(
-																		(new Date(step.completedAt).getTime() -
-																			new Date(step.startedAt).getTime()) /
-																		1000
-																	).toFixed(2)}s
-																{:else if step.status === 'RUNNING'}
-																	...
-																{:else}
-																	0.00s
-																{/if}
-															</span>
-														</div>
+														{:else if step.status === 'RUNNING'}
+															<RefreshCcw class="h-3 w-3 animate-spin text-blue-400" />
+														{/if}
 													</div>
 												</button>
 											{/each}
@@ -990,7 +971,7 @@
 											</div>
 
 											<!-- Errors section if any -->
-											{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED') || step.error}
+											{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED' && step.status !== 'RUNNING') || step.error}
 												<div class="space-y-3">
 													<h3
 														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"
