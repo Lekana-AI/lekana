@@ -9,7 +9,8 @@
 		CircleCheck,
 		CircleX,
 		Lock,
-		LockOpen
+		LockOpen,
+		CircleAlert
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
 
@@ -249,48 +250,110 @@
 		</div>
 	</div>
 {:else if fieldData.type === 'dbUrl'}
+	{@const isEditMode = extractedFields !== undefined}
+	{@const hasExistingUrl = isEditMode && fieldData.value && fieldData.value.length > 0}
+	{@const isModified = isEditMode && fieldData.value !== fieldData.originalValue}
+
 	<div class="flex flex-col gap-2 text-sm">
 		<label for={fieldData.name} class="flex items-center gap-1.5 text-zinc-200">
 			{fieldData.label}
-			{@render infoTooltip()}
+			{#if fieldData.required && (!isEditMode || isModified)}
+				<span class="text-green-500">*</span>
+			{/if}
+			{#if fieldData.info}
+				<div class="group relative inline-block">
+					<Info
+						size="14"
+						class="inline-block cursor-pointer text-zinc-500 transition-colors hover:text-zinc-300"
+					/>
+					<div
+						class="pointer-events-none absolute bottom-full left-1/2 mb-2 w-48 -translate-x-1/2 rounded-md bg-zinc-800 p-2 text-xs text-zinc-200 opacity-0 shadow-xl transition-opacity group-hover:opacity-100"
+					>
+						{fieldData.info}
+						<div
+							class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-zinc-800"
+						></div>
+					</div>
+				</div>
+			{/if}
 		</label>
-		<div class="relative">
-			<input
-				id={fieldData.name}
-				bind:value={fieldData.value}
-				type={showPassword ? 'text' : 'password'}
-				class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 pr-10 text-white disabled:opacity-70"
-				placeholder={fieldData.placeholder}
-				required={fieldData.required}
-				disabled={fieldData.testConnectionStatus}
-				oninput={(e) => {
-					connectionResult = null;
-					fieldData.testConnectionStatus = false;
-					onInput?.(e, fieldData);
-				}}
-			/>
-			<button
-				type="button"
-				class="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
-				onclick={() => {
-					if (fieldData.testConnectionStatus) {
+
+		{#if hasExistingUrl && !isModified}
+			<div class="flex flex-col gap-2">
+				<div
+					class="flex items-center gap-2 rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 text-zinc-400"
+				>
+					<Lock size="16" class="text-green-500" />
+					<span class="text-sm">Database URL configured</span>
+				</div>
+				<button
+					type="button"
+					onclick={() => {
+						// Clear the value to allow entering a new URL
+						fieldData.value = '';
 						connectionResult = null;
 						fieldData.testConnectionStatus = false;
-					} else {
-						showPassword = !showPassword;
-					}
-				}}
-			>
-				{#if fieldData.testConnectionStatus}
-					<Lock size="18" class="text-green-500" />
-				{:else if showPassword}
-					<EyeOff size="18" />
-				{:else}
-					<Eye size="18" />
-				{/if}
-			</button>
-		</div>
-		{#if fieldData.testConnection}
+					}}
+					class="flex w-fit items-center gap-2 rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-200 transition-colors hover:bg-zinc-700 disabled:opacity-50"
+						>
+					Edit URL
+				</button>
+			</div>
+		{:else}
+			<div class="relative">
+				<input
+					id={fieldData.name}
+					bind:value={fieldData.value}
+					type={showPassword ? 'text' : 'password'}
+					class="w-full rounded-lg border border-zinc-700 bg-black/50 px-3.5 py-2.5 pr-10 text-white disabled:opacity-70"
+					placeholder={isEditMode ? 'Enter new database URL (optional)' : fieldData.placeholder}
+					required={fieldData.required && !isEditMode}
+					disabled={fieldData.testConnectionStatus}
+					oninput={(e) => {
+						connectionResult = null;
+						fieldData.testConnectionStatus = false;
+						onInput?.(e, fieldData);
+					}}
+				/>
+				<button
+					type="button"
+					class="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+					onclick={() => {
+						if (fieldData.testConnectionStatus) {
+							connectionResult = null;
+							fieldData.testConnectionStatus = false;
+						} else {
+							showPassword = !showPassword;
+						}
+					}}
+				>
+					{#if fieldData.testConnectionStatus}
+						<Lock size="18" class="text-green-500" />
+					{:else if showPassword}
+						<EyeOff size="18" />
+					{:else}
+						<Eye size="18" />
+					{/if}
+				</button>
+			</div>
+
+			{#if isEditMode && hasExistingUrl}
+				<button
+					type="button"
+					onclick={() => {
+						// Restore the original encrypted value
+						fieldData.value = fieldData.originalValue;
+						connectionResult = null;
+						fieldData.testConnectionStatus = false;
+					}}
+					class="w-fit text-xs text-zinc-400 transition-colors hover:text-zinc-200"
+				>
+					Cancel Edit
+				</button>
+			{/if}
+		{/if}
+
+		{#if fieldData.testConnection && (!hasExistingUrl || isModified)}
 			<div class="flex w-fit flex-col gap-2">
 				<div class="flex items-center gap-3">
 					<button
@@ -319,6 +382,12 @@
 							<CircleCheck size="14" />
 							Connected: {connectionResult.details?.database}
 						</span>
+						{#if connectionResult.warning}
+							<span class="flex items-center gap-1 text-xs text-yellow-400">
+								<CircleAlert size="14" />
+								Warning: {connectionResult.warning}
+							</span>
+						{/if}
 					{:else}
 						<span class="flex items-center gap-1 text-xs text-red-400">
 							<CircleX size="14" />

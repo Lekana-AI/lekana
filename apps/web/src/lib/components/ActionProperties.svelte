@@ -40,11 +40,17 @@
 
 			// build the fields array that the <Input> loop expects
 			// dynamically match node.config with step.uiSchema.fields
-			fields = step.uiSchema.fields.map((field) => ({
-				...field,
-				value: node?.config?.[field.name] ?? field.value ?? field.defaultValue,
-				testConnectionStatus: field.testConnection ? (node?.config?.testConnection ?? false) : false
-			}));
+			fields = step.uiSchema.fields.map((field) => {
+				const value = node?.config?.[field.name] ?? field.value ?? field.defaultValue;
+				return {
+					...field,
+					value,
+					originalValue: value, // Store original value for comparison in edit mode
+					testConnectionStatus: field.testConnection
+						? (node?.config?.testConnection ?? false)
+						: false
+				};
+			});
 		} catch (error) {
 			console.error('Error loading fields:', error);
 			toast.error('Something went wrong. Please try again in a moment.');
@@ -117,6 +123,17 @@
 		fields.every((field) => {
 			if (!isVisible(field) || !field.required) return true;
 
+			// Special handling for dbUrl in edit mode
+			if (field.type === 'dbUrl' && extractedFields !== undefined) {
+				// In edit mode, dbUrl is optional unless modified
+				const isModified = field.value !== field.originalValue;
+				if (!isModified) return true; // Skip validation if not modified
+
+				// If modified, validate the new value
+				if (field.testConnection && !field.testConnectionStatus) return false;
+				return field.value !== undefined && field.value !== null && field.value !== '';
+			}
+
 			// If field requires connection test, it must be successful
 			if (field.testConnection && !field.testConnectionStatus) return false;
 
@@ -130,12 +147,28 @@
 		})
 	);
 
+	// Check if any fields have been modified (for edit mode)
+	let hasChanges = $derived(
+		!node ||
+			fields.some((field) => {
+				if (!isVisible(field)) return false;
+				return JSON.stringify(field.value) !== JSON.stringify(field.originalValue);
+			})
+	);
+
 	async function formSubmit() {
 		if (!isValid) return;
 		try {
 			loading = true;
 			const config = fields.reduce((acc, field) => {
 				if (!isVisible(field)) return acc; // Don't submit hidden fields
+
+				// Skip dbUrl in edit mode if not modified
+				if (field.type === 'dbUrl' && extractedFields !== undefined) {
+					const isModified = field.value !== field.originalValue;
+					if (!isModified) return acc; // Don't include unmodified dbUrl
+				}
+
 				acc[field.name] = field.value;
 				if (field.testConnection && !field.testConnectionStatus) {
 					return acc;
@@ -238,7 +271,7 @@
 						<button
 							type="button"
 							onclick={formSubmit}
-							disabled={!isValid || loading}
+							disabled={!isValid || !hasChanges || loading}
 							class="flex items-center gap-2 rounded-md bg-green-700 px-4 py-2 text-xs font-medium text-white transition-colors duration-300 hover:bg-green-800 disabled:bg-zinc-800 disabled:opacity-50"
 						>
 							{node ? 'Update Action' : 'Add Action to Workflow'}
@@ -264,7 +297,7 @@
 						</div>
 					</div>
 
-					<div class="space-y-6 py-2">
+					<div class="space-y-6 py-2 animate-pulse">
 						{#each Array(3) as _}
 							<div class="space-y-2">
 								<div class="h-3 w-20 rounded bg-white/5"></div>
@@ -273,7 +306,7 @@
 						{/each}
 					</div>
 
-					<div class="mt-7 flex items-center justify-end pb-6">
+					<div class="mt-7 flex items-center justify-end pb-6 animate-pulse">
 						<div class="h-9 w-40 rounded-md bg-white/5"></div>
 					</div>
 				{/if}
