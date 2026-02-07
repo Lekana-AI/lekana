@@ -72,10 +72,10 @@ app.post(
 
       // Log request
       console.log(
-        `[Upload] Processing request from user: ${req.userId || requestUserId}`
+        `[Upload] Processing request from user: ${req.userId || requestUserId}`,
       );
       console.log(
-        `[Upload] Execution: ${executionId}, Node: ${nodeId}, Workflow: ${workflowId}`
+        `[Upload] Execution: ${executionId}, Node: ${nodeId}, Workflow: ${workflowId}`,
       );
       console.log(`[Upload] Config:`, JSON.stringify(config));
       console.log(`[Upload] Input received:`, JSON.stringify(input, null, 2));
@@ -118,7 +118,12 @@ app.post(
         };
       } else {
         // Normal upload mode: Process new file uploads
-        result = await processUpload(combinedInput, config);
+        // Pass userId and workflowId for folder organization
+        const userId = req.userId || requestUserId || "anonymous";
+        result = await processUpload(combinedInput, config, {
+          userId,
+          workflowId,
+        });
       }
 
       // Build response in ServiceResponse format
@@ -151,7 +156,7 @@ app.post(
       }
 
       console.log(
-        `[Upload] Completed in ${processingTime}ms - ${result.successCount}/${result.totalFiles} files uploaded`
+        `[Upload] Completed in ${processingTime}ms - ${result.successCount}/${result.totalFiles} files uploaded`,
       );
       res.json(response);
     } catch (error) {
@@ -172,7 +177,7 @@ app.post(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
@@ -198,12 +203,20 @@ app.post(
         }
       }
 
+      // Extract userId and workflowId from form data for folder organization
+      const userId = req.body.userId || req.userId || "anonymous";
+      const workflowId = req.body.workflowId;
+
+      if (userId && workflowId) {
+        console.log(`[Upload] Organizing files into: ${userId}/${workflowId}/`);
+      }
+
       const input = {
         files: req.files || [],
         file: req.file || null,
       };
 
-      const result = await processUpload(input, config);
+      const result = await processUpload(input, config, { userId, workflowId });
       const processingTime = Date.now() - startTime;
 
       res.json({
@@ -241,7 +254,7 @@ app.post(
         },
       });
     }
-  }
+  },
 );
 
 // ============================================
@@ -297,7 +310,91 @@ app.post(
         error: { code: "SIGNED_URL_ERROR", message: error.message },
       });
     }
-  }
+  },
+);
+
+// ============================================
+// Decrypt and Stream Endpoint
+// Fetches encrypted file from GCS, decrypts it, and returns content
+// ============================================
+app.post(
+  "/api/v1/decrypt",
+  handleAuthError,
+  extractUserInfo,
+  async (req, res) => {
+    try {
+      const { storagePath } = req.body;
+
+      if (!storagePath) {
+        return res.status(400).json({
+          success: false,
+          error: { code: "MISSING_PATH", message: "storagePath is required" },
+        });
+      }
+
+      const { Storage } = require("@google-cloud/storage");
+      const { decryptBuffer } = require("./utils/encryption");
+
+      const storage = new Storage();
+      const bucket = storage.bucket(bucketName);
+
+      // Handle different storage path formats
+      let filePath = storagePath;
+      if (storagePath.includes("storage.googleapis.com")) {
+        const url = new URL(storagePath);
+        filePath = url.pathname.split("/").slice(2).join("/");
+      } else if (storagePath.startsWith("gs://")) {
+        filePath = storagePath.replace(/^gs:\/\/[^\/]+\//, "");
+      }
+
+      console.log(`[Decrypt] Fetching and decrypting: ${filePath}`);
+
+      // Download encrypted file from GCS
+      const file = bucket.file(filePath);
+      const [exists] = await file.exists();
+
+      if (!exists) {
+        return res.status(404).json({
+          success: false,
+          error: { code: "FILE_NOT_FOUND", message: "File not found" },
+        });
+      }
+
+      // Get file metadata to determine content type
+      const [metadata] = await file.getMetadata();
+      const contentType = metadata.contentType || "application/octet-stream";
+      const originalFilename =
+        metadata.metadata?.originalFilename || filePath.split("/").pop();
+
+      // Download the file
+      const [encryptedBuffer] = await file.download();
+
+      // Decrypt the buffer (handles both encrypted and unencrypted files)
+      const decryptedBuffer = decryptBuffer(encryptedBuffer);
+
+      console.log(
+        `[Decrypt] Successfully decrypted: ${originalFilename} (${decryptedBuffer.length} bytes)`,
+      );
+
+      // Set appropriate headers for browser display
+      res.setHeader("Content-Type", contentType);
+      res.setHeader("Content-Length", decryptedBuffer.length);
+      res.setHeader(
+        "Content-Disposition",
+        `inline; filename="${encodeURIComponent(originalFilename)}"`,
+      );
+      res.setHeader("Cache-Control", "private, max-age=3600");
+
+      // Send decrypted content
+      res.send(decryptedBuffer);
+    } catch (error) {
+      console.error("[Decrypt] Error:", error.message);
+      res.status(500).json({
+        success: false,
+        error: { code: "DECRYPT_ERROR", message: error.message },
+      });
+    }
+  },
 );
 
 // ============================================
@@ -308,7 +405,7 @@ app.listen(PORT, () => {
   console.log(
     `Clerk Domain: ${
       process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev"
-    }`
+    }`,
   );
   console.log(`GCS Bucket: ${bucketName}`);
 });

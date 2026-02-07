@@ -116,8 +116,9 @@ function validateFile(file, config) {
   if (file.size > maxSizeBytes) {
     return {
       valid: false,
-      error: `File "${file.filename}" exceeds maximum size of ${config.maxFileSizeMB || DEFAULT_CONFIG.maxFileSizeMB
-        }MB`,
+      error: `File "${file.filename}" exceeds maximum size of ${
+        config.maxFileSizeMB || DEFAULT_CONFIG.maxFileSizeMB
+      }MB`,
     };
   }
 
@@ -127,7 +128,7 @@ function validateFile(file, config) {
     return {
       valid: false,
       error: `File type "${ext}" is not allowed. Allowed types: ${expandedAllowedTypes.join(
-        ", "
+        ", ",
       )}`,
     };
   }
@@ -154,14 +155,26 @@ function base64ToFile(doc) {
  * Process upload request
  * @param {Object} input - Input containing documents or files
  * @param {Object} config - Upload configuration
+ * @param {Object} context - Context containing userId and workflowId for folder organization
  * @returns {Promise<Object>} Upload results with uploadedFiles and skippedFiles
  */
-async function processUpload(input, config = {}) {
+async function processUpload(input, config = {}, context = {}) {
+  const { userId, workflowId } = context;
   const mergedConfig = { ...DEFAULT_CONFIG, ...config };
   const startTime = Date.now();
   const results = [];
   const errors = [];
   const skippedFiles = [];
+
+  // Build folder path based on userId and workflowId
+  let folderPath = "uploads";
+  if (userId && workflowId) {
+    folderPath = `${userId}/${workflowId}`;
+    console.log(`[Upload] Organizing files into folder: ${folderPath}`);
+  } else if (userId) {
+    folderPath = `${userId}/uploads`;
+    console.log(`[Upload] Organizing files into user folder: ${folderPath}`);
+  }
 
   // Get files from input (either base64 documents or multipart files)
   let rawFiles = [];
@@ -202,12 +215,12 @@ async function processUpload(input, config = {}) {
   if (!mergedConfig.bulkUpload) {
     if (zipFiles.length > 0) {
       throw new Error(
-        "ZIP files require bulk upload to be enabled. Enable 'Bulk Upload' in your Upload node configuration."
+        "ZIP files require bulk upload to be enabled. Enable 'Bulk Upload' in your Upload node configuration.",
       );
     }
     if (rawFiles.length > 1) {
       throw new Error(
-        "Bulk upload is disabled. Only one file allowed at a time."
+        "Bulk upload is disabled. Only one file allowed at a time.",
       );
     }
   }
@@ -222,21 +235,23 @@ async function processUpload(input, config = {}) {
       console.log(`[Upload] Extracted ${extractedFiles.length} files from ZIP`);
       files = [...files, ...extractedFiles];
     } catch (err) {
-      throw new Error(`Failed to extract ZIP file "${zipFile.filename}": ${err.message}`);
+      throw new Error(
+        `Failed to extract ZIP file "${zipFile.filename}": ${err.message}`,
+      );
     }
   }
 
   // Final check: if bulk disabled but somehow still multiple files
   if (!mergedConfig.bulkUpload && files.length > 1) {
     throw new Error(
-      "Bulk upload is disabled. Only one file allowed at a time."
+      "Bulk upload is disabled. Only one file allowed at a time.",
     );
   }
 
   // Handle passthrough mode - if documents have URLs but no base64, just pass them through
   if (files.length === 0 && input.documents && Array.isArray(input.documents)) {
     const urlDocs = input.documents.filter(
-      (doc) => doc.url && !doc.base64 && !doc.content
+      (doc) => doc.url && !doc.base64 && !doc.content,
     );
     if (urlDocs.length > 0) {
       // Passthrough mode - documents already have URLs (from previous upload)
@@ -287,7 +302,9 @@ async function processUpload(input, config = {}) {
         continue;
       }
       // Track as skipped file (not a hard error, workflow can continue)
-      console.log(`[Upload] Skipping invalid file: ${file.filename} - ${validation.error}`);
+      console.log(
+        `[Upload] Skipping invalid file: ${file.filename} - ${validation.error}`,
+      );
       skippedFiles.push({
         filename: file.filename,
         reason: validation.error,
@@ -297,11 +314,12 @@ async function processUpload(input, config = {}) {
     }
 
     try {
-      // Upload to GCS
+      // Upload to GCS with folder path for organization
       const uploadResult = await uploadFileWithSignedUrl(
         file.buffer,
         file.filename,
-        file.mimeType
+        file.mimeType,
+        folderPath,
       );
 
       results.push({
@@ -328,14 +346,14 @@ async function processUpload(input, config = {}) {
   // If all files failed (no valid uploads and we had files to process), throw error
   if (results.length === 0 && files.length > 0 && errors.length > 0) {
     throw new Error(
-      `All files failed to upload: ${errors.map((e) => e.error).join("; ")}`
+      `All files failed to upload: ${errors.map((e) => e.error).join("; ")}`,
     );
   }
 
   // If we had files but none were valid (all skipped), throw error
   if (results.length === 0 && skippedFiles.length > 0 && errors.length === 0) {
     throw new Error(
-      `No valid files found. All ${skippedFiles.length} file(s) were skipped: ${skippedFiles.map((s) => `${s.filename} (${s.reason})`).join("; ")}`
+      `No valid files found. All ${skippedFiles.length} file(s) were skipped: ${skippedFiles.map((s) => `${s.filename} (${s.reason})`).join("; ")}`,
     );
   }
 

@@ -2,14 +2,18 @@
  * GCP Cloud Storage Service
  * Handles file uploads and signed URL generation
  */
-const { Storage } = require('@google-cloud/storage');
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { Storage } = require("@google-cloud/storage");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const { encryptBuffer, isEncryptionEnabled } = require("../utils/encryption");
 
 // Initialize GCP Storage client
 const storage = new Storage();
-const bucketName = process.env.GCS_BUCKET_NAME || 'lekana-uploads';
-const signedUrlExpiryMinutes = parseInt(process.env.SIGNED_URL_EXPIRY_MINUTES || '60', 10);
+const bucketName = process.env.GCS_BUCKET_NAME || "lekana-uploads";
+const signedUrlExpiryMinutes = parseInt(
+  process.env.SIGNED_URL_EXPIRY_MINUTES || "60",
+  10,
+);
 
 /**
  * Get the storage bucket
@@ -39,20 +43,37 @@ function generateUniqueFilename(originalFilename) {
  * @param {string} folder - Optional folder path in bucket
  * @returns {Promise<{filename: string, url: string, size: number}>}
  */
-async function uploadFile(buffer, originalFilename, mimeType, folder = 'uploads') {
+async function uploadFile(
+  buffer,
+  originalFilename,
+  mimeType,
+  folder = "uploads",
+) {
   const uniqueFilename = generateUniqueFilename(originalFilename);
   const filePath = `${folder}/${uniqueFilename}`;
   const bucket = getBucket();
   const file = bucket.file(filePath);
 
-  await file.save(buffer, {
+  // Encrypt the buffer if encryption is enabled
+  let dataToUpload = buffer;
+  if (isEncryptionEnabled()) {
+    console.log(`[Storage] Encrypting file: ${originalFilename}`);
+    dataToUpload = encryptBuffer(buffer);
+  } else {
+    console.log(
+      `[Storage] Encryption not enabled, uploading plaintext: ${originalFilename}`,
+    );
+  }
+
+  await file.save(dataToUpload, {
     metadata: {
       contentType: mimeType,
       metadata: {
-        originalFilename: originalFilename
-      }
+        originalFilename: originalFilename,
+        encrypted: isEncryptionEnabled() ? "true" : "false",
+      },
     },
-    resumable: false
+    resumable: false,
   });
 
   const publicUrl = `https://storage.googleapis.com/${bucketName}/${filePath}`;
@@ -62,7 +83,7 @@ async function uploadFile(buffer, originalFilename, mimeType, folder = 'uploads'
     storagePath: filePath,
     url: publicUrl,
     size: buffer.length,
-    mimeType: mimeType
+    mimeType: mimeType,
   };
 }
 
@@ -72,14 +93,17 @@ async function uploadFile(buffer, originalFilename, mimeType, folder = 'uploads'
  * @param {number} expiryMinutes - Expiry time in minutes (default from env)
  * @returns {Promise<string>} Signed URL
  */
-async function generateSignedUrl(filePath, expiryMinutes = signedUrlExpiryMinutes) {
+async function generateSignedUrl(
+  filePath,
+  expiryMinutes = signedUrlExpiryMinutes,
+) {
   const bucket = getBucket();
   const file = bucket.file(filePath);
 
   const [signedUrl] = await file.getSignedUrl({
-    version: 'v4',
-    action: 'read',
-    expires: Date.now() + expiryMinutes * 60 * 1000
+    version: "v4",
+    action: "read",
+    expires: Date.now() + expiryMinutes * 60 * 1000,
   });
 
   return signedUrl;
@@ -93,14 +117,24 @@ async function generateSignedUrl(filePath, expiryMinutes = signedUrlExpiryMinute
  * @param {string} folder - Optional folder path
  * @returns {Promise<Object>} Upload result with URLs
  */
-async function uploadFileWithSignedUrl(buffer, originalFilename, mimeType, folder = 'uploads') {
-  const uploadResult = await uploadFile(buffer, originalFilename, mimeType, folder);
+async function uploadFileWithSignedUrl(
+  buffer,
+  originalFilename,
+  mimeType,
+  folder = "uploads",
+) {
+  const uploadResult = await uploadFile(
+    buffer,
+    originalFilename,
+    mimeType,
+    folder,
+  );
   const signedUrl = await generateSignedUrl(uploadResult.storagePath);
 
   return {
     ...uploadResult,
     signedUrl,
-    uploadedAt: new Date().toISOString()
+    uploadedAt: new Date().toISOString(),
   };
 }
 
@@ -122,5 +156,5 @@ module.exports = {
   generateSignedUrl,
   uploadFileWithSignedUrl,
   checkBucketAccess,
-  bucketName
+  bucketName,
 };
