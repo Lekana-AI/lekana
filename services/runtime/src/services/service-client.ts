@@ -284,7 +284,8 @@ export async function callServiceWithUrl(
                     error: {
                         code: 'SERVICE_TIMEOUT',
                         message: `Service timed out after ${timeout}ms`,
-                        details: { timeout, url: serviceUrl }
+                        //details: { timeout, url: serviceUrl }
+                        details: { timeout }
                     }
                 };
             }
