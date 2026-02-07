@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Classification, Alternative, Category } from '../types';
 import { logger } from '../utils/logger.util';
 import { sortAlternatives, normalizeConfidences } from '../utils/confidence.util';
+import { decryptBuffer } from '../utils/encryption.util';
 
 export class GeminiService {
     private genAI: GoogleGenerativeAI | null = null;
@@ -127,9 +128,11 @@ export class GeminiService {
                 throw new Error(`Failed to fetch document: ${response.status} ${response.statusText}`);
             }
             const arrayBuffer = await response.arrayBuffer();
-            const buffer = Buffer.from(arrayBuffer);
-            logger.info('Document buffer size:', { bytes: buffer.length });
-            return buffer.toString('base64');
+            const rawBuffer = Buffer.from(arrayBuffer);
+            logger.info('Document buffer size:', { bytes: rawBuffer.length });
+            // Decrypt the buffer (handles legacy unencrypted files automatically)
+            const decryptedBuffer = decryptBuffer(rawBuffer);
+            return decryptedBuffer.toString('base64');
         } catch (error) {
             logger.error('Error fetching document for Gemini', {
                 error: error instanceof Error ? error.message : String(error),

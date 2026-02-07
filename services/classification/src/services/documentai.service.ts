@@ -2,6 +2,7 @@ import { DocumentProcessorServiceClient } from '@google-cloud/documentai';
 import { Classification, Alternative } from '../types';
 import { logger } from '../utils/logger.util';
 import { sortAlternatives } from '../utils/confidence.util';
+import { decryptBuffer } from '../utils/encryption.util';
 
 export class DocumentAIService {
     private client: DocumentProcessorServiceClient;
@@ -106,7 +107,10 @@ export class DocumentAIService {
                 throw new Error(`Failed to fetch document: ${response.statusText}`);
             }
             const arrayBuffer = await response.arrayBuffer();
-            return Buffer.from(arrayBuffer);
+            const rawBuffer = Buffer.from(arrayBuffer);
+            // Decrypt the buffer (handles legacy unencrypted files automatically)
+            const decryptedBuffer = decryptBuffer(rawBuffer);
+            return decryptedBuffer;
         } catch (error) {
             logger.error('Error fetching document content', error);
             throw error;
