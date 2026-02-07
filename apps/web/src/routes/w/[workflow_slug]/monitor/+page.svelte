@@ -335,10 +335,9 @@
 	async function openDocument(doc: Document) {
 		openingDocId = doc.id;
 		try {
-			const res = await fetch(`/rime/documents/${doc.id}/url`);
-			if (!res.ok) throw new Error('Failed to get document URL');
-			const data = await res.json();
-			window.open(data.url, '_blank');
+			// Open the document through the proxy which handles auth and decryption
+			// This fetches the decrypted content directly via runtime -> upload service
+			window.open(`/rime/documents/${doc.id}/content`, '_blank');
 		} catch (e: any) {
 			console.error('Error opening document:', e);
 			toast.error('Failed to open document. Please try again in a moment.');
