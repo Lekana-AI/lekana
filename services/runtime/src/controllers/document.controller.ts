@@ -149,8 +149,8 @@ export const listDocuments = async (req: Request, res: Response) => {
 
 /**
  * GET /api/v1/documents/:id/url
- * Generate a fresh signed URL for viewing/downloading a document
- * Calls the Upload service to generate the signed URL
+ * Generate a URL for viewing/downloading a document
+ * For encrypted files, returns a runtime proxy URL that decrypts on-the-fly
  */
 export const getSignedUrl = async (req: Request, res: Response) => {
     try {
@@ -183,7 +183,64 @@ export const getSignedUrl = async (req: Request, res: Response) => {
             });
         }
 
-        // Call Upload service to generate signed URL
+        // Return a proxy URL that will decrypt the file on-the-fly
+        // The frontend will call this URL, which proxies to the upload service
+        const proxyUrl = `/api/v1/documents/${id}/content`;
+
+        res.json({
+            id: document.id,
+            filename: document.filename,
+            url: proxyUrl,
+            expiresIn: 3600, // 1 hour
+            note: 'Use this URL to fetch decrypted content'
+        });
+
+    } catch (error: any) {
+        console.error('Error generating document URL:', error);
+        res.status(500).json({
+            error: 'Failed to generate document URL',
+            message: error.message
+        });
+    }
+};
+
+/**
+ * GET /api/v1/documents/:id/content
+ * Proxy endpoint that fetches and decrypts document content from Upload service
+ * Streams decrypted content back to the frontend
+ */
+export const getDocumentContent = async (req: Request, res: Response) => {
+    try {
+        const userId = req.auth?.sub;
+        const { id } = req.params;
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Unauthorized',
+                message: 'User ID not found in token'
+            });
+        }
+
+        const document = await prisma.document.findUnique({
+            where: { id }
+        });
+
+        if (!document) {
+            return res.status(404).json({
+                error: 'Not found',
+                message: 'Document not found'
+            });
+        }
+
+        // Ensure user owns this document
+        if (document.userId !== userId) {
+            return res.status(403).json({
+                error: 'Forbidden',
+                message: 'You do not have access to this document'
+            });
+        }
+
+        // Call Upload service to fetch and decrypt file
         const uploadServiceUrl = await getUploadServiceUrl();
 
         const headers: Record<string, string> = {
@@ -196,30 +253,32 @@ export const getSignedUrl = async (req: Request, res: Response) => {
             headers['Authorization'] = `Bearer ${iamToken}`;
         }
 
+        console.log(`[Document] Fetching decrypted content for: ${document.filename}`);
+
         const response = await withRetry(() => axios.post(
-            `${uploadServiceUrl}/api/v1/signed-url`,
+            `${uploadServiceUrl}/api/v1/decrypt`,
             {
-                storagePath: document.storagePath,
-                expiryMinutes: 60 // 1 hour
+                storagePath: document.storagePath
             },
-            { headers, timeout: 5000 }
+            {
+                headers,
+                timeout: 60000, // 60 seconds for large files
+                responseType: 'arraybuffer' // Get binary data
+            }
         ));
 
-        if (!response.data.success) {
-            throw new Error(response.data.error?.message || 'Failed to generate signed URL');
-        }
+        // Forward the decrypted content to the client
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
+        res.setHeader('Content-Length', response.data.length);
+        res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(document.filename)}"`);
+        res.setHeader('Cache-Control', 'private, max-age=3600');
 
-        res.json({
-            id: document.id,
-            filename: document.filename,
-            url: response.data.data.signedUrl,
-            expiresIn: response.data.data.expiresIn
-        });
+        res.send(Buffer.from(response.data));
 
     } catch (error: any) {
-        console.error('Error generating signed URL:', error);
+        console.error('Error fetching document content:', error);
         res.status(500).json({
-            error: 'Failed to generate signed URL',
+            error: 'Failed to fetch document content',
             message: error.message
         });
     }

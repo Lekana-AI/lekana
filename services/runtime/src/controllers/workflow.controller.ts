@@ -636,6 +636,10 @@ export const runWorkflowWithFiles = async (req: Request, res: Response) => {
                 // Add upload config from workflow's upload node
                 formData.append('config', JSON.stringify(uploadConfig));
 
+                // Add userId and workflowId for folder organization (user_id/workflow_id/)
+                formData.append('userId', userId);
+                formData.append('workflowId', workflowId);
+
                 // Get headers including form-data headers
                 const headers: Record<string, string> = {
                     ...formData.getHeaders()

@@ -7,6 +7,7 @@ import express from 'express';
 import {
     listDocuments,
     getSignedUrl,
+    getDocumentContent,
     listDocumentsByWorkflow,
     listDocumentsByWorkflowId
 } from '../controllers/document.controller';
@@ -18,6 +19,9 @@ router.get('/', listDocuments);
 
 // Get signed URL for a specific document
 router.get('/:id/url', getSignedUrl);
+
+// Get decrypted document content (proxy to upload service)
+router.get('/:id/content', getDocumentContent);
 
 // List documents for a specific workflow execution
 router.get('/by-workflow/:workflowExecutionId', listDocumentsByWorkflow);
