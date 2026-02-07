@@ -41,11 +41,23 @@
 			// build the fields array that the <Input> loop expects
 			// dynamically match node.config with step.uiSchema.fields
 			fields = step.uiSchema.fields.map((field) => {
-				const value = node?.config?.[field.name] ?? field.value ?? field.defaultValue;
+				const rawValue = node?.config?.[field.name] ?? field.value ?? field.defaultValue;
+				// Deep clone if it's an object or array to avoid reference sharing
+				const value =
+					typeof rawValue === 'object' && rawValue !== null
+						? JSON.parse(JSON.stringify(rawValue))
+						: rawValue;
+
+				const rawOriginalValue = node?.config?.[field.name];
+				const originalValue =
+					typeof rawOriginalValue === 'object' && rawOriginalValue !== null
+						? JSON.parse(JSON.stringify(rawOriginalValue))
+						: rawOriginalValue;
+
 				return {
 					...field,
 					value,
-					originalValue: node?.config?.[field.name], // Only set if it comes from the node config
+					originalValue, // Only set if it comes from the node config
 					testConnectionStatus: field.testConnection
 						? (node?.config?.testConnection ?? false)
 						: false

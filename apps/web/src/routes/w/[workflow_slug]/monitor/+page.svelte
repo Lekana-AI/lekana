@@ -1,5 +1,6 @@
 <script lang="ts">
 	import SidePanel from '$lib/components/SidePanel.svelte';
+	import SupportModal from '$lib/components/SupportModal.svelte';
 	import type { User } from 'svelte-clerk/server';
 
 	let { data } = $props();
@@ -29,7 +30,8 @@
 		Loader2,
 		Image,
 		File,
-		Workflow
+		Workflow,
+		Flag
 	} from 'lucide-svelte';
 	import { toast } from '$lib/toast.svelte';
 	import JsonViewer from '$lib/components/JsonViewer.svelte';
@@ -61,6 +63,30 @@
 
 	let openingDocId = $state<string | null>(null);
 	let showDocuments = $state(false);
+
+	// Support modal state for error reporting
+	let showSupportModal = $state(false);
+	let supportExecutionId = $state<string | null>(null);
+	let supportNodeExecutionId = $state<string | null>(null);
+	let supportErrorDetails = $state<any>(null);
+
+	function openSupportModalWithError(
+		executionId: string,
+		nodeExecutionId?: string | null,
+		errorDetails?: any
+	) {
+		supportExecutionId = executionId;
+		supportNodeExecutionId = nodeExecutionId || null;
+		supportErrorDetails = errorDetails || null;
+		showSupportModal = true;
+	}
+
+	function closeSupportModal() {
+		showSupportModal = false;
+		supportExecutionId = null;
+		supportNodeExecutionId = null;
+		supportErrorDetails = null;
+	}
 
 	let selectedExecution = $derived(executions.find((e) => e.id === selectedExecutionId) || null);
 
@@ -958,12 +984,28 @@
 
 												<!-- Output Section -->
 												<div class="space-y-3">
-													<h3
-														class="flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase"
-													>
-														<CornerRightUp class="h-4 w-4" />
-														Output Results
-													</h3>
+													<div class="flex items-center justify-between gap-2">
+														{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED' && step.status !== 'RUNNING') || step.error || step.output?.success === false || step.output?.error}
+															<h3
+																class="flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase"
+															>
+																<CornerRightUp class="h-4 w-4" />
+																Output Results
+															</h3>
+															<button
+																onclick={() => {
+																	// Copy error to error details if step has error conditions
+																	const errorToReport =
+																		step.output?.data || step.output || step.error || {};
+																	openSupportModalWithError(step.id, execution.id, errorToReport);
+																}}
+																class="mt-3 flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20"
+															>
+																<Flag class="h-3 w-3" />
+																<span>Report This Error</span>
+															</button>
+														{/if}
+													</div>
 													{@render CollapsibleJson(
 														step.output?.data || step.output || step.error || {}
 													)}
@@ -971,27 +1013,6 @@
 											</div>
 
 											<!-- Errors section if any -->
-											{#if (step.status !== 'COMPLETED' && step.status !== 'SKIPPED' && step.status !== 'RUNNING') || step.error}
-												<div class="space-y-3">
-													<h3
-														class="flex items-center gap-2 text-xs font-bold tracking-widest text-red-400 uppercase"
-													>
-														<CircleAlert class="h-4 w-4" />
-														Error Details
-													</h3>
-													<div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
-														<p class="mb-2 text-sm font-bold text-red-500">
-															{step.error?.message || 'Execution Failed'}
-														</p>
-														<pre
-															class="dark-scroll overflow-x-auto font-mono text-xs tracking-tight text-red-400/80">{JSON.stringify(
-																step.error || {},
-																null,
-																2
-															)}</pre>
-													</div>
-												</div>
-											{/if}
 										</div>
 									{/if}
 								</div>
@@ -1017,6 +1038,19 @@
 		</section>
 	</div>
 </main>
+
+<!-- Support Modal for Error Reporting -->
+{#if showSupportModal}
+	<SupportModal
+		onClose={closeSupportModal}
+		workflows={[{ id: workflow.id, name: workflow.name }]}
+		activeWorkflowId={workflow.id}
+		executionId={supportExecutionId}
+		nodeExecutionId={supportNodeExecutionId}
+		errorDetails={supportErrorDetails}
+		expandFeedback={true}
+	/>
+{/if}
 
 <style>
 	.dark-scroll {

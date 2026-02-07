@@ -9,23 +9,54 @@
 		ChevronRight,
 		Play,
 		Shield,
-		ExternalLink
+		ExternalLink,
+		AlertTriangle
 	} from 'lucide-svelte';
 	import { fade, scale, slide } from 'svelte/transition';
 	import { backOut } from 'svelte/easing';
 	import { toast } from '$lib/toast.svelte';
 	import { PUBLIC_YOUTUBE_TUTORIAL_URL } from '$env/static/public';
 
-	let { onClose, workflows = [], activeWorkflowId = '' } = $props();
+	interface Props {
+		onClose: () => void;
+		workflows?: any[];
+		activeWorkflowId?: string;
+		// Error reporting fields
+		executionId?: string | null;
+		nodeExecutionId?: string | null;
+		errorDetails?: any;
+		expandFeedback?: boolean;
+	}
 
-	let activeTab = $state<'video' | 'feedback' | 'email' | null>(null);
+	let {
+		onClose,
+		workflows = [],
+		activeWorkflowId = '',
+		executionId = null,
+		nodeExecutionId = null,
+		errorDetails = null,
+		expandFeedback = false
+	}: Props = $props();
+
+	// Auto-expand feedback tab if expandFeedback is true
+	let activeTab = $state<'video' | 'feedback' | 'email' | null>(expandFeedback ? 'feedback' : null);
 	let feedback = $state('');
 	let selectedWorkflowId = $state(activeWorkflowId);
 	let isSubmitting = $state(false);
 	let submitted = $state(false);
 
+	// Error details section - collapsed by default unless error data is provided
+	let showErrorDetails = $state(!!errorDetails);
+
+	// Formatted error details for display/submission
+	const formattedErrorDetails = errorDetails
+		? typeof errorDetails === 'string'
+			? errorDetails
+			: errorDetails?.message || JSON.stringify(errorDetails, null, 2)
+		: '';
+
 	async function handleSubmit() {
-		if (!feedback.trim()) return;
+		if (!feedback.trim() && !formattedErrorDetails) return;
 
 		isSubmitting = true;
 
@@ -37,7 +68,10 @@
 				},
 				body: JSON.stringify({
 					comment: feedback,
-					workflowId: selectedWorkflowId || null
+					workflowId: selectedWorkflowId || null,
+					executionId: executionId || null,
+					nodeExecutionId: nodeExecutionId || null,
+					errorDetails: formattedErrorDetails || null
 				})
 			});
 
@@ -218,9 +252,89 @@
 										placeholder="What can we do better?"
 										class="min-h-[100px] w-full resize-none rounded-xl border border-white/10 bg-zinc-950/50 px-4 py-3 text-sm text-white transition-all placeholder:text-zinc-600 focus:border-green-500/50 focus:outline-none"
 									></textarea>
+
+									{#if errorDetails}
+										<!-- Collapsible Error Details Section -->
+										<div class=" border-t border-white/5">
+											<button
+												type="button"
+												onclick={() => (showErrorDetails = !showErrorDetails)}
+												class="flex w-full items-center justify-between px-3 py-2 text-left"
+											>
+												<div class="flex items-center gap-2">
+													<AlertTriangle class="h-3.5 w-3.5 text-red-400" />
+													<span class="text-xs font-medium text-zinc-400"
+														>Error Details (Included)</span
+													>
+												</div>
+												{#if showErrorDetails}
+													<ChevronDown class="h-3.5 w-3.5 text-zinc-500" />
+												{:else}
+													<ChevronRight class="h-3.5 w-3.5 text-zinc-500" />
+												{/if}
+											</button>
+
+											{#if showErrorDetails}
+												<div class="space-y-3 pt-3 pb-3" transition:slide>
+													{#if executionId}
+														<div class="flex flex-col gap-1.5">
+															<label
+																for="execution-id"
+																class="px-1 text-[10px] font-bold text-zinc-500 uppercase"
+															>
+																Execution ID
+															</label>
+															<input
+																id="execution-id"
+																type="text"
+																disabled
+																value={executionId}
+																class="w-full rounded-lg border border-white/10 bg-zinc-950 px-3 py-2 font-mono text-xs text-white placeholder:text-zinc-600 focus:outline-none"
+															/>
+														</div>
+													{/if}
+
+													{#if nodeExecutionId}
+														<div class="flex flex-col gap-1.5">
+															<label
+																for="node-execution-id"
+																class="px-1 text-[10px] font-bold text-zinc-500 uppercase"
+															>
+																Node ID
+															</label>
+															<input
+																id="node-execution-id"
+																type="text"
+																disabled
+																value={nodeExecutionId}
+																class="w-full rounded-lg border border-white/10 bg-zinc-950 px-3 py-2 font-mono text-xs text-white placeholder:text-zinc-600 focus:outline-none"
+															/>
+														</div>
+													{/if}
+
+													<div class="flex flex-col gap-1.5">
+														<label
+															for="error-details"
+															class="px-1 text-[10px] font-bold text-zinc-500 uppercase"
+														>
+															Error
+														</label>
+														<textarea
+															id="error-details"
+															value={formattedErrorDetails}
+															rows="3"
+															disabled
+															class="min-h-[200px] w-full resize-none rounded-lg border border-white/10 bg-zinc-950 px-3 py-2 font-mono text-xs text-red-300 placeholder:text-zinc-600 focus:outline-none"
+														></textarea>
+													</div>
+												</div>
+											{/if}
+										</div>
+									{/if}
+
 									<button
 										onclick={handleSubmit}
-										disabled={!feedback.trim() || isSubmitting}
+										disabled={(!feedback.trim() && !formattedErrorDetails) || isSubmitting}
 										class="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-2.5 text-sm font-semibold text-white transition-all hover:bg-green-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
 									>
 										{#if isSubmitting}
