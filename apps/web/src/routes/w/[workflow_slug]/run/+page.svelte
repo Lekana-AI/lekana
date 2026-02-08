@@ -18,9 +18,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import { toast } from '$lib/toast.svelte';
 
-	import { env } from '$env/dynamic/private';
-
-	const RUNTIME_BASE = env.RUNTIME_BASE;
+	import { PUBLIC_API_URL } from '$env/static/public';
 
 	let { data } = $props();
 
@@ -122,7 +120,7 @@
 			});
 
 			const response = await fetch(
-				`${RUNTIME_BASE}/api/v1/workflows/${workflow.id}/run-with-files`,
+				`${PUBLIC_API_URL}/api/v1/workflows/${workflow.id}/run-with-files`,
 				{
 					method: 'POST',
 					headers: headers,
