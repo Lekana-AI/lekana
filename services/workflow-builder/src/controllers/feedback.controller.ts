@@ -49,11 +49,21 @@ export const createFeedback = async (req: Request, res: Response) => {
         });
 
         // Get user email for notifications
-        let userEmail = req.auth?.email;
+        const userEmail = req.auth?.email;
+
+        // Get workflow name if workflowId exists
+        let workflowName: string | undefined;
+        if (workflowId) {
+            const workflow = await prisma.workflow.findUnique({
+                where: { id: workflowId },
+                select: { name: true }
+            });
+            workflowName = workflow?.name;
+        }
 
         // Send email notifications asynchronously
         if (userEmail) {
-            sendFeedbackAcknowledgmentEmail(userEmail).catch(err =>
+            sendFeedbackAcknowledgmentEmail(userEmail, feedback, workflowName).catch(err =>
                 console.error('Failed to send user feedback email:', err)
             );
         }
