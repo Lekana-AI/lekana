@@ -192,35 +192,47 @@ model DefaultRolePermission {
   @@index([permissionId])
 }
 
+// Feedback type enum
+enum FeedbackType {
+  GENERAL
+  ERROR_REPORT
+}
+
 model Feedback {
-  id         String   @id @default(uuid())
-  userId     String
-  workflowId String?
-  comment    String
-  createdAt  DateTime @default(now())
+  id              String       @id @default(uuid())
+  userId          String
+  workflowId      String?
+  comment         String
+  type            FeedbackType @default(GENERAL)
+  executionId     String? // Runtime execution ID (for error reports)
+  nodeExecutionId String? // Runtime node execution ID (for step-level reports)
+  errorDetails    Json? // Captured error context from the execution
+  createdAt       DateTime     @default(now())
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   workflow Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([workflowId])
+  @@index([executionId])
+  @@index([type])
 }
 
 // User usage tracking for storage and token limits
 model UserUsage {
-  userId        String   @id // Clerk user ID
-  storageLimit  BigInt   @default(1073741824) // 1GB in bytes
-  storageUsed   BigInt   @default(0)
-  tokenLimit    Int?     // Optional hard cap on tokens
-  tokensUsed    Float    @default(0) // Total tokens consumed
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  userId       String   @id // Clerk user ID
+  storageLimit BigInt   @default(1073741824) // 1GB in bytes
+  storageUsed  BigInt   @default(0)
+  tokenLimit   Int? // Optional hard cap on tokens
+  tokensUsed   Float    @default(0) // Total tokens consumed
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // System configuration for default limits and settings
 // Use key-value pairs for flexibility
 model SystemConfig {
   key       String   @id
-  value     String   // JSON string for complex values
+  value     String // JSON string for complex values
   updatedAt DateTime @updatedAt
 }
