@@ -18,6 +18,10 @@
 	import { fade, fly } from 'svelte/transition';
 	import { toast } from '$lib/toast.svelte';
 
+	import { env } from '$env/dynamic/private';
+
+	const RUNTIME_BASE = env.RUNTIME_BASE;
+
 	let { data } = $props();
 
 	let workflow = $state(data?.workflow);
@@ -117,11 +121,14 @@
 				formData.append('files', file);
 			});
 
-			const response = await fetch(`/rime/workflows/${workflow.id}/run-with-files`, {
-				method: 'POST',
-				headers: headers,
-				body: formData
-			});
+			const response = await fetch(
+				`${RUNTIME_BASE}/api/v1/workflows/${workflow.id}/run-with-files`,
+				{
+					method: 'POST',
+					headers: headers,
+					body: formData
+				}
+			);
 
 			if (!response.ok) {
 				const errorData = await response.json().catch(() => ({}));

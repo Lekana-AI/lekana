@@ -24,49 +24,6 @@
             "description": "Trigger and manage your document processing pipelines.",
             "endpoints": [
                 {
-                    "name": "Run Workflow (URL)",
-                    "id": "run-workflow-url",
-                    "method": "POST",
-                    "path": "/workflows/:workflow_id/run",
-                    "description": "Trigger a workflow using documents hosted at public URLs.",
-                    "long_description": "Use this endpoint when you already have your documents hosted online. It accepts a JSON payload containing a message and document URLs. The message will be passed as an input variable to your workflow.",
-                    "headers": [
-                        {
-                            "key": "Content-Type",
-                            "value": "application/json",
-                            "description": "Specifies that the request body is in JSON format."
-                        },
-                        {
-                            "key": "X-API-Key",
-                            "value": "{{api_key}}",
-                            "description": "Your unique API key for authentication."
-                        }
-                    ],
-                    "body": {
-                        "type": "json",
-                        "raw": "{\n  \"input\": {\n    \"message\": \"Analyze this invoice for high priority processing.\"\n  },\n  \"documents\": [\n    {\n      \"url\": \"https://example.com/invoice.pdf\",\n      \"filename\": \"invoice.pdf\",\n      \"mimeType\": \"application/pdf\"\n    }\n  ]\n}",
-                        "fields": [
-                            {
-                                "name": "input.message",
-                                "type": "string",
-                                "description": "A message or prompt that will be passed to the workflow as an input variable."
-                            },
-                            {
-                                "name": "documents",
-                                "type": "array",
-                                "description": "An array of document objects. Each object must contain 'url', 'filename', and 'mimeType'."
-                            }
-                        ]
-                    },
-                    "responses": [
-                        {
-                            "status": 202,
-                            "description": "Accepted - The workflow execution has successfully started.",
-                            "body": "{\n  \"id\": \"exec_abc123\",\n  \"status\": \"pending\",\n  \"message\": \"Workflow started successfully\"\n}"
-                        }
-                    ]
-                },
-                {
                     "name": "Run Workflow (File Upload)",
                     "id": "run-workflow-files",
                     "method": "POST",
