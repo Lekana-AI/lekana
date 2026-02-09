@@ -101,6 +101,6 @@
 		display: none !important;
 	}
 	.clerk-wrapper :global(.cl-footer) {
-		background-color: transparent !important;
+		background: none !important;
 	}
 </style>
