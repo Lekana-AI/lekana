@@ -32,7 +32,7 @@ export const sendFeedbackAcknowledgmentEmail = async (email: string, feedback: a
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
         <div style="font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1f2937; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 10px;">
-               <img src="${LOGO_URL}" alt="Lekana Logo" style="width: 25px; height: 25px; margin-right: 10px;">
+               <img src="${LOGO_URL}" alt="Lekana Logo" width="40" height="40" style=" margin-right: 10px;">
                <h1 style="font-size: 26px; font-weight: 700; color: #111827; margin-bottom: 16px; margin-top: 0;">Lekana Support</h1>
             </div>
             <div style="background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 20px; padding: 40px; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
