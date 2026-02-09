@@ -80,6 +80,11 @@
 
 <svelte:head>
 	<title>API Reference - Lekana</title>
+	<meta
+		name="description"
+		content="Comprehensive API documentation for Lekana. Learn how to integrate AI-powered document automation into your workflows."
+	/>
+	<link rel="canonical" href="https://lekana.dev/docs" />
 </svelte:head>
 
 <main class="min-h-screen bg-neutral-950 font-sans text-zinc-400 selection:bg-green-500/30">
@@ -181,8 +186,8 @@
 			<div class="max-w-3xl flex-1 space-y-24">
 				<!-- Introduction -->
 				<section id="introduction" class="scroll-mt-32 space-y-6">
-					<h1 class="text-4xl font-bold tracking-tight text-white">{apiDocs.introduction.title}</h1>
-					<p class="text-lg leading-relaxed text-zinc-300">
+					<h1 class="text-2xl font-bold tracking-tight text-white">{apiDocs.introduction.title}</h1>
+					<p class="text-xs leading-relaxed text-zinc-300">
 						{apiDocs.introduction.content}
 					</p>
 				</section>
@@ -191,9 +196,9 @@
 				<section id="authentication" class="scroll-mt-32 space-y-6">
 					<div class="flex items-center gap-3">
 						<Shield class="text-green-500" size={24} />
-						<h2 class="text-2xl font-bold text-white">{apiDocs.authentication.title}</h2>
+						<h2 class="text-lg font-bold text-white">{apiDocs.authentication.title}</h2>
 					</div>
-					<p class="leading-relaxed">
+					<p class="text-xs leading-relaxed">
 						{apiDocs.authentication.content}
 					</p>
 					<div
@@ -215,12 +220,12 @@
 
 				<!-- Core Concepts -->
 				<section id="concepts" class="scroll-mt-32 space-y-12">
-					<h2 class="text-2xl font-bold text-white">Core Concepts</h2>
+					<h2 class="text-xl font-bold text-white">Core Concepts</h2>
 					<div class="grid gap-8">
 						{#each apiDocs.core_concepts as concept}
 							<div class="space-y-3">
-								<h3 class="text-lg font-semibold text-zinc-200">{concept.title}</h3>
-								<p class="leading-relaxed">{concept.content}</p>
+								<h3 class="text-base font-semibold text-zinc-200">{concept.title}</h3>
+								<p class="text-sm leading-relaxed">{concept.content}</p>
 							</div>
 						{/each}
 					</div>
@@ -241,9 +246,9 @@
 										>
 											{endpoint.method}
 										</span>
-										<h2 class="text-2xl font-bold tracking-tight text-white">{endpoint.name}</h2>
+										<h2 class="text-xl font-bold tracking-tight text-white">{endpoint.name}</h2>
 									</div>
-									<p class="leading-relaxed text-zinc-300">
+									<p class="text-sm leading-relaxed text-zinc-300">
 										{endpoint.description}
 									</p>
 								</div>
@@ -275,7 +280,7 @@
 								<div class="space-y-4 rounded-2xl border border-zinc-800/50 bg-zinc-900/40 p-6">
 									<div class="flex items-start gap-3">
 										<Info size={18} class="mt-1 shrink-0 text-green-500" />
-										<p class="text-sm leading-relaxed text-zinc-400">
+										<p class="text-xs leading-relaxed text-zinc-400">
 											{endpoint.long_description}
 										</p>
 									</div>
@@ -295,7 +300,7 @@
 													<div class="w-32 shrink-0 font-mono text-xs text-green-400">
 														{header.key}
 													</div>
-													<div class="text-sm text-zinc-500">{header.description}</div>
+													<div class="text-xs text-zinc-500">{header.description}</div>
 												</div>
 											{/each}
 										</div>
@@ -318,7 +323,7 @@
 															>{field.type}</span
 														>
 													</div>
-													<p class="text-sm leading-relaxed text-zinc-500">
+													<p class="text-xs leading-relaxed text-zinc-500">
 														{field.description}
 													</p>
 												</div>
@@ -375,7 +380,7 @@
 														: 'bg-red-500'}"
 												></div>
 												<span class="text-sm font-semibold text-zinc-200">{res.status}</span>
-												<span class="text-sm text-zinc-500">{res.description}</span>
+												<span class="text-xs text-zinc-500">{res.description}</span>
 											</div>
 											<div class="rounded-xl border border-zinc-800 bg-zinc-900/20 p-6">
 												<pre
@@ -395,9 +400,9 @@
 				<section id="errors" class="scroll-mt-32 space-y-8">
 					<div class="flex items-center gap-3">
 						<AlertTriangle class="text-yellow-500" size={24} />
-						<h2 class="text-2xl font-bold text-white">Error Codes</h2>
+						<h2 class="text-xl font-bold text-white">Error Codes</h2>
 					</div>
-					<p>
+					<p class="text-sm">
 						Lekana uses conventional HTTP response codes to indicate the success or failure of an
 						API request.
 					</p>
@@ -415,7 +420,7 @@
 								{#each apiDocs.error_codes as error}
 									<tr class="transition-colors hover:bg-zinc-900/30">
 										<td class="px-6 py-4 font-mono text-zinc-200">{error.code}</td>
-										<td class="px-6 py-4 text-zinc-500">{error.description}</td>
+										<td class="px-6 py-4 text-xs text-zinc-500">{error.description}</td>
 									</tr>
 								{/each}
 							</tbody>

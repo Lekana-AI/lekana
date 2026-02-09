@@ -13,7 +13,8 @@
 
 	const appearance = {
 		elements: {
-			footer: { display: 'none' }
+			// footer: { display: 'none' },
+			header: { display: 'none' }
 		}
 	};
 </script>
@@ -27,7 +28,7 @@
 		transition:fade={{ duration: 200 }}
 	>
 		<div
-			class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
+			class="relative max-h-11/12 w-full max-w-lg overflow-hidden overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl"
 			onclick={(e) => e.stopPropagation()}
 			transition:scale={{ duration: 300, easing: backOut, start: 0.95 }}
 		>
@@ -47,10 +48,10 @@
 
 				<div class="flex flex-col items-center">
 					<div class="mb-6 flex flex-col items-center text-center">
-						<!-- <div class="mb-4 flex items-center gap-2">
+						<div class="mb-4 flex items-center gap-2">
 							<img src="/logo.svg" alt="logo" class="h-8 w-8" />
 							<span class="text-xl font-bold text-white">Lekana</span>
-						</div> -->
+						</div>
 						<h2 class="text-2xl font-bold text-white">
 							{mode === 'sign-in' ? 'Welcome back' : 'Create an account'}
 						</h2>
@@ -59,14 +60,16 @@
 						</p>
 					</div>
 
-					<div class="flex flex-col items-center w-full">
+					<div class="clerk-wrapper flex w-full flex-col items-center">
 						{#if mode === 'sign-in'}
 							<SignIn {appearance} signUpUrl="/sign-up" afterSignInUrl="/dashboard" />
 							<button
 								onclick={() => (mode = 'sign-up')}
 								class="mt-4 w-full text-center text-sm text-zinc-400"
 							>
-								Don't have an account? <span class="text-green-500 hover:text-green-400 transition-colors">Sign Up</span>
+								Don't have an account? <span
+									class="text-green-500 transition-colors hover:text-green-400">Sign Up</span
+								>
 							</button>
 						{:else}
 							<SignUp {appearance} signInUrl="/sign-in" afterSignUpUrl="/dashboard" />
@@ -74,7 +77,9 @@
 								onclick={() => (mode = 'sign-in')}
 								class="mt-4 w-full text-center text-sm text-zinc-400"
 							>
-								Already have an account? <span class="text-green-500 hover:text-green-400 transition-colors">Sign In</span>
+								Already have an account? <span
+									class="text-green-500 transition-colors hover:text-green-400">Sign In</span
+								>
 							</button>
 						{/if}
 					</div>
@@ -83,3 +88,19 @@
 		</div>
 	</div>
 </SignedOut>
+
+<style>
+	.clerk-wrapper :global(.cl-internal-hkbunq) {
+		background-color: transparent !important;
+	}
+
+	.clerk-wrapper :global(.cl-internal-zko3ih) {
+		box-shadow: none !important;
+	}
+	.clerk-wrapper :global(.cl-footerAction) {
+		display: none !important;
+	}
+	.clerk-wrapper :global(.cl-footer) {
+		background-color: transparent !important;
+	}
+</style>

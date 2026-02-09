@@ -1,6 +1,6 @@
 <script>
-	import Header from "$lib/components/Header.svelte";
-
+	import Footer from '$lib/components/Footer.svelte';
+	import Header from '$lib/components/Header.svelte';
 
 	let currentYear = new Date().getFullYear();
 </script>
@@ -8,6 +8,7 @@
 <svelte:head>
 	<title>Privacy Policy - Lekana</title>
 	<meta name="description" content="Privacy Policy for Lekana - AI-Powered Document Automation." />
+	<link rel="canonical" href="https://lekana.dev/privacy" />
 </svelte:head>
 
 <main
@@ -17,9 +18,9 @@
 	<Header />
 	<style>
 		.policy-content h2 {
-			font-size: 1.5rem;
+			font-size: 1.2rem;
 			font-weight: 600;
-			color: #05df72;
+			color: #d4d4d8;
 			margin-top: 2rem;
 			margin-bottom: 1rem;
 		}
@@ -46,124 +47,140 @@
 		class="absolute top-0 aspect-square w-full scale-[150%] animate-[pulse_5s_ease-in-out_infinite] justify-self-center rounded-full bg-radial from-green-500/10 to-transparent to-60%"
 	></div>
 
-	<section class="relative z-10 w-full max-w-4xl px-6 pt-32 pb-20 md:pt-48">
-		<h1 class="mb-4 text-4xl font-bold text-zinc-300 md:text-5xl">Privacy Policy</h1>
-		<p class="mb-12 text-xs text-neutral-500">Last Updated: December 20, 2024</p>
+	<section class="relative z-10 w-full max-w-5xl px-6 pt-32 pb-20 md:pt-48">
+		<h1 class="mb-4 text-3xl font-bold text-zinc-300 md:text-4xl">Privacy Policy</h1>
+		<p class="mb-6 md:mb-12 text-[10px] text-neutral-500">
+			Last Updated: February 09, 2026
+		</p>
 
-		<div class="policy-content">
-			<p>
-				At Lekana, we take your privacy seriously. This Privacy Policy explains how we collect, use,
-				and protect your information when you use our AI-powered document intake service.
-			</p>
+		<div class="policy-content space-y-8 text-[11px] md:text-[12px]">
+			<section>
+				<p class="leading-relaxed">
+					This Privacy Policy ("Policy") describes the practices of Berl (PVT) LTD ("Company", "we",
+					"us", or "our") regarding the collection, use, and disclosure of information through our
+					AI-powered document automation platform, Lekana (the "Service"). By accessing or using the
+					Service, you consent to the information practices described in this Policy.
+				</p>
+			</section>
 
-			<h2>1. Information We Collect</h2>
-			<p>We collect information that you provide directly to us, including:</p>
-			<ul>
-				<li>
-					Contact information (such as name, email address, and phone number) when you join our
-					waitlist or create an account.
-				</li>
-				<li>Company information and details about your document workflows.</li>
-				<li>
-					Documents you upload for processing (which are processed securely and not stored
-					permanently unless specifically requested for your workflow).
-				</li>
-			</ul>
+			<section>
+				<h2>1. Information Collection and Categorization</h2>
+				<p>We categorize collected information into the following primary types:</p>
+				<ul class="space-y-2">
+					<li>
+						<strong>Personal Identification Data:</strong> includes but is not limited to name, professional
+						email addresses, billing information, and contact credentials provided during account registration
+						or waitlist onboarding.
+					</li>
+					<li>
+						<strong>Document Metadata:</strong> includes non-sensitive structural information about documents
+						processed (file type, size, upload timestamps).
+					</li>
+					<li>
+						<strong>User-Provided Content:</strong> includes the actual documents, images, and data structures
+						submitted for AI extraction and workflow processing.
+					</li>
+					<li>
+						<strong>Technical Log Data:</strong> includes IP addresses, browser types, interaction logs,
+						and device identifiers collected automatically for security and performance monitoring.
+					</li>
+				</ul>
+			</section>
 
-			<h2>2. How We Use Your Information</h2>
-			<p>We use the information we collect to:</p>
-			<ul>
-				<li>Provide and improve our document processing services.</li>
-				<li>
-					Communicate with you about our services, including updates and promotional materials.
-				</li>
-				<li>Analyze usage patterns to enhance our platform's performance and user experience.</li>
-				<li>Comply with legal obligations and protect our rights.</li>
-			</ul>
+			<section>
+				<h2>2. Data Encryption and Technical Safeguards</h2>
+				<p>
+					The security of your data is a fundamental cornerstone of our Service architecture. We
+					implement the following technical safeguards:
+				</p>
+				<ul class="space-y-2">
+					<li>
+						<strong>Encryption at Rest:</strong> All user-provided content and processed data are encrypted
+						using the Industry-Standard Advanced Encryption Standard (AES-256) when stored on our physical
+						or cloud infrastructure.
+					</li>
+					<li>
+						<strong>Encryption in Transit:</strong> All data transmissions between the user and our Service,
+						and between our internal service components, are protected using Transport Layer Security
+						(TLS 1.2 or higher).
+					</li>
+					<li>
+						<strong>Access Controls:</strong> We maintain strict internal logical access controls based
+						on the Principle of Least Privilege (PoLP). No Company personnel access raw document content
+						except when explicitly authorized for support or technical troubleshooting.
+					</li>
+				</ul>
+			</section>
 
-			<h2>3. Data Security</h2>
-			<p>
-				We implement industry-standard security measures to protect your information from
-				unauthorized access, disclosure, or destruction. Your documents are processed in controlled
-				environments, and access is restricted according to strict security protocols.
-			</p>
+			<section>
+				<h2>3. Global Data Residency and Infrastructure</h2>
+				<p>
+					Lekana utilizes a geographically distributed infrastructure to ensure high availability
+					and performance. All primary data storage and processing facilities are located within
+					multiple regions across the <strong>United States</strong>. By using the Service, you
+					acknowledge and agree that your data will be transferred to and processed in the United
+					States.
+				</p>
+			</section>
 
-			<h2>4. Data Retention</h2>
-			<p>
-				We only retain your personal information for as long as necessary to fulfill the purposes
-				outlined in this policy or as required by law. For our free demo scanner, documents are
-				processed in memory and not permanently stored.
-			</p>
+			<section>
+				<h2>4. Utilization of Information</h2>
+				<p>Information is utilized exclusively for the following purposes:</p>
+				<ul class="space-y-2">
+					<li>Facilitating AI-driven document recognition, extraction, and automated routing.</li>
+					<li>
+						Continuous improvement of our proprietary extraction algorithms and user interface
+						experiences.
+					</li>
+					<li>Billing, account management, and provision of technical support services.</li>
+					<li>Detection and prevention of fraudulent or unauthorized access to the Service.</li>
+				</ul>
+				<p>
+					We do not sell, rent, or trade your document content or personal identification data to
+					third parties for marketing purposes.
+				</p>
+			</section>
 
-			<h2>5. Your Rights</h2>
-			<p>
-				You have the right to access, correct, or delete your personal information. If you wish to
-				exercise these rights, please contact us at privacy@lekana.dev.
-			</p>
+			<section>
+				<h2>5. Third-Party Service Providers</h2>
+				<p>
+					We may engage trusted third-party service providers to perform functions and provide
+					services to us, such as hosting, maintenance, and analytics. These providers are bound by
+					strict confidentiality and data protection agreements and are only permitted to use your
+					information as necessary to provide their services to us.
+				</p>
+			</section>
 
-			<h2>6. Updates to This Policy</h2>
-			<p>
-				We may update this Privacy Policy from time to time. We will notify you of any significant
-				changes by posting the new policy on this page and updating the "Last Updated" date.
-			</p>
+			<section>
+				<h2>6. Retention and Deletion Architecture</h2>
+				<p>
+					We retain data only for the duration required to provide the requested Services or as
+					mandated by legal obligations. For users of our "Free Beta" or "Demo" entry points,
+					document content is typically processed in volatile memory and is not persisted in
+					long-term storage, unless the user explicitly saves the workflow or document to their
+					account.
+				</p>
+			</section>
 
-			<h2>7. Contact Us</h2>
-			<p>
-				If you have any questions about this Privacy Policy, please contact us at
-				support@lekana.dev.
-			</p>
+			<section>
+				<h2>7. Regulatory Compliance and User Rights</h2>
+				<p>
+					Depending on your jurisdiction, you may have rights under the General Data Protection
+					Regulation (GDPR), the California Consumer Privacy Act (CCPA), or other regional data
+					protection laws. These may include the right to access, correct, or delete your personal
+					data. To exercise these rights, please contact our Data Protection Officer at <strong
+						>privacy@lekana.dev</strong
+					>.
+				</p>
+			</section>
+
+			<section>
+				<h2>8. Contact Information</h2>
+				<p>Questions, concerns, or requests regarding this Privacy Policy should be directed to:</p>
+				<p><strong>Lekana Support Team</strong><br />Email: support@lekana.dev</p>
+			</section>
 		</div>
 	</section>
 
-	<!-- FOOTER -->
-	<footer class="w-full border-t border-green-950/60 bg-black/95 z-10">
-		<div class="mx-auto max-w-6xl px-4 py-10 text-sm text-gray-400 md:px-8 md:py-12">
-			
-			<div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-				<!-- Brand -->
-				<div class="max-w-sm space-y-3">
-					<p class="text-base font-semibold text-white">Lekana</p>
-					<p class="text-xs leading-relaxed text-gray-500 md:text-sm">
-						An OCR-powered document intake service for businesses. We read your documents,
-						understand them, and route them into your workflow — fully managed, end-to-end.
-					</p>
-				</div>
-
-				<!-- Navigation -->
-				<div class="flex flex-1 flex-wrap gap-10 md:justify-end">
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Product</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="/#about" class="hover:text-green-500">About</a></li>
-							<li><a href="/#faq" class="hover:text-green-500">FAQ</a></li>
-						</ul>
-					</div>
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Company</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="/#waitlist" class="hover:text-green-500">Join waitlist</a></li>
-						</ul>
-					</div>
-					<div class="space-y-3">
-						<p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">Legal</p>
-						<ul class="space-y-2 text-xs md:text-sm">
-							<li><a href="/privacy" class="text-green-500">Privacy</a></li>
-							<li><a href="/terms" class="hover:text-green-500">Terms</a></li>
-						</ul>
-					</div>
-				</div>
-			</div>
-
-			<hr class="mt-8 border-neutral-800" />
-
-			<div
-				class="mt-4 flex flex-col items-center justify-between gap-3 text-[11px] text-gray-500 md:flex-row md:text-xs"
-			>
-				<p>Lekana © {currentYear}. All rights reserved.</p>
-				<p class="text-center md:text-right">
-					Built for businesses that are done with the chaos of documents.
-				</p>
-			</div>
-		</div>
-	</footer>
+	<Footer />
 </main>

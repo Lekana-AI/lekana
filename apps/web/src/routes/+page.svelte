@@ -124,24 +124,157 @@
 </script>
 
 <svelte:head>
-	<title>Lekana - Automated Document Workflows for Business</title>
+	<!-- Primary Meta Tags -->
+	<title>Lekana - AI-Powered Document Automation | Intelligent OCR & Workflow Platform</title>
 	<meta
 		name="description"
-		content="Transform document chaos into structured workflows. Lekana reads, understands, and routes your business documents automatically."
+		content="Transform your document chaos with Lekana's AI-powered automation. Our intelligent OCR and LLM technology extracts, structures, and routes documents automatically — no coding required."
 	/>
-	<meta property="og:title" content="Lekana - Automated Document Workflows" />
+	<meta
+		name="keywords"
+		content="AI document processing, intelligent OCR, document automation, AI workflow automation, machine learning document extraction, automated document routing, LLM document understanding, artificial intelligence business automation, smart document management, AI-powered OCR"
+	/>
+	<meta name="robots" content="index, follow" />
+	<link rel="canonical" href="https://lekana.dev/" />
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="https://lekana.dev/" />
+	<meta
+		property="og:title"
+		content="Lekana - AI-Powered Document Automation | Intelligent OCR & Workflow Platform"
+	/>
 	<meta
 		property="og:description"
-		content="AI-powered document intake that works the way you need it to."
+		content="Transform your document chaos with Lekana's AI-powered automation. Our intelligent OCR and LLM technology extracts, structures, and routes documents automatically."
 	/>
-	<meta property="og:image" content="/thumb.png" />
+	<meta property="og:image" content="https://lekana.dev/beta.png" />
+	<meta property="og:site_name" content="Lekana" />
+	<meta property="og:locale" content="en_US" />
 
-	<link rel="preconnect" href="https://fonts.googleapis.com" />
-	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<!-- Twitter Card -->
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:url" content="https://lekana.dev/" />
+	<meta name="twitter:title" content="Lekana - AI-Powered Document Automation" />
+	<meta
+		name="twitter:description"
+		content="Transform your document chaos with AI-powered automation. Intelligent OCR + LLM technology for automatic document processing."
+	/>
+	<meta name="twitter:image" content="https://lekana.dev/beta.png" />
+
 	<link
 		href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap"
 		rel="stylesheet"
 	/>
+
+	<!-- JSON-LD Structured Data -->
+	{@html `<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@graph": [
+			{
+				"@type": "Organization",
+				"@id": "https://lekana.dev/#organization",
+				"name": "Lekana",
+				"url": "https://lekana.dev",
+				"logo": {
+					"@type": "ImageObject",
+					"url": "https://lekana.dev/logo-circle.png"
+				},
+				"description": "AI-powered document automation platform using intelligent OCR and LLM technology",
+				"sameAs": []
+			},
+			{
+				"@type": "WebSite",
+				"@id": "https://lekana.dev/#website",
+				"url": "https://lekana.dev",
+				"name": "Lekana",
+				"publisher": {
+					"@id": "https://lekana.dev/#organization"
+				},
+				"description": "AI-Powered Document Automation Platform"
+			},
+			{
+				"@type": "SoftwareApplication",
+				"@id": "https://lekana.dev/#software",
+				"name": "Lekana",
+				"applicationCategory": "BusinessApplication",
+				"operatingSystem": "Web",
+				"description": "AI-powered document intake and automation service that uses intelligent OCR and LLM technology to extract, structure, and route business documents automatically.",
+				"offers": {
+					"@type": "Offer",
+					"availability": "https://schema.org/PreOrder",
+					"description": "Join the waitlist for early access"
+				},
+				"featureList": [
+					"AI-Powered Document Recognition",
+					"Intelligent OCR with LLM Understanding",
+					"Automated Workflow Routing",
+					"Multi-language Support",
+					"Custom Integration APIs",
+					"Secure Private Portal"
+				],
+				"publisher": {
+					"@id": "https://lekana.dev/#organization"
+				}
+			},
+			{
+				"@type": "FAQPage",
+				"@id": "https://lekana.dev/#faq",
+				"mainEntity": [
+					{
+						"@type": "Question",
+						"name": "How does Lekana actually work day-to-day?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "You connect your document sources (email inboxes, uploads, storage, or APIs) and tell us what you want to happen. We configure document types, fields to extract, validation rules, and routing destinations. Once live, new documents are automatically read, structured, and sent into your systems — without your team touching each file."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "What kinds of documents can you handle?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "We work with PDFs, scans, and image-based documents including invoices, forms, contracts, ID documents, shipping documents, statements, and more. Layout-heavy documents, multipage files, tables, and semi-structured forms are all supported thanks to our OCR + LLM stack."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "Can you integrate with our existing tools and APIs?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "Yes. We can push structured data into CRMs, ERPs, helpdesk tools, internal databases, webhooks, or custom APIs. During onboarding, we map your document fields to the exact objects and endpoints you use today."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "Do we need internal engineering resources to use Lekana?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "No. Lekana is designed for operations, finance, and business teams. You describe your current process, share example documents, and confirm the outputs you need. We handle all configuration, integrations, and maintenance behind the scenes."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "How do you handle security and data privacy?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "Data security is a core part of the product. Your documents are processed in controlled environments, and access is restricted through your private dashboard. We can discuss data retention, encryption, and compliance requirements during onboarding."
+						}
+					},
+					{
+						"@type": "Question",
+						"name": "What does the private dashboard include?",
+						"acceptedAnswer": {
+							"@type": "Answer",
+							"text": "Your private dashboard gives you visibility into document intake, processing status, extracted fields, and delivery logs. You can review edge cases, export data, and adjust workflows with our team — without touching any low-level infrastructure."
+						}
+					}
+				]
+			}
+		]
+	}
+	</script>`}
 </svelte:head>
 
 <main class="dark-scroll relative flex flex-col items-center overflow-x-clip bg-neutral-950">
@@ -552,7 +685,7 @@
 				<div class="flex-1">
 					<img src="monitoring.png" alt="Builder Screenshot" />
 				</div>
-				<div class="md:w-1/3 space-y-4">
+				<div class="space-y-4 md:w-1/3">
 					<span class="text-xs font-semibold tracking-widest text-green-400 uppercase"
 						>Monitoring</span
 					>

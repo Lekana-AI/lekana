@@ -100,6 +100,7 @@
 
 <svelte:head>
 	<title>Dashboard - Lekana</title>
+	<meta name="robots" content="noindex, nofollow" />
 	<meta
 		name="description"
 		content="Lekana automates document workflows for businesses. Scan, structure, and route documents seamlessly."

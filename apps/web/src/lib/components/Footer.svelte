@@ -4,7 +4,7 @@
 </script>
 
 <!-- FOOTER -->
-<footer class="mt-14 w-full border-t border-green-950/60 bg-black/95">
+<footer class="mt-14 w-full border-t border-green-950/60 bg-black/95 z-10">
 	<div class="mx-auto max-w-6xl px-4 py-10 text-sm text-gray-400 md:px-8 md:py-12">
 		<div class="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
 			<!-- Brand -->
@@ -81,7 +81,7 @@
 							<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
 						</svg>
 					</a>
-					<a
+					<!-- <a
 						href="https://x.com/lekana.dev"
 						target="_blank"
 						rel="noopener noreferrer"
@@ -102,9 +102,9 @@
 							<path d="M4 4l11.733 16h4.267l-11.733-16z"></path>
 							<path d="M4 20l6.768-6.768m2.464-2.464l6.768-6.768"></path>
 						</svg>
-					</a>
+					</a> -->
 					<a
-						href="https://linkedin.com/company/lekana.dev"
+						href="https://linkedin.com/company/lekana-dev"
 						target="_blank"
 						rel="noopener noreferrer"
 						class="transition-colors hover:text-green-500"

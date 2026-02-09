@@ -1,3 +1,9 @@
-# allow crawling everything by default
+# allow crawling everything public
 User-agent: *
-Disallow:
+Disallow: /dashboard
+Disallow: /enterprise
+Disallow: /w/
+Disallow: /e/
+Disallow: /api/
+
+Sitemap: https://lekana.dev/sitemap.xml
