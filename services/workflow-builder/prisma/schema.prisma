@@ -11,27 +11,29 @@ datasource db {
 
 model User {
   id        String     @id @default(uuid())
-  feedbacks Feedback[]
   workflows Workflow[]
+  feedbacks Feedback[]
 }
 
 model Workflow {
-  id                  String          @id @default(uuid())
-  name                String
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  userId              String
-  isPublished         Boolean         @default(false)
-  lastPublishedAt     DateTime?
-  publishedAt         DateTime?
-  publishedWorkflowId String?
-  isDeleted           Boolean         @default(false)
-  feedbacks           Feedback[]
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  edges               WorkflowEdge[]
-  fields              WorkflowField[]
-  nodes               WorkflowNode[]
-  roles               WorkflowRole[]
+  id        String          @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  isDeleted Boolean         @default(false)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  edges     WorkflowEdge[]
+  nodes     WorkflowNode[]
+  fields    WorkflowField[]
+  roles     WorkflowRole[]
+  feedbacks Feedback[]
+
+  // Publish status tracking (synced from runtime)
+  isPublished         Boolean   @default(false)
+  publishedWorkflowId String? // Runtime's published workflow ID
+  publishedAt         DateTime? // First publish time
+  lastPublishedAt     DateTime? // Most recent publish time
 
   @@index([userId])
 }
@@ -43,11 +45,11 @@ model WorkflowNode {
   positionX  Float
   positionY  Float
   actionId   String
-  isDeleted  Boolean         @default(false)
   outgoing   WorkflowEdge[]  @relation("SourceEdges")
   incoming   WorkflowEdge[]  @relation("TargetEdges")
   fields     WorkflowField[]
   action     Action          @relation(fields: [actionId], references: [id])
+  isDeleted  Boolean         @default(false)
   workflow   Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([workflowId])
@@ -59,9 +61,9 @@ model WorkflowEdge {
   workflowId   String
   sourceNodeId String
   targetNodeId String
-  isDeleted    Boolean      @default(false)
   sourceNode   WorkflowNode @relation("SourceEdges", fields: [sourceNodeId], references: [id], onDelete: Cascade)
   targetNode   WorkflowNode @relation("TargetEdges", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  isDeleted    Boolean      @default(false)
   workflow     Workflow     @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([workflowId])
@@ -107,38 +109,41 @@ model WorkflowField {
   @@index([workflowId])
 }
 
+// Available permissions in the system for role-based access control
 model Permission {
   id                     String                   @id @default(uuid())
-  code                   String                   @unique
-  name                   String
-  description            String?
-  category               String                   @default("general")
+  code                   String                   @unique // e.g., "WORKFLOW_VIEW"
+  name                   String // e.g., "View Workflow"
+  description            String? // Detailed description
+  category               String                   @default("general") // e.g., "workflow", "review", "admin"
   createdAt              DateTime                 @default(now())
-  defaultRolePermissions DefaultRolePermission[]
   rolePermissions        WorkflowRolePermission[]
+  defaultRolePermissions DefaultRolePermission[]
 
   @@index([category])
 }
 
+// Junction table linking WorkflowRole to Permission
 model WorkflowRolePermission {
   id             String       @id @default(uuid())
   workflowRoleId String
   permissionId   String
-  createdAt      DateTime     @default(now())
-  permission     Permission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
   workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)
+  permission     Permission   @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
 
   @@unique([workflowRoleId, permissionId])
   @@index([workflowRoleId])
   @@index([permissionId])
 }
 
+// Role definition with explicit permissions for each workflow
 model WorkflowRole {
   id              String                   @id @default(uuid())
   workflowId      String
-  name            String
+  name            String // "developer", "validator", custom names
   description     String?
-  isSystem        Boolean                  @default(false)
+  isSystem        Boolean                  @default(false) // true for developer/validator
   createdAt       DateTime                 @default(now())
   workflow        Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
   assignments     WorkflowRoleAssignment[]
@@ -148,40 +153,49 @@ model WorkflowRole {
   @@index([workflowId])
 }
 
+// Role assignment - links users to roles for specific workflows
 model WorkflowRoleAssignment {
   id             String       @id @default(uuid())
-  userId         String
-  userEmail      String?
+  userId         String // Clerk user ID
+  userEmail      String? // For display/invite
   workflowRoleId String
-  assignedAt     DateTime     @default(now())
-  assignedBy     String?
   workflowRole   WorkflowRole @relation(fields: [workflowRoleId], references: [id], onDelete: Cascade)
+  assignedAt     DateTime     @default(now())
+  assignedBy     String? // Who assigned this role
 
   @@unique([userId, workflowRoleId])
   @@index([userId])
   @@index([workflowRoleId])
 }
 
+// Default role templates - automatically created for each new workflow
 model DefaultRole {
   id                     String                  @id @default(uuid())
-  name                   String                  @unique
+  name                   String                  @unique // e.g., "developer", "validator"
   description            String?
-  isActive               Boolean                 @default(true)
+  isActive               Boolean                 @default(true) // Can disable without deleting
   createdAt              DateTime                @default(now())
   defaultRolePermissions DefaultRolePermission[]
 }
 
+// Junction table linking DefaultRole to Permission
 model DefaultRolePermission {
   id            String      @id @default(uuid())
   defaultRoleId String
   permissionId  String
-  createdAt     DateTime    @default(now())
   defaultRole   DefaultRole @relation(fields: [defaultRoleId], references: [id], onDelete: Cascade)
   permission    Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
 
   @@unique([defaultRoleId, permissionId])
   @@index([defaultRoleId])
   @@index([permissionId])
+}
+
+// Feedback type enum
+enum FeedbackType {
+  GENERAL
+  ERROR_REPORT
 }
 
 model Feedback {
@@ -189,35 +203,36 @@ model Feedback {
   userId          String
   workflowId      String?
   comment         String
-  createdAt       DateTime     @default(now())
   type            FeedbackType @default(GENERAL)
-  executionId     String?
-  nodeExecutionId String?
-  errorDetails    Json?
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workflow        Workflow?    @relation(fields: [workflowId], references: [id])
+  executionId     String? // Runtime execution ID (for error reports)
+  nodeExecutionId String? // Runtime node execution ID (for step-level reports)
+  errorDetails    Json? // Captured error context from the execution
+  createdAt       DateTime     @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflow Workflow? @relation(fields: [workflowId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([workflowId])
+  @@index([executionId])
+  @@index([type])
 }
 
+// User usage tracking for storage and token limits
 model UserUsage {
-  userId       String   @id
+  userId       String   @id // Clerk user ID
+  storageLimit BigInt   @default(1073741824) // 1GB in bytes
   storageUsed  BigInt   @default(0)
-  tokensUsed   BigInt   @default(0)
-  storageLimit BigInt   @default(536870912)
-  tokenLimit   BigInt?
-  updatedAt    DateTime @default(now()) @updatedAt
+  tokenLimit   Int? // Optional hard cap on tokens
+  tokensUsed   Float    @default(0) // Total tokens consumed
   createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
+// System configuration for default limits and settings
+// Use key-value pairs for flexibility
 model SystemConfig {
   key       String   @id
-  value     String
+  value     String // JSON string for complex values
   updatedAt DateTime @updatedAt
-}
-
-enum FeedbackType {
-  GENERAL
-  ERROR_REPORT
 }
