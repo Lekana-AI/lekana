@@ -32,6 +32,7 @@ export interface WorkflowSnapshot {
 
 /**
  * Streams the workflow generation process, including reasoning and final JSON.
+ * Includes automatic retry for transient errors like 429.
  */
 export async function* streamWorkflowGeneration(
   prompt: string,
@@ -51,16 +52,39 @@ export async function* streamWorkflowGeneration(
     ? `Current Workflow State: ${JSON.stringify(currentState, null, 2)}\n\nUser Request: ${prompt}`
     : `User Request: ${prompt}`;
 
-  try {
-    const result = await chat.sendMessageStream(userMessage);
+  // Retry logic for transient errors (like 429 Resource Exhausted)
+  const maxRetries = 3;
+  let lastError: any;
 
-    for await (const chunk of result.stream) {
-      yield chunk.text();
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      const result = await chat.sendMessageStream(userMessage);
+
+      // Successfully started the stream
+      for await (const chunk of result.stream) {
+        yield chunk.text();
+      }
+      return; // Success, exit the loop
+    } catch (error: any) {
+      lastError = error;
+
+      // If it's a 429 Resource Exhausted error, wait and retry
+      if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
+        const delay = 2000 * Math.pow(2, i); // 2s, 4s, 8s
+        console.warn(`[AI] 429 Error (Resource Exhausted). Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // For other errors, log and throw immediately
+      console.error(`Error in streamWorkflowGeneration using model ${GEMINI_MODEL}:`, error);
+      throw error;
     }
-  } catch (error) {
-    console.error(`Error in streamWorkflowGeneration using model ${GEMINI_MODEL}:`, error);
-    throw error;
   }
+
+  // If we exhausted retries
+  console.error(`AI generation failed after ${maxRetries} retries.`);
+  throw lastError;
 }
 
 function getSystemInstruction(actions: any[]): string {
