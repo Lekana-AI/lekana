@@ -1,6 +1,5 @@
 # allow crawling everything public
 User-agent: *
-Disallow: /dashboard
 Disallow: /enterprise
 Disallow: /w/
 Disallow: /e/
