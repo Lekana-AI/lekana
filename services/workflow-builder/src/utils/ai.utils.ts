@@ -101,7 +101,7 @@ ${JSON.stringify(actionDocs, null, 2)}
 `;
 }
 
-function getFewShotHistory(actions: any[]): Content[] {
+export function getFewShotHistory(actions: any[]): Content[] {
   return [
     {
       role: "user",
