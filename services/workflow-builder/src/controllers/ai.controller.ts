@@ -71,38 +71,44 @@ export const generateAIWorkflow = async (req: Request, res: Response) => {
         let reasoningSentLength = 0;
         const BUFFER_SIZE = 20; // Enough to hold '---JSON_START---' and some change
 
-        for await (const chunk of stream) {
-            fullText += chunk;
+        try {
+            for await (const chunk of stream) {
+                fullText += chunk;
 
-            if (!isStreamingJson) {
-                const markerIndex = fullText.indexOf(START_MARKER);
-                const markdownIndex = fullText.search(/```json|```/);
-                const braceIndex = fullText.search(/\n\s*\{/);
+                if (!isStreamingJson) {
+                    const markerIndex = fullText.indexOf(START_MARKER);
+                    const markdownIndex = fullText.search(/```json|```/);
+                    const braceIndex = fullText.search(/\n\s*\{/);
 
-                const triggerIndex = [markerIndex, markdownIndex, braceIndex]
-                    .filter(i => i !== -1)
-                    .sort((a, b) => a - b)[0];
+                    const triggerIndex = [markerIndex, markdownIndex, braceIndex]
+                        .filter(i => i !== -1)
+                        .sort((a, b) => a - b)[0];
 
-                if (triggerIndex !== undefined) {
-                    isStreamingJson = true;
+                    if (triggerIndex !== undefined) {
+                        isStreamingJson = true;
 
-                    // Flush everything from reasoningSentLength to triggerIndex
-                    const toSend = fullText.slice(reasoningSentLength, triggerIndex);
-                    if (toSend.trim()) {
-                        res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
-                    }
-                    reasoningSentLength = triggerIndex;
-                } else {
-                    // We haven't found a trigger yet. 
-                    // Send everything up to (fullText.length - BUFFER_SIZE) to avoid leaking partial markers
-                    const safeLimit = Math.max(0, fullText.length - BUFFER_SIZE);
-                    if (safeLimit > reasoningSentLength) {
-                        const toSend = fullText.slice(reasoningSentLength, safeLimit);
-                        res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
-                        reasoningSentLength = safeLimit;
+                        // Flush everything from reasoningSentLength to triggerIndex
+                        const toSend = fullText.slice(reasoningSentLength, triggerIndex);
+                        if (toSend.trim()) {
+                            res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
+                        }
+                        reasoningSentLength = triggerIndex;
+                    } else {
+                        // We haven't found a trigger yet. 
+                        // Send everything up to (fullText.length - BUFFER_SIZE) to avoid leaking partial markers
+                        const safeLimit = Math.max(0, fullText.length - BUFFER_SIZE);
+                        if (safeLimit > reasoningSentLength) {
+                            const toSend = fullText.slice(reasoningSentLength, safeLimit);
+                            res.write(`data: ${JSON.stringify({ type: 'text', content: toSend })}\n\n`);
+                            reasoningSentLength = safeLimit;
+                        }
                     }
                 }
             }
+        } catch (streamError) {
+            console.error('Error during AI stream iteration:', streamError);
+            res.write(`data: ${JSON.stringify({ type: 'error', message: 'Stream processing error' })}\n\n`);
+            return res.end();
         }
 
         // Before moving to JSON extraction, flush any remaining reasoning if we NEVER hit isStreamingJson (error case)

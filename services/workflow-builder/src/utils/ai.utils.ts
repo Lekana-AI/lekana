@@ -3,7 +3,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+
+if (!GEMINI_API_KEY) {
+  console.error("WARNING: GEMINI_API_KEY is not set in environment variables");
+}
+
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export interface WorkflowNodeSnapshot {
   tempId: string;
@@ -32,7 +39,7 @@ export async function* streamWorkflowGeneration(
   currentState?: WorkflowSnapshot
 ) {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: GEMINI_MODEL,
     systemInstruction: getSystemInstruction(actions)
   });
 
@@ -44,10 +51,15 @@ export async function* streamWorkflowGeneration(
     ? `Current Workflow State: ${JSON.stringify(currentState, null, 2)}\n\nUser Request: ${prompt}`
     : `User Request: ${prompt}`;
 
-  const result = await chat.sendMessageStream(userMessage);
+  try {
+    const result = await chat.sendMessageStream(userMessage);
 
-  for await (const chunk of result.stream) {
-    yield chunk.text();
+    for await (const chunk of result.stream) {
+      yield chunk.text();
+    }
+  } catch (error) {
+    console.error(`Error in streamWorkflowGeneration using model ${GEMINI_MODEL}:`, error);
+    throw error;
   }
 }
 
@@ -61,7 +73,6 @@ function getSystemInstruction(actions: any[]): string {
     inputType: a.inputType,
     outputType: a.outputType
   }));
-  console.log(actionDocs);
 
   return `You are an expert AI Workflow Architect for "Lekana AI Workflow Builder".
 Your goal is to help users build or refine automation workflows.
