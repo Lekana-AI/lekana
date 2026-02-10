@@ -1,0 +1,431 @@
+﻿[
+  {
+    "id": "dc6d6470-8dc4-4a19-82a9-ce8ffa821fca",
+    "name": "Classification",
+    "description": "Classify documents using Lekana, and fallback with custom labels",
+    "categoryId": "5d0d4ed6-0410-4b07-8251-57044507575d",
+    "configSchema": {
+      "mode": "custom",
+      "stepName": "Classification",
+      "customLabels": [],
+      "outputVariables": [
+        "label",
+        "confidence"
+      ],
+      "confidenceThreshold": 0.7
+    },
+    "configMeta": {
+      "mode": {
+        "type": "select",
+        "label": "Classification Mode",
+        "options": [
+          {
+            "label": "Custom Labels",
+            "value": "custom"
+          },
+          {
+            "label": "Auto-Categorize",
+            "value": "auto"
+          }
+        ]
+      },
+      "stepName": {
+        "type": "text",
+        "label": "Step Name",
+        "required": true
+      },
+      "customLabels": {
+        "info": "Array of labels e.g. \"Invoice\", \"Receipt\", \"Contract\", \"ID Card\"",
+        "type": "array",
+        "label": "Custom Labels",
+        "value": [
+          ""
+        ],
+        "visibleWhen": {
+          "mode": "custom"
+        }
+      },
+      "outputVariables": {
+        "info": "Fields available for downstream routing",
+        "type": "hidden",
+        "label": "Output Variables"
+      },
+      "outputFieldsSource": "customLabels",
+      "confidenceThreshold": {
+        "info": "Minimum confidence (0.0 - 1.0) before flagging for human review",
+        "type": "number",
+        "label": "Confidence Threshold"
+      }
+    },
+    "inputType": "file",
+    "outputType": "json",
+    "icon": "ListChecks",
+    "serviceUrl": "https://lekana-classification-PROJECT_NUMBER.europe-west1.run.app",
+    "isActive": true,
+    "category": {
+      "id": "5d0d4ed6-0410-4b07-8251-57044507575d",
+      "name": "Input & Pre-Processing",
+      "description": "Initial data ingestion and preparation"
+    }
+  },
+  {
+    "id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+    "name": "Conditional Router",
+    "description": "Route data based on field values with conditional operators",
+    "categoryId": "123ec4b3-8d96-48e9-8008-4fed68751d58",
+    "configSchema": {
+      "operator": "equals",
+      "stepName": "Conditional Router",
+      "outputMode": "documents_only",
+      "routeValue": "",
+      "skipIfEmpty": true,
+      "routeByField": "label"
+    },
+    "configMeta": {
+      "operator": {
+        "type": "select",
+        "label": "Operator",
+        "options": [
+          {
+            "label": "Equals",
+            "value": "equals"
+          },
+          {
+            "label": "Not Equals",
+            "value": "not_equals"
+          },
+          {
+            "label": "Contains",
+            "value": "contains"
+          },
+          {
+            "label": "Greater Than",
+            "value": "greater_than"
+          },
+          {
+            "label": "Less Than",
+            "value": "less_than"
+          }
+        ]
+      },
+      "stepName": {
+        "type": "text",
+        "label": "Step Name",
+        "required": true
+      },
+      "outputMode": {
+        "info": "What data to send downstream",
+        "type": "select",
+        "label": "Output Format",
+        "options": [
+          {
+            "label": "Documents Only (for OCR)",
+            "value": "documents_only"
+          },
+          {
+            "label": "Filtered Data (for DB Export)",
+            "value": "filtered_data"
+          },
+          {
+            "label": "Full Data (pass everything)",
+            "value": "full_data"
+          }
+        ]
+      },
+      "routeValue": {
+        "info": "Value to match (from upstream labels or custom)",
+        "type": "dynamicSelectValues",
+        "label": "Match Value",
+        "allowCustom": true
+      },
+      "skipIfEmpty": {
+        "type": "checkbox",
+        "label": "Skip if no matches"
+      },
+      "routeByField": {
+        "info": "Field to match against (from upstream node)",
+        "type": "dynamicSelect",
+        "label": "Route By Field",
+        "sourceKey": "outputVariables"
+      }
+    },
+    "inputType": "json",
+    "outputType": "file",
+    "icon": "GitBranch",
+    "serviceUrl": "https://lekana-ai-conditional-router-PROJECT_NUMBER.europe-west1.run.app",
+    "isActive": true,
+    "category": {
+      "id": "123ec4b3-8d96-48e9-8008-4fed68751d58",
+      "name": "Utilities",
+      "description": "Utility actions for data processing"
+    }
+  },
+  {
+    "id": "8d80def8-1cd5-4b2e-a33b-39d48335e4e7",
+    "name": "Upload files",
+    "description": "Upload and ingest files to Lekana",
+    "categoryId": "5d0d4ed6-0410-4b07-8251-57044507575d",
+    "configSchema": {
+      "stepName": "Upload Files",
+      "bulkUpload": false,
+      "maxFileSizeMB": 20,
+      "allowedFileTypes": [
+        "pdf",
+        "images"
+      ]
+    },
+    "configMeta": {
+      "stepName": {
+        "type": "text",
+        "label": "Step Name",
+        "required": true
+      },
+      "bulkUpload": {
+        "info": "Allows zip compressed files to be uploaded",
+        "type": "checkbox",
+        "label": "Allow Zip"
+      },
+      "maxFileSizeMB": {
+        "type": "number",
+        "label": "Max File Size (MB)",
+        "value": 20
+      },
+      "allowedFileTypes": {
+        "type": "checkbox-group",
+        "label": "Allowed File Types",
+        "options": [
+          {
+            "label": "PDF",
+            "value": "pdf"
+          },
+          {
+            "label": "Images",
+            "value": "images"
+          }
+        ]
+      }
+    },
+    "inputType": "file",
+    "outputType": "file",
+    "icon": "CloudUpload",
+    "serviceUrl": "https://lekana-ai-upload-PROJECT_NUMBER.europe-west1.run.app",
+    "isActive": true,
+    "category": {
+      "id": "5d0d4ed6-0410-4b07-8251-57044507575d",
+      "name": "Input & Pre-Processing",
+      "description": "Initial data ingestion and preparation"
+    }
+  },
+  {
+    "id": "bd7e2a42-4498-4175-bdb4-a3b427f081dd",
+    "name": "Database Export",
+    "description": "Export workflow data to a Postgres SQL database",
+    "categoryId": "ffa3fb55-fc03-4767-9169-2e7a5e66decf",
+    "configSchema": {
+      "mode": "auto",
+      "stepName": "Database Export",
+      "tableName": "",
+      "onConflict": "skip",
+      "databaseUrl": "",
+      "fieldMapping": [],
+      "includeMetadata": true,
+      "flattenFieldsMode": true,
+      "unmappedFieldStrategy": "store_as_json",
+      "includeExtractionMetadata": true
+    },
+    "configMeta": {
+      "mode": {
+        "type": "select",
+        "label": "Table Mode",
+        "options": [
+          {
+            "label": "Auto Create",
+            "value": "auto"
+          },
+          {
+            "label": "Use Existing",
+            "value": "existing"
+          }
+        ]
+      },
+      "stepName": {
+        "type": "text",
+        "label": "Step Name",
+        "required": true
+      },
+      "tableName": {
+        "type": "text",
+        "label": "Table Name",
+        "required": true
+      },
+      "onConflict": {
+        "type": "select",
+        "label": "On Conflict",
+        "options": [
+          {
+            "label": "Skip",
+            "value": "skip"
+          },
+          {
+            "label": "Update",
+            "value": "update"
+          },
+          {
+            "label": "Error",
+            "value": "error"
+          }
+        ]
+      },
+      "databaseUrl": {
+        "info": "Only postgres databases are allowed. An account with limited access is recomended.",
+        "type": "dbUrl",
+        "label": "Postgres Database URL",
+        "required": true,
+        "placeholder": "postgresql://user:pass@host:5432/db",
+        "testConnection": true
+      },
+      "fieldMapping": {
+        "info": "Map extracted fields to database columns",
+        "type": "keyValue",
+        "label": "Field Mapping",
+        "value": [
+          ""
+        ],
+        "keyLabel": "OCR Field",
+        "valueLabel": "Database Column",
+        "useExtractedFields": true
+      },
+      "includeMetadata": {
+        "type": "checkbox",
+        "label": "Include Execution Metadata"
+      },
+      "flattenFieldsMode": {
+        "info": "Extract .value from OCR field objects",
+        "type": "checkbox",
+        "label": "Flatten OCR Fields"
+      },
+      "unmappedFieldStrategy": {
+        "type": "select",
+        "label": "Unmapped Fields",
+        "options": [
+          {
+            "label": "Store as JSON",
+            "value": "store_as_json"
+          },
+          {
+            "label": "Ignore",
+            "value": "ignore"
+          },
+          {
+            "label": "Error",
+            "value": "error"
+          }
+        ]
+      },
+      "includeExtractionMetadata": {
+        "info": "Store confidence and correction data",
+        "type": "checkbox",
+        "label": "Include Extraction Metadata"
+      }
+    },
+    "inputType": "json",
+    "outputType": "json",
+    "icon": "Database",
+    "serviceUrl": "https://lekana-ai-db-export-PROJECT_NUMBER.asia-south1.run.app",
+    "isActive": true,
+    "category": {
+      "id": "ffa3fb55-fc03-4767-9169-2e7a5e66decf",
+      "name": "Storage & Integrations",
+      "description": "Storage and external integrations"
+    }
+  },
+  {
+    "id": "8db87730-9720-4b1c-bf0c-ef75ad70c322",
+    "name": "OCR",
+    "description": "Extract text and key-value pairs with refinement",
+    "categoryId": "5d0d4ed6-0410-4b07-8251-57044507575d",
+    "configSchema": {
+      "stepName": "OCR",
+      "isRefined": false,
+      "outputMode": "auto",
+      "extractFields": [],
+      "processorType": "auto",
+      "outputVariables": [
+        "extractFields"
+      ]
+    },
+    "configMeta": {
+      "stepName": {
+        "type": "text",
+        "label": "Step Name",
+        "required": true
+      },
+      "isRefined": {
+        "type": "checkbox",
+        "label": "Include Raw Text Result"
+      },
+      "outputMode": {
+        "type": "select",
+        "label": "Output Mode",
+        "options": [
+          {
+            "label": "Text Cleanup",
+            "value": "auto"
+          },
+          {
+            "label": "Key-Value Pairs",
+            "value": "key-value"
+          },
+          {
+            "label": "Field Extraction",
+            "value": "field-extract"
+          }
+        ]
+      },
+      "extractFields": {
+        "type": "keyValue",
+        "label": "Fields to Extract",
+        "value": [],
+        "keyLabel": "Field Name",
+        "required": true,
+        "valueLabel": "Field Prompt",
+        "visibleWhen": {
+          "outputMode": "field-extract"
+        }
+      },
+      "processorType": {
+        "type": "select",
+        "label": "Processor Type",
+        "options": [
+          {
+            "label": "Auto",
+            "value": "auto"
+          },
+          {
+            "label": "Form Parser",
+            "value": "FORM_PARSER"
+          },
+          {
+            "label": "OCR Processor",
+            "value": "OCR_PROCESSOR"
+          }
+        ]
+      },
+      "outputVariables": {
+        "type": "hidden",
+        "label": "Output Variables"
+      },
+      "outputFieldsSource": "extractFields"
+    },
+    "inputType": "file",
+    "outputType": "json",
+    "icon": "ScanText",
+    "serviceUrl": "https://lekana-ai-ocr-final-PROJECT_NUMBER.europe-west1.run.app",
+    "isActive": true,
+    "category": {
+      "id": "5d0d4ed6-0410-4b07-8251-57044507575d",
+      "name": "Input & Pre-Processing",
+      "description": "Initial data ingestion and preparation"
+    }
+  }
+]

@@ -1,16 +1,9 @@
-import { GoogleGenerativeAI, Content, Part } from "@google/generative-ai";
+import { GoogleGenAI, Content, Part } from "@google/genai";
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-
-if (!GEMINI_API_KEY) {
-  console.error("WARNING: GEMINI_API_KEY is not set in environment variables");
-}
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface WorkflowNodeSnapshot {
   tempId: string;
@@ -32,19 +25,17 @@ export interface WorkflowSnapshot {
 
 /**
  * Streams the workflow generation process, including reasoning and final JSON.
- * Includes automatic retry for transient errors like 429.
  */
 export async function* streamWorkflowGeneration(
   prompt: string,
   actions: any[],
   currentState?: WorkflowSnapshot
 ) {
-  const model = genAI.getGenerativeModel({
-    model: GEMINI_MODEL,
-    systemInstruction: getSystemInstruction(actions)
-  });
-
-  const chat = model.startChat({
+  const chat = genAI.chats.create({
+    model: "gemini-2.0-flash",
+    config: {
+      systemInstruction: getSystemInstruction(actions)
+    },
     history: getFewShotHistory(actions)
   });
 
@@ -52,39 +43,11 @@ export async function* streamWorkflowGeneration(
     ? `Current Workflow State: ${JSON.stringify(currentState, null, 2)}\n\nUser Request: ${prompt}`
     : `User Request: ${prompt}`;
 
-  // Retry logic for transient errors (like 429 Resource Exhausted)
-  const maxRetries = 3;
-  let lastError: any;
+  const result = await chat.sendMessageStream({ message: userMessage });
 
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const result = await chat.sendMessageStream(userMessage);
-
-      // Successfully started the stream
-      for await (const chunk of result.stream) {
-        yield chunk.text();
-      }
-      return; // Success, exit the loop
-    } catch (error: any) {
-      lastError = error;
-
-      // If it's a 429 Resource Exhausted error, wait and retry
-      if (error.status === 429 || error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
-        const delay = 2000 * Math.pow(2, i); // 2s, 4s, 8s
-        console.warn(`[AI] 429 Error (Resource Exhausted). Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-        continue;
-      }
-
-      // For other errors, log and throw immediately
-      console.error(`Error in streamWorkflowGeneration using model ${GEMINI_MODEL}:`, error);
-      throw error;
-    }
+  for await (const chunk of result) {
+    yield chunk.text || "";
   }
-
-  // If we exhausted retries
-  console.error(`AI generation failed after ${maxRetries} retries.`);
-  throw lastError;
 }
 
 function getSystemInstruction(actions: any[]): string {
@@ -97,6 +60,7 @@ function getSystemInstruction(actions: any[]): string {
     inputType: a.inputType,
     outputType: a.outputType
   }));
+  // console.log(actionDocs);
 
   return `You are an expert AI Workflow Architect for "Lekana AI Workflow Builder".
 Your goal is to help users build or refine automation workflows.
@@ -141,12 +105,12 @@ function getFewShotHistory(actions: any[]): Content[] {
   return [
     {
       role: "user",
-      parts: [{ text: "Build an invoice processing workflow that uploads an invoice and then validates it." } as Part]
+      parts: [{ text: "Build an invoice processing workflow that uploads an invoice, extracts the amount and date, and then saves it to a database." } as Part]
     },
     {
       role: "model",
       parts: [{
-        text: `I will build a 2-step workflow. First, we need an "Invoice Upload" node to get the document into the system. Since this node produces a "file" output, we can connect it to a "Data Validation" node which accepts "json".
+        text: `I will build a 3-step workflow. First, we'll use "Upload files" to ingest the invoice. Then, we'll use "OCR" in "field-extract" mode to pull out the amount and date. Finally, we'll use "Database Export" to save those values into your Postgres table.
 
 ---JSON_START---
 {
@@ -154,19 +118,44 @@ function getFewShotHistory(actions: any[]): Content[] {
   "nodes": [
     {
       "tempId": "node-upload",
-      "actionName": "Invoice Upload",
-      "config": { "stepName": "Upload Invoice", "allowedFileTypes": ["pdf"] },
+      "actionName": "Upload files",
+      "config": {
+        "stepName": "Upload Invoice",
+        "allowedFileTypes": ["pdf", "images"]
+      },
       "position": { "x": 100, "y": 100 }
     },
     {
-      "tempId": "node-validate",
-      "actionName": "Data Validation",
-      "config": { "stepName": "Validate Data", "validationRules": "Check if amount > 0" },
+      "tempId": "node-ocr",
+      "actionName": "OCR",
+      "config": {
+        "stepName": "Extract Invoice Data",
+        "outputMode": "field-extract",
+        "extractFields": [
+          { "key": "total_amount", "value": "What is the total amount inclusive of tax?" },
+          { "key": "invoice_date", "value": "What is the date of the invoice?" }
+        ]
+      },
       "position": { "x": 100, "y": 300 }
+    },
+    {
+      "tempId": "node-db",
+      "actionName": "Database Export",
+      "config": {
+        "stepName": "Save to DB",
+        "tableName": "invoices",
+        "databaseUrl": "",
+        "fieldMapping": [
+          { "key": "total_amount", "value": "amount" },
+          { "key": "invoice_date", "value": "date" }
+        ]
+      },
+      "position": { "x": 100, "y": 500 }
     }
   ],
   "edges": [
-    { "sourceTempId": "node-upload", "targetTempId": "node-validate" }
+    { "sourceTempId": "node-upload", "targetTempId": "node-ocr" },
+    { "sourceTempId": "node-ocr", "targetTempId": "node-db" }
   ]
 }
 ---JSON_END---` } as Part]
@@ -174,40 +163,60 @@ function getFewShotHistory(actions: any[]): Content[] {
     {
       role: "user",
       parts: [{
-        text: `Current Workflow State: {
-  "name": "Invoice Processor",
-  "nodes": [
-    { "tempId": "node-upload", "actionName": "Invoice Upload", "config": { "stepName": "Upload Invoice" }, "position": { "x": 100, "y": 100 } },
-    { "tempId": "node-validate", "actionName": "Data Validation", "config": { "stepName": "Validate Data" }, "position": { "x": 100, "y": 300 } }
-  ],
-  "edges": [
-    { "sourceTempId": "node-upload", "targetTempId": "node-validate" }
-  ]
-}
-
-Request: Add an API call at the end to save the data.` } as Part]
+        text: "I want to classify documents first. If it's an 'Invoice', extract fields, otherwise just ignore."
+      } as Part]
     },
     {
       role: "model",
       parts: [{
-        text: `I will add an "API Call" node after the "Data Validation" node. This node will receive the validated JSON and send it to an external endpoint.
+        text: `I will add a "Classification" step after the upload. The "Conditional Router" will then check if the label is "Invoice" before passing it to the OCR step.
 
 ---JSON_START---
 {
-  "name": "Invoice Processor with API",
+  "name": "Classified Invoice Processor",
   "nodes": [
-    { "tempId": "node-upload", "actionName": "Invoice Upload", "config": { "stepName": "Upload Invoice" }, "position": { "x": 100, "y": 100 } },
-    { "tempId": "node-validate", "actionName": "Data Validation", "config": { "stepName": "Validate Data" }, "position": { "x": 100, "y": 300 } },
     {
-      "tempId": "node-api",
-      "actionName": "API Call",
-      "config": { "stepName": "Export to ERP", "endpoint": "https://api.erp.provider/invoices", "method": "POST" },
-      "position": { "x": 100, "y": 500 }
+      "tempId": "node-upload",
+      "actionName": "Upload files",
+      "config": { "stepName": "Upload Doc" },
+      "position": { "x": 250, "y": 50 }
+    },
+    {
+      "tempId": "node-classify",
+      "actionName": "Classification",
+      "config": {
+        "stepName": "Classify Doc",
+        "mode": "custom",
+        "customLabels": ["Invoice", "Receipt", "Other"]
+      },
+      "position": { "x": 250, "y": 200 }
+    },
+    {
+      "tempId": "node-router",
+      "actionName": "Conditional Router",
+      "config": {
+        "stepName": "Is it an Invoice?",
+        "routeByField": "label",
+        "routeValue": "Invoice",
+        "operator": "equals"
+      },
+      "position": { "x": 250, "y": 350 }
+    },
+    {
+      "tempId": "node-ocr",
+      "actionName": "OCR",
+      "config": {
+        "stepName": "Extract Data",
+        "outputMode": "field-extract",
+        "extractFields": [{ "key": "amount", "value": "Total amount" }]
+      },
+      "position": { "x": 250, "y": 500 }
     }
   ],
   "edges": [
-    { "sourceTempId": "node-upload", "targetTempId": "node-validate" },
-    { "sourceTempId": "node-validate", "targetTempId": "node-api" }
+    { "sourceTempId": "node-upload", "targetTempId": "node-classify" },
+    { "sourceTempId": "node-classify", "targetTempId": "node-router" },
+    { "sourceTempId": "node-router", "targetTempId": "node-ocr" }
   ]
 }
 ---JSON_END---` } as Part]
