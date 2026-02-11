@@ -262,7 +262,7 @@ export const getDocumentContent = async (req: Request, res: Response) => {
             },
             {
                 headers,
-                timeout: 60000, // 60 seconds for large files
+                timeout: 900000, // 15 minutes for large files
                 responseType: 'arraybuffer' // Get binary data
             }
         ));
