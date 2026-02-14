@@ -64,10 +64,8 @@
 						{#if mode === 'sign-in'}
 							<SignIn
 								{appearance}
-								signUpUrl="/sign-up"
 								forceRedirectUrl="/dashboard"
-								afterSignInUrl="/dashboard"
-								afterSignUpUrl="/dashboard"
+								signUpFallbackRedirectUrl="/dashboard"
 							/>
 							<button
 								onclick={() => (mode = 'sign-up')}
@@ -80,10 +78,8 @@
 						{:else}
 							<SignUp
 								{appearance}
-								signInUrl="/sign-in"
 								forceRedirectUrl="/dashboard"
-								afterSignInUrl="/dashboard"
-								afterSignUpUrl="/dashboard"
+								signInFallbackRedirectUrl="/dashboard"
 							/>
 							<button
 								onclick={() => (mode = 'sign-in')}
