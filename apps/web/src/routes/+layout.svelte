@@ -8,8 +8,15 @@
 	import AlertDialog from '$lib/components/ui/AlertDialog.svelte';
 	import { navState } from '$lib/nav.svelte.js';
 	import SignInModal from '$lib/components/SignInModal.svelte';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
+
+	onMount(() => {
+		if (window.location.hash.includes('sso-callback')) {
+			navState.showSignInModal = true;
+		}
+	});
 </script>
 
 <svelte:head>

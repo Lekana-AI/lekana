@@ -2,7 +2,7 @@
 	import { SignIn, SignedOut } from 'svelte-clerk';
 	import { page } from '$app/state';
 
-	let afterSignInUrl = $derived(page.url.searchParams.get('redirect_url') || '/dashboard');
+	let fallbackRedirectUrl = $derived(page.url.searchParams.get('redirect_url') || '/dashboard');
 </script>
 
 <SignedOut>
@@ -16,7 +16,12 @@
 			</div>
 
 			<div class="flex w-full max-w-md flex-col items-center gap-6">
-				<SignIn signUpUrl="/sign-up" {afterSignInUrl} />
+				<SignIn
+					signUpUrl="/sign-up"
+					forceRedirectUrl={fallbackRedirectUrl}
+					afterSignInUrl={fallbackRedirectUrl}
+					afterSignUpUrl={fallbackRedirectUrl}
+				/>
 			</div>
 		</div>
 		<div
