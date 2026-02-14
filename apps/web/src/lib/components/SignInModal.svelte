@@ -62,7 +62,13 @@
 
 					<div class="clerk-wrapper flex w-full flex-col items-center">
 						{#if mode === 'sign-in'}
-							<SignIn {appearance} signUpUrl="/sign-up" afterSignInUrl="/dashboard" />
+							<SignIn
+								{appearance}
+								signUpUrl="/sign-up"
+								forceRedirectUrl="/dashboard"
+								afterSignInUrl="/dashboard"
+								afterSignUpUrl="/dashboard"
+							/>
 							<button
 								onclick={() => (mode = 'sign-up')}
 								class="mt-4 w-full text-center text-sm text-zinc-400"
@@ -72,7 +78,13 @@
 								>
 							</button>
 						{:else}
-							<SignUp {appearance} signInUrl="/sign-in" afterSignUpUrl="/dashboard" />
+							<SignUp
+								{appearance}
+								signInUrl="/sign-in"
+								forceRedirectUrl="/dashboard"
+								afterSignInUrl="/dashboard"
+								afterSignUpUrl="/dashboard"
+							/>
 							<button
 								onclick={() => (mode = 'sign-in')}
 								class="mt-4 w-full text-center text-sm text-zinc-400"
