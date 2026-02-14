@@ -17,8 +17,7 @@
 				<SignUp
 					signInUrl="/sign-in"
 					forceRedirectUrl={fallbackRedirectUrl}
-					afterSignInUrl={fallbackRedirectUrl}
-					afterSignUpUrl={fallbackRedirectUrl}
+					signInFallbackRedirectUrl={fallbackRedirectUrl}
 				/>
 			</div>
 		</div>

@@ -9,11 +9,14 @@
 	import { navState } from '$lib/nav.svelte.js';
 	import SignInModal from '$lib/components/SignInModal.svelte';
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
 
 	let { children } = $props();
 
 	onMount(() => {
-		if (window.location.hash.includes('sso-callback')) {
+		const isAuthPage =
+			page.url.pathname.includes('/sign-in') || page.url.pathname.includes('/sign-up');
+		if (window.location.hash.includes('sso-callback') && !isAuthPage) {
 			navState.showSignInModal = true;
 		}
 	});
