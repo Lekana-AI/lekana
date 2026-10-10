@@ -1,6 +1,6 @@
 # Standalone Node build of the SvelteKit app (adapter-node).
 # PUBLIC_* values are inlined into the client bundle at build time, so pass them as build args.
-FROM node:22-alpine AS build
+FROM node:25-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json .npmrc ./
@@ -18,7 +18,7 @@ ENV PUBLIC_CLERK_PUBLISHABLE_KEY=$PUBLIC_CLERK_PUBLISHABLE_KEY \
 
 RUN npm run build && npm prune --omit=dev
 
-FROM node:22-alpine
+FROM node:25-alpine
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000
