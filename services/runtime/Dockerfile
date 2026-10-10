@@ -1,5 +1,5 @@
 # Use Node.js 20 Alpine as the base image
-FROM node:20-alpine
+FROM node:25-alpine
 
 # Install OpenSSL for Prisma compatibility
 RUN apk add --no-cache openssl
