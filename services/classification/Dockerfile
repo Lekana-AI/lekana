@@ -1,5 +1,5 @@
 # Use official Node.js 20 Alpine image for smaller size
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -19,7 +19,7 @@ COPY src ./src
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:25-alpine
 
 # Set working directory
 WORKDIR /app
