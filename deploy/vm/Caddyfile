@@ -1,0 +1,16 @@
+# Public entry points. Caddy obtains and renews TLS certificates automatically
+# once APP_DOMAIN / API_DOMAIN point at this machine (ports 80 and 443 open).
+# Everything else (workers, databases) stays on the private Docker network.
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}
+
+{$API_DOMAIN} {
+	encode zstd gzip
+	# flush_interval -1 keeps Server-Sent Events (live execution updates) streaming
+	reverse_proxy runtime:3002 {
+		flush_interval -1
+	}
+}

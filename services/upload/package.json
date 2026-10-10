@@ -14,7 +14,7 @@
     "microservice"
   ],
   "author": "Lekana.ai",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",

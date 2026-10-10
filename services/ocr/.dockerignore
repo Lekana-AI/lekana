@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.*
+!.env.example
+service-account.json
+*.postman_collection.json
+.git
+.gitignore
+*.log
+uploads

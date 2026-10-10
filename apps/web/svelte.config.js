@@ -1,12 +1,14 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapterAuto from '@sveltejs/adapter-auto';
+import adapterNode from '@sveltejs/adapter-node';
+
+// SVELTE_ADAPTER=node builds a standalone Node server (Docker / VM / Cloud Run).
+// Otherwise adapter-auto picks the right adapter for Vercel, Netlify, Cloudflare, etc.
+const useNode = process.env.SVELTE_ADAPTER === 'node';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-		adapter: adapter()
+		adapter: useNode ? adapterNode({ out: 'build' }) : adapterAuto()
 	}
 };
 

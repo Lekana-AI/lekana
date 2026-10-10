@@ -1,0 +1,223 @@
+# Lekana - full stack on a single host (VM, bare metal, or a laptop).
+#
+#   cp .env.example .env            # fill in secrets
+#   mkdir -p secrets && cp <key>.json secrets/gcp-service-account.json
+#   docker compose up -d --build
+#
+# Only Caddy publishes ports (80/443). Worker services have no auth of their own
+# and must never be exposed directly - see docs/architecture.md#security-model.
+
+name: lekana
+
+x-service: &service
+  restart: unless-stopped
+  networks: [internal]
+
+x-gcp-credentials: &gcp-credentials
+  type: bind
+  source: ./secrets/gcp-service-account.json
+  target: /secrets/gcp.json
+  read_only: true
+
+services:
+  # ---------------------------------------------------------------- data
+  postgres:
+    <<: *service
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lekana}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: workflow_builder
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres/init-databases.sql:/docker-entrypoint-initdb.d/01-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      retries: 20
+
+  mongo:
+    <<: *service
+    image: mongo:7
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      retries: 10
+
+  # ---------------------------------------------------------------- core
+  workflow-builder:
+    <<: *service
+    build: ./services/workflow-builder
+    # No migration history yet - sync the schema on start (refuses destructive changes)
+    command: sh -c "npx prisma db push --skip-generate && npm run start"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lekana}:${POSTGRES_PASSWORD}@postgres:5432/workflow_builder?schema=public
+      CLERK_DOMAIN: ${CLERK_DOMAIN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY in .env}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SUPPORT_EMAIL_FROM: ${SUPPORT_EMAIL_FROM:-}
+      INTERNAL_NOTIFICATION_EMAILS: ${INTERNAL_NOTIFICATION_EMAILS:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      start_period: 60s
+      retries: 10
+
+  # Registers the built-in actions and points them at the internal service URLs.
+  # Idempotent; runs once per `docker compose up` and exits.
+  seed-actions:
+    image: postgres:16-alpine
+    networks: [internal]
+    restart: "no"
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./deploy/seed/actions.sql:/seed/actions.sql:ro
+    command: >
+      psql -h postgres -U ${POSTGRES_USER:-lekana} -d workflow_builder
+      -v upload_url=http://upload:4001
+      -v classification_url=http://classification:4002
+      -v ocr_url=http://ocr:4004
+      -v db_export_url=http://db-export:4005
+      -v conditional_router_url=http://conditional-router:4010
+      -f /seed/actions.sql
+    depends_on:
+      workflow-builder: { condition: service_healthy }
+
+  runtime:
+    <<: *service
+    build: ./services/runtime
+    command: sh -c "npx prisma migrate deploy && npm run start"
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://${POSTGRES_USER:-lekana}:${POSTGRES_PASSWORD}@postgres:5432/runtime?schema=public
+      WORKFLOW_DB_URL: postgresql://${POSTGRES_USER:-lekana}:${POSTGRES_PASSWORD}@postgres:5432/workflow_builder?schema=public
+      WORKFLOW_API: http://workflow-builder:3001
+      UPLOAD_SERVICE_URL: http://upload:4001
+      CLERK_DOMAIN: ${CLERK_DOMAIN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      LOG_NEED: ${LOG_NEED:-false}
+    depends_on:
+      postgres: { condition: service_healthy }
+      workflow-builder: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3002/health"]
+      interval: 10s
+      start_period: 60s
+      retries: 10
+
+  web:
+    <<: *service
+    build:
+      context: ./apps/web
+      args:
+        PUBLIC_CLERK_PUBLISHABLE_KEY: ${PUBLIC_CLERK_PUBLISHABLE_KEY}
+        PUBLIC_API_URL: https://${API_DOMAIN}
+        PUBLIC_YOUTUBE_TUTORIAL_URL: ${PUBLIC_YOUTUBE_TUTORIAL_URL:-}
+    environment:
+      PORT: 3000
+      ORIGIN: https://${APP_DOMAIN}
+      BODY_SIZE_LIMIT: 50M
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      PUBLIC_CLERK_PUBLISHABLE_KEY: ${PUBLIC_CLERK_PUBLISHABLE_KEY}
+      PUBLIC_GA_MEASUREMENT_ID: ${PUBLIC_GA_MEASUREMENT_ID:-}
+      WORKFLOW_BASE: http://workflow-builder:3001
+      RUNTIME_BASE: http://runtime:3002
+    depends_on:
+      workflow-builder: { condition: service_healthy }
+      runtime: { condition: service_healthy }
+
+  # ---------------------------------------------------------------- workers
+  # Called only by the runtime over the private network.
+  upload:
+    <<: *service
+    build: ./services/upload
+    environment:
+      PORT: 4001
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp.json
+      CLERK_DOMAIN: ${CLERK_DOMAIN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    volumes: [*gcp-credentials]
+
+  classification:
+    <<: *service
+    build: ./services/classification
+    environment:
+      PORT: 4002
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongo:27017/lekana_classification
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GOOGLE_CLOUD_PROJECT_ID: ${DOCUMENT_AI_PROJECT_ID}
+      GOOGLE_CLOUD_LOCATION: ${DOCUMENT_AI_LOCATION:-us}
+      GOOGLE_CLOUD_PROCESSOR_ID: ${DOCUMENT_AI_CLASSIFIER_PROCESSOR_ID:-}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp.json
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    volumes: [*gcp-credentials]
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  ocr:
+    <<: *service
+    build: ./services/ocr
+    environment:
+      PORT: 4004
+      DOCUMENT_AI_PROJECT_ID: ${DOCUMENT_AI_PROJECT_ID}
+      DOCUMENT_AI_LOCATION: ${DOCUMENT_AI_LOCATION:-us}
+      DOCUMENT_AI_FORM_PARSER_ID: ${DOCUMENT_AI_FORM_PARSER_ID}
+      DOCUMENT_AI_OCR_PROCESSOR_ID: ${DOCUMENT_AI_OCR_PROCESSOR_ID}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/gcp.json
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLERK_DOMAIN: ${CLERK_DOMAIN}
+    volumes: [*gcp-credentials]
+
+  db-export:
+    <<: *service
+    build: ./services/db-export
+    environment:
+      PORT: 4005
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLERK_DOMAIN: ${CLERK_DOMAIN}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+
+  conditional-router:
+    <<: *service
+    build: ./services/conditional-router
+    environment:
+      PORT: 4010
+
+  # ---------------------------------------------------------------- edge
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks: [internal]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-localhost}
+      API_DOMAIN: ${API_DOMAIN:-api.localhost}
+    volumes:
+      - ./deploy/vm/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web, runtime]
+
+networks:
+  internal:
+
+volumes:
+  pgdata:
+  mongodata:
+  caddy_data:
+  caddy_config:

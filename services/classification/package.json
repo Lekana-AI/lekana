@@ -16,7 +16,7 @@
     "microservice"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "@google-cloud/documentai": "^8.7.0",
     "@google/generative-ai": "^0.21.0",
