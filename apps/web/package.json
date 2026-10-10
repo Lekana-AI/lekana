@@ -40,7 +40,7 @@
 		"@types/marked": "^6.0.0",
 		"@xyflow/svelte": "^1.4.2",
 		"lucide-svelte": "^0.555.0",
-		"marked": "^17.0.1",
+		"marked": "^18.1.0",
 		"svelte-clerk": "^0.18.7",
 		"svelte-jsoneditor": "^3.11.0"
 	},
