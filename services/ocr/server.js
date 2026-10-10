@@ -428,7 +428,7 @@ app.listen(PORT, () => {
   console.log(`OCR service running on port ${PORT}`);
   console.log(
     `Clerk Domain: ${
-      process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev"
+      process.env.CLERK_DOMAIN || "not configured"
     }`,
   );
   console.log(

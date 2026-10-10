@@ -10,7 +10,10 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 // Clerk JWKS configuration
-const CLERK_DOMAIN = process.env.CLERK_DOMAIN || 'your-app.clerk.accounts.dev';
+const CLERK_DOMAIN = process.env.CLERK_DOMAIN;
+if (!CLERK_DOMAIN) {
+    console.warn('CLERK_DOMAIN is not set - JWT-protected routes will reject all requests');
+}
 
 // Extend Express Request type to include auth properties
 declare global {

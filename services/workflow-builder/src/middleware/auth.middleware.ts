@@ -12,7 +12,10 @@ const prisma = new PrismaClient();
 // Clerk JWKS configuration
 // Clerk's JWKS endpoint follows the pattern: https://<clerk-domain>/.well-known/jwks.json
 // The domain is extracted from your publishable key
-const CLERK_DOMAIN = process.env.CLERK_DOMAIN || 'your-app.clerk.accounts.dev';
+const CLERK_DOMAIN = process.env.CLERK_DOMAIN;
+if (!CLERK_DOMAIN) {
+    console.warn('CLERK_DOMAIN is not set - JWT-protected routes will reject all requests');
+}
 
 // Type for workflow role data (now uses string codes instead of enum)
 interface WorkflowRoleData {

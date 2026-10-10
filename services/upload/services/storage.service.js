@@ -9,7 +9,10 @@ const { encryptBuffer, isEncryptionEnabled } = require("../utils/encryption");
 
 // Initialize GCP Storage client
 const storage = new Storage();
-const bucketName = process.env.GCS_BUCKET_NAME || "lekana-uploads";
+const bucketName = process.env.GCS_BUCKET_NAME;
+if (!bucketName) {
+  console.warn("GCS_BUCKET_NAME is not set - uploads will fail");
+}
 const signedUrlExpiryMinutes = parseInt(
   process.env.SIGNED_URL_EXPIRY_MINUTES || "60",
   10,

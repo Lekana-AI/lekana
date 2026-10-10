@@ -4,7 +4,7 @@
  */
 
 import type { RequestHandler } from '@sveltejs/kit';
-import { RUNTIME_BASE } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export const GET: RequestHandler = async ({ params, locals, fetch }) => {
     const { workflowId } = params;
@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ params, locals, fetch }) => {
     }
 
     const token = await getToken();
-    const upstreamUrl = `${RUNTIME_BASE}/api/v1/workflows/${workflowId}/events`;
+    const upstreamUrl = `${env.RUNTIME_BASE}/api/v1/workflows/${workflowId}/events`;
 
     console.log(`[SSE Proxy] Connecting to ${upstreamUrl}`);
 

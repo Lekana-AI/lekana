@@ -1,4 +1,4 @@
-export async function GET() {
+export async function GET({ url }) {
     return new Response(
         `
 		<?xml version="1.0" encoding="UTF-8" ?>
@@ -11,25 +11,25 @@ export async function GET() {
 			xmlns:video="https://www.google.com/schemas/sitemap-video/1.1"
 		>
 			<url>
-				<loc>https://lekana.dev/</loc>
+				<loc>${url.origin}/</loc>
 				<lastmod>${new Date().toISOString()}</lastmod>
 				<changefreq>monthly</changefreq>
 				<priority>1.0</priority>
 			</url>
 			<url>
-				<loc>https://lekana.dev/docs</loc>
+				<loc>${url.origin}/docs</loc>
 				<lastmod>${new Date().toISOString()}</lastmod>
 				<changefreq>monthly</changefreq>
 				<priority>0.5</priority>
 			</url>
 			<url>
-				<loc>https://lekana.dev/privacy</loc>
+				<loc>${url.origin}/privacy</loc>
 				<lastmod>${new Date().toISOString()}</lastmod>
 				<changefreq>monthly</changefreq>
 				<priority>0.3</priority>
 			</url>
 			<url>
-				<loc>https://lekana.dev/terms</loc>
+				<loc>${url.origin}/terms</loc>
 				<lastmod>${new Date().toISOString()}</lastmod>
 				<changefreq>monthly</changefreq>
 				<priority>0.3</priority>

@@ -6,8 +6,10 @@ const { expressjwt: jwt } = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
 
 // Clerk JWKS configuration
-const CLERK_DOMAIN =
-  process.env.CLERK_DOMAIN || "your-app.clerk.accounts.dev";
+const CLERK_DOMAIN = process.env.CLERK_DOMAIN;
+if (!CLERK_DOMAIN) {
+  console.warn("CLERK_DOMAIN is not set - JWT-protected routes will reject all requests");
+}
 
 /**
  * JWT validation middleware using Clerk's JWKS endpoint
