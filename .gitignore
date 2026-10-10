@@ -1,0 +1,24 @@
+# Dependencies & build output
+node_modules/
+dist/
+build/
+.svelte-kit/
+generated/
+
+# Secrets - never commit
+.env
+.env.*
+!.env.example
+secrets/
+service-account*.json
+*-service-account.json
+*.pem
+*.key
+
+# Logs & OS / editor files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

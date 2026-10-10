@@ -23,10 +23,11 @@ npm start
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `PORT` | Service port | `4001` |
-| `GCS_BUCKET_NAME` | GCP Cloud Storage bucket | `lekana-uploads` |
+| `GCS_BUCKET_NAME` | GCP Cloud Storage bucket (required) | - |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Path to GCP service account JSON | - |
-| `CLERK_DOMAIN` | Clerk authentication domain | `your-app.clerk.accounts.dev` |
+| `CLERK_DOMAIN` | Clerk Frontend API domain | - |
 | `SIGNED_URL_EXPIRY_MINUTES` | Signed URL expiry time | `60` |
+| `ENCRYPTION_KEY` | 64-hex AES key shared with the other services | - |
 
 ## API Endpoints
 
@@ -59,4 +60,3 @@ Import `upload-service.postman_collection.json` into Postman.
 docker build -t upload-service .
 docker run -p 4001:4001 -e GCS_BUCKET_NAME=your-bucket upload-service
 ```
-# lekana-ai-upload

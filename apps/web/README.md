@@ -1,38 +1,27 @@
-# sv
+# Lekana Web
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+The SvelteKit app: landing pages, sign-in (Clerk), the visual workflow editor, the run/monitor pages, the review queue and the API docs.
 
-## Creating a project
+The browser talks only to this app. Its server routes proxy to the backends and add the user's Clerk token:
 
-If you're seeing this, you've probably already done this step. Congrats!
+| Route | Upstream |
+|-------|----------|
+| `/api/*` | workflow-builder (`WORKFLOW_BASE`) |
+| `/rime/*` | runtime `/api/v1/*` (`RUNTIME_BASE`) |
+| `/rime/workflows/:id/events` | runtime SSE stream |
+| `/enterprise/*` | optional `ENTERPRISE_BASE` |
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Develop
 
-# create a new project in my-app
-npx sv create my-app
+```bash
+cp .env.example .env && npm install
+npm run dev            # http://localhost:5173
+npm run check && npm run lint
 ```
 
-## Developing
+## Build
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- **Docker / VM / Cloud Run:** `docker build --build-arg PUBLIC_CLERK_PUBLISHABLE_KEY=… --build-arg PUBLIC_API_URL=… .` (this sets `SVELTE_ADAPTER=node`)
+- **Vercel / Netlify / Cloudflare:** deploy as-is; `adapter-auto` detects the platform.
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+All variables are listed in [docs/configuration.md](../../docs/configuration.md#web-appsweb).

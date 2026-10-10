@@ -22,11 +22,13 @@ Create a `.env` file:
 DATABASE_URL="postgresql://user:password@localhost:5432/runtime_db?schema=public"
 PORT=3002
 CLERK_DOMAIN=your-app.clerk.accounts.dev
+WORKFLOW_DB_URL="postgresql://user:password@localhost:5432/workflow_builder?schema=public"
+ENCRYPTION_KEY=   # openssl rand -hex 32, shared with the other services
 ```
 
 ### 3. Setup Database
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate deploy
 ```
 
 ### 4. Start the Service
@@ -66,5 +68,3 @@ npm run dev
 ## Testing
 
 Import `runtime-api.postman_collection.json` into Postman for API testing.
-"# lekana-ai-runtime" 
-"# lekana-ai-runtime" 

@@ -138,12 +138,4 @@ curl -X POST http://localhost:4004/api/v1/configure \
 
 ## Runtime Integration
 
-The runtime already has this service registered:
-- URL: `OCR_SERVICE_URL` (default: `http://localhost:4004`)
-- Action aliases: `ocr`, `ocr processing`, `text extraction`, `extract text`
-
-Add to runtime `.env`:
-```env
-OCR_SERVICE_URL=http://localhost:4004
-```
-# lekana-ai-ocr
+The runtime calls this service at `<serviceUrl>/api/v1/process`. `serviceUrl` comes from the `OCR` row in the workflow-builder `Action` table, which [`deploy/seed/actions.sql`](../../deploy/seed/actions.sql) creates. `/api/v1/process` does not check user tokens, so expose this service only to the runtime. See the [security model](../../docs/architecture.md#security-model).
