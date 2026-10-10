@@ -1,0 +1,24 @@
+name: Create Database Branch
+on:
+  push:
+    branches-ignore:
+      - main # Don't create branches when pushing to main
+      
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Neon Branch
+        uses: neondatabase/create-branch-action@v5
+        id: create_branch
+        with:
+          project_id: ${{ secrets.NEON_PROJECT_ID }}
+          # Creates a branch named after the git branch (e.g., issue/101)
+          branch_name: ${{ github.ref_name }} 
+          api_key: ${{ secrets.NEON_API_KEY }}
+
+      - name: Comment DB URL (Optional)
+        run: |
+          echo "Database Created!"
+          echo "Connection String: ${{ steps.create_branch.outputs.db_url }}"
+          # You can also script this to post a comment on the PR

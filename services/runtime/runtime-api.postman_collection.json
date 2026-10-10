@@ -1,0 +1,356 @@
+{
+	"info": {
+		"name": "Runtime API",
+		"description": "Workflow Runtime Service - Publishing, Execution, and Monitoring",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3002/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "workflow_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "execution_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "key_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Publishing (JWT Auth)",
+			"description": "Endpoints for publishing workflows - requires JWT authentication",
+			"item": [
+				{
+					"name": "Publish Workflow",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.workflowId) {",
+									"        pm.collectionVariables.set('workflow_id', jsonData.workflowId);",
+									"    }",
+									"    if (jsonData.apiKey && jsonData.apiKey.key) {",
+									"        pm.collectionVariables.set('api_key', jsonData.apiKey.key);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"workflowId\": \"{{workflow_id}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/publish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"publish"
+							]
+						},
+						"description": "Publish a workflow by ID. Fetches workflow from workflow-builder using JWT passthrough."
+					}
+				},
+				{
+					"name": "Get Published Workflow",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "List API Keys",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create API Key",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.apiKey && jsonData.apiKey.key) {",
+									"        pm.collectionVariables.set('api_key', jsonData.apiKey.key);",
+									"    }",
+									"    if (jsonData.apiKey && jsonData.apiKey.id) {",
+									"        pm.collectionVariables.set('key_id', jsonData.apiKey.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"New API Key\",\n    \"expiresAt\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys"
+							]
+						}
+					}
+				},
+				{
+					"name": "Revoke API Key",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/keys/{{key_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"keys",
+								"{{key_id}}"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Execution (API Key Auth)",
+			"description": "Run workflows - requires X-API-Key header",
+			"auth": {
+				"type": "noauth"
+			},
+			"item": [
+				{
+					"name": "Run Workflow",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 202) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.executionId) {",
+									"        pm.collectionVariables.set('execution_id', jsonData.executionId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"input\": {},\n    \"documents\": [\n        {\n            \"url\": \"https://example.com/document.pdf\",\n            \"filename\": \"document.pdf\",\n            \"mimeType\": \"application/pdf\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/workflows/{{workflow_id}}/run",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"workflows",
+								"{{workflow_id}}",
+								"run"
+							]
+						},
+						"description": "Run a published workflow with input data. Requires X-API-Key header."
+					}
+				}
+			]
+		},
+		{
+			"name": "Monitoring",
+			"description": "Execution status and logs",
+			"item": [
+				{
+					"name": "Get All Executions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/executions?limit=20&offset=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Execution by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/executions/{{execution_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions",
+								"{{execution_id}}"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Execution Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/executions/{{execution_id}}/logs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"executions",
+								"{{execution_id}}",
+								"logs"
+							]
+						}
+					}
+				}
+			]
+		}
+	]
+}
