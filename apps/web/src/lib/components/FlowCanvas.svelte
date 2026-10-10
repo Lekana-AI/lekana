@@ -1,0 +1,275 @@
+<script lang="ts">
+	import {
+		Background,
+		Controls,
+		MiniMap,
+		SvelteFlow,
+		type Connection,
+		addEdge,
+		type Edge,
+		MarkerType,
+		ConnectionLineType
+	} from '@xyflow/svelte';
+
+	import '@xyflow/svelte/dist/style.css';
+	import CustomEdge from './SvelteFlow/Edge/CustomEdge.svelte';
+	import type { EdgeTypes, NodeEventWithPointer } from '@xyflow/svelte';
+	import ActiveActionNode from './SvelteFlow/Node/ActiveActionNode.svelte';
+	import { toast } from '$lib/toast.svelte';
+	import { Copy, Settings, Settings2, Trash } from 'lucide-svelte';
+	import ContextMenu from './SvelteFlow/ContextMenu.svelte';
+
+	let { onNodeClick, nodes = $bindable(), edges = $bindable(), workflowId, reloading } = $props();
+
+	const nodeTypes = {
+		activeAction: ActiveActionNode
+	};
+
+	const edgeTypes: EdgeTypes = {
+		'custom-edge': CustomEdge
+	};
+
+	async function updateNodePosition(value: any) {
+		try {
+			const res = await fetch(`/api/workflows/${workflowId}/nodes/${value.targetNode.id}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					positionX: value.targetNode.position.x,
+					positionY: value.targetNode.position.y
+				})
+			});
+
+			if (!res.ok) {
+				const errorText = await res.text();
+				console.error('Failed to update node:', errorText);
+				toast.error('Failed to update node position');
+				throw new Error(`Failed to update node: ${res.status}`);
+			}
+		} catch (error) {
+			console.error('Error updating node position:', error);
+			toast.error('Something went wrong. Please try again in a moment.');
+		}
+	}
+
+	async function updateEdge(connection: Connection) {
+		// console.log(connection);
+		const tempId = `edge-${Date.now()}`;
+		const newEdge = {
+			...connection,
+			id: tempId,
+			type: 'custom-edge',
+			markerEnd: { type: MarkerType.ArrowClosed, color: '#52525c' }
+		};
+
+		// Filter out any automatically added edge by SvelteFlow to prevent duplicates
+		edges = addEdge(
+			newEdge,
+			edges.filter((e) => !e.id.startsWith('xy-edge__'))
+		);
+		try {
+			const res = await fetch(`/api/workflows/${workflowId}/edges`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					sourceNodeId: connection.source,
+					targetNodeId: connection.target
+				})
+			});
+
+			if (!res.ok) {
+				const errorData = await res.json().catch(() => null);
+				const errorMessage = errorData?.message || `Failed to update edge: ${res.status}`;
+
+				console.error('Failed to update edge:', errorData || res.statusText);
+
+				// Remove the edge we just added
+				edges = edges.filter((e: Edge) => e.id !== tempId);
+
+				toast.error(errorMessage);
+			} else {
+				const savedEdge = await res.json();
+				console.log('TempId', tempId);
+				console.log('SavedId', savedEdge.id);
+				// Update the edge with the real ID from database
+				edges = edges.map((e: Edge) => (e.id === tempId ? { ...e, id: savedEdge.id } : e));
+			}
+		} catch (err) {
+			console.error('Network error updating edge:', err);
+			// Remove the edge we just added
+			edges = edges.filter((e: Edge) => e.id !== tempId);
+			toast.error('Network error. Failed to connect nodes.');
+		}
+	}
+
+	let showMiniMap = $state(false);
+
+	let menu: {
+		id: string;
+		data: any;
+		top?: number;
+		left?: number;
+		right?: number;
+		bottom?: number;
+	} | null = $state(null);
+	let flowContainer: HTMLDivElement;
+	let clientWidth: number = $state(0);
+	let clientHeight: number = $state(0);
+
+	const handleContextMenu: NodeEventWithPointer<MouseEvent> = ({ event, node }) => {
+		// Prevent native context menu from showing
+		event.preventDefault();
+
+		const rect = flowContainer.getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		// Calculate position of the context menu. We want to make sure it
+		// doesn't get positioned off-screen.
+		menu = {
+			id: node.id,
+			data: node.data,
+			top: y < clientHeight - 200 ? y : undefined,
+			left: x < clientWidth - 200 ? x : undefined,
+			right: x >= clientWidth - 200 ? clientWidth - x : undefined,
+			bottom: y >= clientHeight - 200 ? clientHeight - y : undefined
+		};
+	};
+
+	async function handleDelete({ edges: deletedEdges }: { edges: Edge[] }) {
+		for (const edge of deletedEdges) {
+			console.log(edge.id);
+			console.log(edge.id);
+			if (edge.id && !edge.id.startsWith('edge-') && !edge.id.startsWith('xy-edge__')) {
+				console.log(edge);
+				try {
+					const res = await fetch(`/api/workflows/${workflowId}/edges/${edge.id}`, {
+						method: 'DELETE',
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+
+					if (!res.ok) {
+						const errorText = await res.text();
+						console.error('Failed to delete edge:', errorText);
+						toast.error('Failed to delete edge');
+					}
+				} catch (err) {
+					console.error('Network error deleting edge:', err);
+					toast.error('Network error deleting edge');
+					edges = [...edges, edge];
+				}
+			}
+		}
+	}
+</script>
+
+<div
+	bind:this={flowContainer}
+	bind:clientWidth
+	bind:clientHeight
+	class="flow-wrapper relative h-full w-full overflow-clip rounded-xl bg-zinc-900"
+>
+	{#if reloading}
+		<div class="absolute top-4 right-4 z-50">
+			<div
+				class="h-4 w-4 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent"
+			></div>
+		</div>
+	{/if}
+	<SvelteFlow
+		connectionLineType={ConnectionLineType.SmoothStep}
+		defaultEdgeOptions={{
+			type: 'custom-edge',
+			markerEnd: { type: MarkerType.ArrowClosed, color: '#52525c' }
+		}}
+		onnodecontextmenu={handleContextMenu}
+		onpaneclick={() => (menu = null)}
+		onpointerdown={() => (menu = null)}
+		ondelete={handleDelete}
+		onconnect={(connection) => updateEdge(connection)}
+		isValidConnection={(connection) => {
+			const sourceNode = nodes.find((n: any) => n.id === connection.source);
+			const targetNode = nodes.find((n: any) => n.id === connection.target);
+
+			if (!sourceNode || !targetNode) return false;
+
+			const isValid =
+				sourceNode.data.node.action.outputType === targetNode.data.node.action.inputType;
+
+			if (!isValid) {
+				toast.error(
+					`Cannot connect ${sourceNode.data.node.action.outputType} output to ${targetNode.data.node.action.inputType} input`
+				);
+			}
+
+			return isValid;
+		}}
+		onnodedragstop={(value: any) => updateNodePosition(value)}
+		onmovestart={() => (showMiniMap = true)}
+		onmoveend={() =>
+			setTimeout(() => {
+				showMiniMap = false;
+			}, 500)}
+		proOptions={{ hideAttribution: true }}
+		bind:nodes
+		bind:edges
+		{nodeTypes}
+		{edgeTypes}
+		fitView
+	>
+		<MiniMap
+			maskColor="#27272a"
+			class="{showMiniMap ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300"
+		/>
+
+		<Controls />
+		<Background bgColor="#18181b" patternColor="#52525c" />
+		{#if menu}
+			<ContextMenu
+				onclick={() => (menu = null)}
+				id={menu.id}
+				data={menu.data}
+				top={menu.top}
+				left={menu.left}
+				right={menu.right}
+				bottom={menu.bottom}
+			/>
+		{/if}
+	</SvelteFlow>
+</div>
+
+<style>
+	.flow-wrapper :global(.svelte-flow__minimap) {
+		background-color: #1c1c1f !important;
+		border-radius: 0.5rem;
+		margin-bottom: 30px;
+		margin-right: 30px;
+	}
+
+	.flow-wrapper :global(.svelte-flow__controls button) {
+		background-color: #27272a !important;
+		border: 1px solid #3f3f46 !important;
+		color: #e4e4e7 !important;
+		border-radius: 0.2rem;
+		padding: 7px;
+	}
+	.flow-wrapper :global(.svelte-flow__controls button):hover {
+		background-color: #38383c !important;
+		transition-property: background-color;
+		transition-duration: 300ms;
+	}
+	.flow-wrapper :global(.svelte-flow__controls) {
+		scale: 130%;
+		margin-bottom: 30px;
+		margin-left: 40px;
+		display: flex;
+		flex-direction: row;
+		gap: 5px;
+	}
+</style>
