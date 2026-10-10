@@ -1,0 +1,249 @@
+{
+	"info": {
+		"_postman_id": "upload-service-collection",
+		"name": "Upload Service API",
+		"description": "File upload microservice for GCP Cloud Storage\n\nPort: 4001\n\nEndpoints:\n- GET /health - Health check\n- POST /api/v1/process - Main upload endpoint (ServiceRequest format)\n- POST /api/v1/upload - Direct multipart upload",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:4001",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "YOUR_CLERK_JWT_TOKEN",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/health",
+					"host": ["{{baseUrl}}"],
+					"path": ["health"]
+				},
+				"description": "Check service health and GCS bucket accessibility"
+			},
+			"response": [
+				{
+					"name": "Success",
+					"originalRequest": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"status\": \"ok\",\n  \"service\": \"upload-service\",\n  \"version\": \"1.0.0\",\n  \"bucket\": {\n    \"accessible\": true,\n    \"bucket\": \"lekana-uploads\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Upload via Process Endpoint (Base64)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"exec-123\",\n  \"nodeId\": \"node-456\",\n  \"workflowId\": \"wf-789\",\n  \"userId\": \"user-001\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"filename\": \"sample.pdf\",\n        \"mimeType\": \"application/pdf\",\n        \"base64\": \"JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5kb2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKL01lZGlhQm94IFswIDAgNjEyIDc5Ml0KPj4KZW5kb2JqCjMgMCBvYmoKPDwKL1R5cGUgL1BhZ2UKL1BhcmVudCAyIDAgUgo+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDE0NyAwMDAwMCBuIAp0cmFpbGVyCjw8Ci9TaXplIDQKL1Jvb3QgMSAwIFIKPj4Kc3RhcnR4cmVmCjE5OQolJUVPRgo=\"\n      }\n    ]\n  },\n  \"config\": {\n    \"stepName\": \"Invoice Upload\",\n    \"bulkUpload\": true,\n    \"maxFileSizeMB\": 20,\n    \"allowedFileTypes\": [\"pdf\", \"png\", \"jpg\", \"jpeg\", \"tiff\"]\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Upload files using the ServiceRequest format (for workflow runtime)"
+			},
+			"response": [
+				{
+					"name": "Success",
+					"originalRequest": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/process",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "process"]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"body": "{\n  \"success\": true,\n  \"data\": {\n    \"uploadedFiles\": [\n      {\n        \"filename\": \"sample.pdf\",\n        \"url\": \"https://storage.googleapis.com/lekana-uploads/uploads/sample_1702569600000_a1b2c3d4.pdf\",\n        \"signedUrl\": \"https://storage.googleapis.com/lekana-uploads/uploads/sample_1702569600000_a1b2c3d4.pdf?X-Goog-Algorithm=...\",\n        \"size\": 199,\n        \"mimeType\": \"application/pdf\",\n        \"uploadedAt\": \"2024-12-14T12:00:00.000Z\"\n      }\n    ]\n  },\n  \"documents\": [\n    {\n      \"url\": \"https://storage.googleapis.com/lekana-uploads/uploads/sample_1702569600000_a1b2c3d4.pdf\",\n      \"filename\": \"sample.pdf\",\n      \"mimeType\": \"application/pdf\"\n    }\n  ],\n  \"metadata\": {\n    \"processingTime\": 1523,\n    \"serviceVersion\": \"1.0.0\",\n    \"bucket\": \"lekana-uploads\",\n    \"totalFiles\": 1,\n    \"successCount\": 1,\n    \"errorCount\": 0\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Upload via Form Data",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "files",
+							"type": "file",
+							"src": []
+						},
+						{
+							"key": "config",
+							"value": "{\"stepName\":\"Document Upload\",\"bulkUpload\":true,\"maxFileSizeMB\":20,\"allowedFileTypes\":[\"pdf\",\"png\",\"jpg\",\"jpeg\",\"tiff\"]}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/upload",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "upload"]
+				},
+				"description": "Direct file upload using multipart form data"
+			},
+			"response": []
+		},
+		{
+			"name": "Test Invalid File Type",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"exec-test\",\n  \"nodeId\": \"node-test\",\n  \"workflowId\": \"wf-test\",\n  \"userId\": \"user-test\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"filename\": \"script.js\",\n        \"mimeType\": \"application/javascript\",\n        \"base64\": \"Y29uc29sZS5sb2coJ2hlbGxvJyk7\"\n      }\n    ]\n  },\n  \"config\": {\n    \"allowedFileTypes\": [\"pdf\"]\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Test upload rejection for invalid file type"
+			},
+			"response": [
+				{
+					"name": "Error - Invalid File Type",
+					"originalRequest": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/process",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "process"]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"body": "{\n  \"success\": false,\n  \"data\": null,\n  \"error\": {\n    \"code\": \"UPLOAD_ERROR\",\n    \"message\": \"All files failed to upload: File type \\\"js\\\" is not allowed. Allowed types: pdf\"\n  },\n  \"metadata\": {\n    \"processingTime\": 5,\n    \"serviceVersion\": \"1.0.0\",\n    \"bucket\": \"lekana-uploads\"\n  }\n}"
+				}
+			]
+		},
+		{
+			"name": "Test Unauthorized",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"exec-test\",\n  \"nodeId\": \"node-test\",\n  \"workflowId\": \"wf-test\",\n  \"input\": {\n    \"documents\": []\n  },\n  \"config\": {}\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Test authentication requirement (no token)"
+			},
+			"response": [
+				{
+					"name": "Error - Unauthorized",
+					"originalRequest": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/process",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "process"]
+						}
+					},
+					"status": "Unauthorized",
+					"code": 401,
+					"body": "{\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid or missing authentication token\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Test Bulk Upload Disabled",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{token}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"executionId\": \"exec-bulk-test\",\n  \"nodeId\": \"node-bulk-test\",\n  \"workflowId\": \"wf-bulk-test\",\n  \"userId\": \"user-test\",\n  \"input\": {\n    \"documents\": [\n      {\n        \"filename\": \"file1.pdf\",\n        \"mimeType\": \"application/pdf\",\n        \"base64\": \"JVBERi0xLjQK\"\n      },\n      {\n        \"filename\": \"file2.pdf\",\n        \"mimeType\": \"application/pdf\",\n        \"base64\": \"JVBERi0xLjQK\"\n      }\n    ]\n  },\n  \"config\": {\n    \"bulkUpload\": false\n  }\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/v1/process",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "v1", "process"]
+				},
+				"description": "Test bulk upload rejection when disabled"
+			},
+			"response": [
+				{
+					"name": "Error - Bulk Upload Disabled",
+					"originalRequest": {
+						"method": "POST",
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/process",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "process"]
+						}
+					},
+					"status": "Bad Request",
+					"code": 400,
+					"body": "{\n  \"success\": false,\n  \"data\": null,\n  \"error\": {\n    \"code\": \"UPLOAD_ERROR\",\n    \"message\": \"Bulk upload is disabled. Only one file allowed at a time.\"\n  },\n  \"metadata\": {\n    \"processingTime\": 2,\n    \"serviceVersion\": \"1.0.0\",\n    \"bucket\": \"lekana-uploads\"\n  }\n}"
+				}
+			]
+		}
+	]
+}
