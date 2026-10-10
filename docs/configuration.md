@@ -36,7 +36,7 @@ Every service is configured through environment variables only. Each directory h
 | `DATABASE_URL` | yes | | Postgres connection string |
 | `CLERK_DOMAIN` | yes | | |
 | `ENCRYPTION_KEY` | yes | | |
-| `GEMINI_API_KEY` | for AI builder | | |
+| `GEMINI_API_KEY` | yes | | The service does not start without it (AI workflow generation) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | for email | port `587` | Port `465` switches to implicit TLS |
 | `SUPPORT_EMAIL_FROM` | no | `SMTP_USER` | Sender address |
 | `INTERNAL_NOTIFICATION_EMAILS` | no | | Comma-separated recipients for feedback notifications |
