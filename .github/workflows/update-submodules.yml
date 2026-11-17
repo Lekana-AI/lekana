@@ -1,0 +1,42 @@
+# Moves every submodule to the latest commit on its tracked branch and commits
+# the new pointers. Vercel projects connected to this repo redeploy on that push.
+#
+# Trigger it from a service repo after a merge to main:
+#   curl -X POST -H "Authorization: Bearer $TOKEN" \
+#     https://api.github.com/repos/<owner>/<root-repo>/dispatches \
+#     -d '{"event_type":"submodule-updated"}'
+name: Update submodules
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [submodule-updated]
+  schedule:
+    - cron: "0 3 * * *" # daily safety net
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          # Needed only while any submodule repo is private.
+          token: ${{ secrets.SUBMODULES_TOKEN || github.token }}
+
+      - name: Pull latest submodule commits
+        run: git submodule update --remote --recursive
+
+      - name: Commit new pointers
+        run: |
+          if git diff --quiet; then
+            echo "Submodules already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: update submodules" -m "$(git submodule status | sed 's/^/  /')"
+          git push

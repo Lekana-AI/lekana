@@ -1,0 +1,46 @@
+# One click: Actions → "Deploy to Vercel" → Run workflow.
+#
+# Repository secrets:
+#   VERCEL_TOKEN       https://vercel.com/account/tokens          (required)
+#   VERCEL_TEAM_ID     team_xxx, if the projects live in a team   (optional)
+#   LEKANA_VERCEL_ENV  full contents of deploy/vercel.env         (required)
+name: Deploy to Vercel
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Build from this repo's submodules (root) or each service's own repo (services)"
+        type: choice
+        options: [root, services]
+        default: root
+      only:
+        description: "Comma-separated service ids to deploy (empty = all)"
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy-vercel
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Deploy all services
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          LEKANA_VERCEL_ENV: ${{ secrets.LEKANA_VERCEL_ENV }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          args="--source ${{ inputs.source }} --ref ${GITHUB_REF_NAME}"
+          if [ -n "$ONLY" ]; then args="$args --only $ONLY"; fi
+          node scripts/deploy-vercel.mjs $args

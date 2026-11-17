@@ -1,0 +1,77 @@
+{
+  "$comment": "One entry per Vercel project. `path` is the submodule folder, `repo` its own GitHub repo. `env` lists the variables taken from deploy/vercel.env ([shared] + [<id>] sections). `links` are filled automatically with the production URL of another service in this file, so dependents are deployed after the services they point at.",
+  "services": [
+    {
+      "id": "upload",
+      "project": "lekana-upload",
+      "path": "lekana-ai-upload",
+      "repo": "Lekana-AI/lekana-ai-upload",
+      "env": ["CLERK_DOMAIN", "ENCRYPTION_KEY", "GCS_BUCKET_NAME", "SIGNED_URL_EXPIRY_MINUTES", "GOOGLE_SERVICE_ACCOUNT_JSON"],
+      "required": ["ENCRYPTION_KEY", "GCS_BUCKET_NAME", "GOOGLE_SERVICE_ACCOUNT_JSON"]
+    },
+    {
+      "id": "ocr",
+      "project": "lekana-ocr",
+      "path": "lekana-ai-ocr",
+      "repo": "Lekana-AI/lekana-ai-ocr",
+      "env": ["CLERK_DOMAIN", "GEMINI_API_KEY", "GOOGLE_SERVICE_ACCOUNT_JSON", "DOCUMENT_AI_PROJECT_ID", "DOCUMENT_AI_LOCATION", "DOCUMENT_AI_OCR_PROCESSOR_ID", "DOCUMENT_AI_FORM_PARSER_ID"],
+      "required": ["GEMINI_API_KEY"]
+    },
+    {
+      "id": "classification",
+      "project": "lekana-classification",
+      "path": "lekana-classification",
+      "repo": "Lekana-AI/lekana-classification",
+      "env": ["MONGODB_URI", "GEMINI_API_KEY", "GOOGLE_SERVICE_ACCOUNT_JSON", "GOOGLE_CLOUD_PROJECT_ID", "GOOGLE_CLOUD_LOCATION", "GOOGLE_CLOUD_PROCESSOR_ID", "CONFIDENCE_THRESHOLD", "CORS_ORIGIN", "ENCRYPTION_KEY"],
+      "required": ["MONGODB_URI", "GEMINI_API_KEY"]
+    },
+    {
+      "id": "conditional-router",
+      "project": "lekana-conditional-router",
+      "path": "lekana-ai-conditional-router",
+      "repo": "Lekana-AI/lekana-ai-conditional-router",
+      "env": []
+    },
+    {
+      "id": "db-export",
+      "project": "lekana-db-export",
+      "path": "lekana-ai-db-export",
+      "repo": "Lekana-AI/lekana-ai-db-export",
+      "env": ["CLERK_DOMAIN", "GEMINI_API_KEY", "ENCRYPTION_KEY"],
+      "required": ["ENCRYPTION_KEY"]
+    },
+    {
+      "id": "workflow-builder",
+      "project": "lekana-workflow-builder",
+      "path": "lekana-ai-workflow-builder",
+      "repo": "Lekana-AI/lekana-ai-workflow-builder",
+      "env": ["DATABASE_URL", "CLERK_DOMAIN", "ENCRYPTION_KEY", "GEMINI_API_KEY", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "SUPPORT_EMAIL_FROM", "INTERNAL_NOTIFICATION_EMAILS", "LOGO_URL"],
+      "required": ["DATABASE_URL", "GEMINI_API_KEY"]
+    },
+    {
+      "id": "runtime",
+      "project": "lekana-runtime",
+      "path": "lekana-ai-runtime",
+      "repo": "Lekana-AI/lekana-ai-runtime",
+      "env": ["DATABASE_URL", "WORKFLOW_DB_URL", "CLERK_DOMAIN", "ENCRYPTION_KEY", "LOG_NEED"],
+      "required": ["DATABASE_URL"],
+      "links": {
+        "UPLOAD_SERVICE_URL": "upload",
+        "WORKFLOW_API": "workflow-builder"
+      }
+    },
+    {
+      "id": "web",
+      "project": "lekana-web",
+      "path": "LekanaLanding",
+      "repo": "notlasandu/LekanaLanding",
+      "env": ["PUBLIC_CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY", "PUBLIC_YOUTUBE_TUTORIAL_URL", "ENTERPRISE_BASE", "ENTERPRISE_TOKEN"],
+      "required": ["PUBLIC_CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY"],
+      "links": {
+        "WORKFLOW_BASE": "workflow-builder",
+        "RUNTIME_BASE": "runtime",
+        "PUBLIC_API_URL": "runtime"
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# Local-only folders that are not part of the open-source root repo
+/lekana-monorepo/
+/.vscode/
+
+# Deployment secrets (filled from deploy/vercel.env.example)
+/deploy/vercel.env
+/deploy/*.env
+!/deploy/vercel.env.example
+/deploy/last-deploy.json
+
+node_modules/
+.DS_Store
+Thumbs.db
