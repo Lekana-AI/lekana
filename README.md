@@ -8,13 +8,13 @@ This is the **root repository**. Each service lives in its own repository and is
 
 | id | folder | what it does | deploy just this one |
 |---|---|---|---|
-| `upload` | [`lekana-ai-upload`](lekana-ai-upload) | File upload → Google Cloud Storage (encrypted) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-upload&project-name=lekana-upload&env=ENCRYPTION_KEY%2CGCS_BUCKET_NAME%2CGOOGLE_SERVICE_ACCOUNT_JSON) |
-| `ocr` | [`lekana-ai-ocr`](lekana-ai-ocr) | OCR: Document AI + Gemini | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-ocr&project-name=lekana-ocr&env=GEMINI_API_KEY) |
-| `classification` | [`lekana-classification`](lekana-classification) | Document classification (Document AI + Gemini, MongoDB) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-classification&project-name=lekana-classification&env=MONGODB_URI%2CGEMINI_API_KEY) |
-| `conditional-router` | [`lekana-ai-conditional-router`](lekana-ai-conditional-router) | Routes documents by label / confidence | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-conditional-router&project-name=lekana-conditional-router) |
-| `db-export` | [`lekana-ai-db-export`](lekana-ai-db-export) | Exports extracted data to external databases | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-db-export&project-name=lekana-db-export&env=ENCRYPTION_KEY) |
-| `workflow-builder` | [`lekana-ai-workflow-builder`](lekana-ai-workflow-builder) | Workflow editor API (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-workflow-builder&project-name=lekana-workflow-builder&env=DATABASE_URL%2CGEMINI_API_KEY) |
-| `runtime` | [`lekana-ai-runtime`](lekana-ai-runtime) | Executes published workflows (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLekana-AI%2Flekana-ai-runtime&project-name=lekana-runtime&env=DATABASE_URL) |
+| `upload` | [`lekana-ai-upload`](lekana-ai-upload) | File upload → Google Cloud Storage (encrypted) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-upload&project-name=lekana-upload&env=ENCRYPTION_KEY%2CGCS_BUCKET_NAME%2CGOOGLE_SERVICE_ACCOUNT_JSON) |
+| `ocr` | [`lekana-ai-ocr`](lekana-ai-ocr) | OCR: Document AI + Gemini | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-ocr&project-name=lekana-ocr&env=GEMINI_API_KEY) |
+| `classification` | [`lekana-classification`](lekana-classification) | Document classification (Document AI + Gemini, MongoDB) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-clasification&project-name=lekana-classification&env=MONGODB_URI%2CGEMINI_API_KEY) |
+| `conditional-router` | [`lekana-ai-conditional-router`](lekana-ai-conditional-router) | Routes documents by label / confidence | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-conditional-router&project-name=lekana-conditional-router) |
+| `db-export` | [`lekana-ai-db-export`](lekana-ai-db-export) | Exports extracted data to external databases | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-db-export&project-name=lekana-db-export&env=ENCRYPTION_KEY) |
+| `workflow-builder` | [`lekana-ai-workflow-builder`](lekana-ai-workflow-builder) | Workflow editor API (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-workflow-builder&project-name=lekana-workflow-builder&env=DATABASE_URL%2CGEMINI_API_KEY) |
+| `runtime` | [`lekana-ai-runtime`](lekana-ai-runtime) | Executes published workflows (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-runtime&project-name=lekana-runtime&env=DATABASE_URL) |
 | `web` | [`LekanaLanding`](LekanaLanding) | SvelteKit web app (Clerk auth) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fnotlasandu%2FLekanaLanding&project-name=lekana-web&env=PUBLIC_CLERK_PUBLISHABLE_KEY%2CCLERK_SECRET_KEY) |
 
 ```
@@ -30,7 +30,7 @@ This is the **root repository**. Each service lives in its own repository and is
 ## Getting the code
 
 ```bash
-git clone --recurse-submodules https://github.com/Lekana-AI/lekana.git
+git clone --recurse-submodules https://github.com/lekana-dev/lekana.git
 cd lekana
 # already cloned without submodules?
 npm run setup          # git submodule update --init --recursive

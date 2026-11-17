@@ -1,30 +1,30 @@
 [submodule "lekana-ai-upload"]
 	path = lekana-ai-upload
-	url = https://github.com/Lekana-AI/lekana-ai-upload.git
+	url = https://github.com/lekana-dev/lekana-ai-upload.git
 	branch = main
 [submodule "lekana-ai-ocr"]
 	path = lekana-ai-ocr
-	url = https://github.com/Lekana-AI/lekana-ai-ocr.git
+	url = https://github.com/lekana-dev/lekana-ai-ocr.git
 	branch = main
 [submodule "lekana-classification"]
 	path = lekana-classification
-	url = https://github.com/Lekana-AI/lekana-classification.git
+	url = https://github.com/lekana-dev/lekana-ai-clasification.git
 	branch = main
 [submodule "lekana-ai-conditional-router"]
 	path = lekana-ai-conditional-router
-	url = https://github.com/Lekana-AI/lekana-ai-conditional-router.git
+	url = https://github.com/lekana-dev/lekana-ai-conditional-router.git
 	branch = main
 [submodule "lekana-ai-db-export"]
 	path = lekana-ai-db-export
-	url = https://github.com/Lekana-AI/lekana-ai-db-export.git
+	url = https://github.com/lekana-dev/lekana-ai-db-export.git
 	branch = main
 [submodule "lekana-ai-workflow-builder"]
 	path = lekana-ai-workflow-builder
-	url = https://github.com/Lekana-AI/lekana-ai-workflow-builder.git
+	url = https://github.com/lekana-dev/lekana-ai-workflow-builder.git
 	branch = main
 [submodule "lekana-ai-runtime"]
 	path = lekana-ai-runtime
-	url = https://github.com/Lekana-AI/lekana-ai-runtime.git
+	url = https://github.com/lekana-dev/lekana-ai-runtime.git
 	branch = main
 [submodule "LekanaLanding"]
 	path = LekanaLanding
