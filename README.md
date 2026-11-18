@@ -15,7 +15,7 @@ This is the **root repository**. Each service lives in its own repository and is
 | `db-export` | [`lekana-ai-db-export`](lekana-ai-db-export) | Exports extracted data to external databases | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-db-export&project-name=lekana-db-export&env=ENCRYPTION_KEY) |
 | `workflow-builder` | [`lekana-ai-workflow-builder`](lekana-ai-workflow-builder) | Workflow editor API (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-workflow-builder&project-name=lekana-workflow-builder&env=DATABASE_URL%2CGEMINI_API_KEY) |
 | `runtime` | [`lekana-ai-runtime`](lekana-ai-runtime) | Executes published workflows (Postgres / Prisma) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-runtime&project-name=lekana-runtime&env=DATABASE_URL) |
-| `web` | [`LekanaLanding`](LekanaLanding) | SvelteKit web app (Clerk auth) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-frontend&project-name=lekana-web&env=PUBLIC_CLERK_PUBLISHABLE_KEY%2CCLERK_SECRET_KEY) |
+| `web` | [`lekana-ai-frontend`](lekana-ai-frontend) | SvelteKit web app (Clerk auth) | [![Deploy](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Flekana-dev%2Flekana-ai-frontend&project-name=lekana-web&env=PUBLIC_CLERK_PUBLISHABLE_KEY%2CCLERK_SECRET_KEY) |
 
 ```
              ┌──────────── web (SvelteKit) ────────────┐
