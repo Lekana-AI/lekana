@@ -3,11 +3,14 @@
   "private": true,
   "description": "Lekana root repo: every service as a git submodule, deployable to Vercel in one command.",
   "license": "Apache-2.0",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "setup": "git submodule update --init --recursive",
     "sync": "git submodule update --remote --recursive",
     "deploy": "node scripts/deploy-vercel.mjs",
-    "deploy:plan": "node scripts/deploy-vercel.mjs --dry-run"
+    "deploy:plan": "node scripts/deploy-vercel.mjs --dry-run",
+    "rulesets": "node scripts/apply-rulesets.mjs"
   }
 }
