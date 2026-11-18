@@ -64,7 +64,7 @@
       "id": "web",
       "project": "lekana-web",
       "path": "LekanaLanding",
-      "repo": "notlasandu/LekanaLanding",
+      "repo": "lekana-dev/lekana-ai-frontend",
       "env": ["PUBLIC_CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY", "PUBLIC_YOUTUBE_TUTORIAL_URL", "ENTERPRISE_BASE", "ENTERPRISE_TOKEN"],
       "required": ["PUBLIC_CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY"],
       "links": {
